@@ -497,6 +497,74 @@ Skill Version → Role Profile → AI Employee Capability
 
 任一答案為「否」即為護城河鬆動的早期警訊。
 
+### 29.10 AEOS vs Loops / Agent Runtime 類工具的競合定位
+
+> 紅杉資本 / Boris (2026) 提到 Loops 等工具將成為「未來 SaaS 公司的標配」。AEOS 與此類工具是**不同層次**而非競爭關係。釐清此定位對銷售與募資至關重要。
+
+#### 29.10.1 三層分工模型
+
+```
+┌────────────────────────────────────────┐
+│ Layer 3 — Governance & Lifecycle (AEOS) │
+│ 訓練 / 驗收 / 監控 / Skill 版控          │
+│ 跨客戶 Benchmark / 數據飛輪              │
+└─────────────────┬──────────────────────┘
+                  ↓ 依賴
+┌────────────────────────────────────────┐
+│ Layer 2 — Agent Runtime (Loops 類)      │
+│ Agent Loop / Tool Calling / Memory      │
+│ 多 Agent 編排 / Workflow 動態生成        │
+└─────────────────┬──────────────────────┘
+                  ↓ 依賴
+┌────────────────────────────────────────┐
+│ Layer 1 — LLM Provider                  │
+│ OpenAI / Anthropic / Google / Local     │
+└────────────────────────────────────────┘
+```
+
+#### 29.10.2 三層工具的職責邊界
+
+| 層級 | 職責 | 護城河類型 | 商品化風險 |
+| :--- | :--- | :--- | :--- |
+| Layer 1 — LLM | 產生 token、推理 | 規模 / 演算法 | 高（多供應商競爭） |
+| Layer 2 — Loops 類 Agent Runtime | Agent loop、Tool calling、多 Agent 編排 | 開發者體驗 | 中高（Open source 追趕快） |
+| **Layer 3 — AEOS** | 治理、評估、Skill 版控、跨客戶數據飛輪 | **企業信任 + 數據資產** | **低**（需長期累積） |
+
+#### 29.10.3 為何 AEOS 不會與 Loops 直接競爭
+
+| 維度 | Loops (Layer 2) | AEOS (Layer 3) |
+| :--- | :--- | :--- |
+| 目標客戶 | 開發者、SaaS 公司技術團隊 | 企業客戶（含非技術部門） |
+| 賣點 | 「讓你快速建出 Agent」 | 「讓你安全管理 AI 員工」 |
+| 計價單位 | API 用量 / Workflow 數 | 員工席次 / 治理服務 |
+| 累積資產 | Workflow 模板 | 跨客戶 Skill / Evaluation Benchmark |
+| 客戶心智 | 「工程工具」 | 「勞動力管理體系」 |
+
+**結論**：Loops 是 AEOS 的**潛在底層元件**，不是競爭對手。AEOS 可選擇：
+- (a) 自建 Layer 2（控制度高）
+- (b) 採用 Loops 等成熟方案作為 Layer 2（呼應 §23 自研 vs 外包）
+
+#### 29.10.4 對銷售與募資的標準回應
+
+```
+Q: 「你們跟 Loops / LangGraph / CrewAI 有什麼差別？」
+
+A: 我們不是同一層工具。
+   Loops 解決『如何快速建一個 Agent』；
+   AEOS 解決『如何安全把 1000 個 AI 員工放進企業流程並治理它們』。
+   Loops 是工程工具，AEOS 是勞動力管理體系。
+   未來 AEOS 內部可能採用 Loops 作為 Agent Runtime，但治理層、Skill 版控、
+   跨客戶 Benchmark、Evaluation Dataset 是 AEOS 獨有的護城河。
+```
+
+#### 29.10.5 戰略推論
+
+此三層分工模型同時驗證三件事：
+
+1. **AEOS 不在「會被模型 / Agent Runtime 進步吃掉」的危險區** — 因為定位高一層
+2. **AEOS 不需與 Loops 競爭 Agent 編排能力** — 可採購或自建均可
+3. **AEOS 真正的對手不是 Loops，而是「Salesforce 內建 AI / Zendesk AI 助理」等大廠下沉**（呼應 §28.6 SWOT Threats）
+
 ---
 
 ## 30. 十年演化路線與 90 天行動

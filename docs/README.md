@@ -21,6 +21,16 @@
 | [06-risk-boundaries.md](./06-risk-boundaries.md) | **風險** | §11, §15, §31 | ~147 |
 | [99-conclusion.md](./99-conclusion.md) | 收束 | §32 完整版 | ~70 |
 
+### Visual Prompts (架構圖文字投影片)
+
+| 檔案 | 圖類 | 對應白皮書章節 |
+| :--- | :--- | :--- |
+| [visual-prompts/01-architecture-stack.md](./visual-prompts/01-architecture-stack.md) | 系統架構堆疊圖 | §5 / §5.4 / §29.11 |
+| [visual-prompts/02-sa-process-flow.md](./visual-prompts/02-sa-process-flow.md) | SA 流程架構圖 | §9 / §17 / §18 / §29.5~29.7 |
+| [visual-prompts/README.md](./visual-prompts/README.md) | 通用使用說明 | — |
+
+> 用途：給 GPT-4o / DALL-E 3 / Midjourney 等 image generation tool 生成投影片用架構圖。
+
 ### 附錄 (10 個)
 
 | 檔案 | 對應主檔 | 用途 |

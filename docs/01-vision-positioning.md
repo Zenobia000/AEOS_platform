@@ -8,15 +8,22 @@
 
 **本檔被外部引用的高頻章節**：
 - §1 問題陳述 — 治理鴻溝六大風險
+- **§1.4 歷史定位 — AI 革命「企業勞動力管理層」早期定義者** (R6 新增)
 - §2 產品定位 — AI 員工平台抽象階梯、職位目錄、商業模式
 - §3 設計原則 — 七大原則
 - §22 戰略定位 — 公司本質、Wedge 三段敘事、VC 七大關鍵問題、護城河四層遞進
+- **§22.7 紅杉/Boris 觀點對照 — 證明 AEOS 不在被摧毀類型** (R6 新增)
+- **§22.8 大廠下沉 + AI 藍領 Wedge — 收斂 wedge 至 frontline worker** (R7 新增)
+- **§22.8.3 AI 藍領精準定義 — 8 大產業 × 8 種職位範例**
+- **§22.8.6 新紅線 — 不進 white-collar Copilot 戰場**
 
 **本檔對外引用的章節**：
 - §13 多模型策略 (見 `02-product-architecture.md`)
 - §17 五階段方法論 (見 `03-execution-onboarding.md`)
 - §18 Onboarding Layer (見 `03-execution-onboarding.md`)
+- §28.9 H5 假設 — 藍領市場可承載性 (見 `05-investor-thesis.md`)
 - §29 三 Compiler (見 `05-investor-thesis.md`)
+- §29.11 Layer 3a/3b/3c 細分 (見 `05-investor-thesis.md`)
 
 ---
 

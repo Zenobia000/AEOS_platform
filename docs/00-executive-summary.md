@@ -56,6 +56,31 @@ AI 客服只是這套系統承載的眾多職位之一。把產品定位釘在�
 2. **Governance-first，DevOps-later**。第一版的成功不是「Agent 很強」，而是「企業敢把 AI 員工放進流程，出事時知道誰、何時、用什麼 Skill、呼叫什麼 Tool、依據什麼資料、做了什麼決策」。
 3. **把 MVP 收斂到一條職位、三個工具、一個租戶**。第一階段不要試圖整合 ERP / SAP / CRM 全家桶；先讓最小閉環是乾淨、可控、可稽核的。
 
+### 0.5 Wedge 定位 — AI 藍領 (R7 收斂)
+
+> 2026 年 Google Cloud Next 1800 億美元投入 Gemini Enterprise + Agent Studio 之後，AEOS 必須明確避開大廠主場。
+
+| 項目 | AEOS 立場 |
+| :--- | :--- |
+| 服務對象 | **Frontline Worker (藍領)** — 客服、店員、護理員、維修工、揀貨員、加盟督導 |
+| **不服務** | Knowledge Worker (白領) — 該市場屬 Google / Microsoft / Salesforce |
+| 入口 | **LINE / WhatsApp / 行動 App / 對講機**，非 Web / Slack / Office |
+| 採購決策者 | **COO / 營運主管 / 店面總監**，非 CIO |
+| 預算邏輯 | **人力預算**（規模 10 倍於 IT 預算），非軟體 IT 預算 |
+| 戰略口號 | 「全球 30 億藍領工作者的 AI 同事 / 替代方案」 |
+
+詳見 §22.8 (`01-vision-positioning.md`) 與 §28.9 / §29.11 (`05-investor-thesis.md`)。
+
+### 0.6 防守紅線 — 永不違反
+
+```
+× 不可進 white-collar Copilot 戰場 (Google/MS 主場)
+× 不可只做客服 (Zendesk 主場，須涵蓋多藍領場景)
+× 不可放棄行動 / LINE / WhatsApp 入口 (藍領不在 Slack)
+× 不可固化客戶業務流程 (固化的只是 meta-治理流程)
+× 不可把護城河放在「我們的 Agent 比較強」 (模型供應商會吃掉)
+```
+
 ---
 
 ## 給不同決策者的一句話
@@ -93,3 +118,11 @@ AI 客服只是這套系統承載的眾多職位之一。把產品定位釘在�
 1. **AI 員工不是模型，是受治理的執行物件**。
 2. **訓練室可成長，上線員工要凍結**。
 3. **Skill 要版本化、Tool 要走閘道、監控評分才是護城河**。
+
+---
+
+## R7 新增三句話 — AI 藍領戰略
+
+1. **大廠服務 Knowledge Worker，AEOS 服務 Frontline Worker**。
+2. **客服是入口，AI 藍領平台才是本體**。
+3. **永不進 Layer 3a 大廠主場，鎖定 3b 垂直藍領 + 3c 跨雲中立**。

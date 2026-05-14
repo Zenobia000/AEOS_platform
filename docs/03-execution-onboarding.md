@@ -9,8 +9,11 @@
 **本檔被外部引用的高頻章節**：
 - §14 MVP 路線圖 (Phase 1~4，0~24 個月)
 - §16 組織與運營 (Personas / AIOC / 採購流程)
+- **§16.4 客戶側 AI 員工管理者角色重塑 — AWM 新職位 + 人機比例演化** (R6 新增)
 - §17 五階段方法論 (Phase 0~4 — 需求盤點 / 知識建模 / 沙盒陪練 / 灰度上線 / 監控迭代)
+- **§17 開頭 Disclaimer — 釐清「meta-流程 vs 業務流程」** (R6 新增)
 - §18 Onboarding Automation Layer (五步無腦流程 / 6 個 MVP 功能 / L0~L5 成熟度 / AI 員工履歷)
+- **§18 開頭 Disclaimer — 無腦導入 ≠ 業務流程鎖死** (R6 新增)
 - §18.11.1 知識卡資料結構
 - §19 三種企業導入模式 (Hosted Channel / Agent API / Webhook+MCP)
 - §20 自動化成熟度 (L1 草稿 → L4 受控自動化)

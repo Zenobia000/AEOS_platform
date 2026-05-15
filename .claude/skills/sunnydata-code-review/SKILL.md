@@ -142,7 +142,7 @@ The rule applies to exact phrases, paraphrases, synonyms, and implications of su
 **Mandatory:**
 - After each task in subagent-driven development
 - After completing a major feature
-- Before merge to main
+- Before merge to main (typically after PR creation — `sunnydata-branch-lifecycle` invokes this skill post-PR for structured self-review)
 
 **Optional but valuable:**
 - When stuck (fresh perspective)
@@ -159,7 +159,7 @@ HEAD_SHA=$(git rev-parse HEAD)
 
 **Step 2 — Dispatch code-reviewer subagent:**
 
-Use Task tool with `superpowers:code-reviewer` type. Fill the template at `code-review/code-reviewer.md`.
+Use Agent tool with `code-quality-specialist` subagent type. Fill the template at `code-review/code-reviewer.md`.
 
 Placeholders to fill:
 - `{WHAT_WAS_IMPLEMENTED}` — What you just built
@@ -181,7 +181,7 @@ Placeholders to fill:
 BASE_SHA=$(git log --oneline | grep "Task 1" | head -1 | awk '{print $1}')
 HEAD_SHA=$(git rev-parse HEAD)
 
-[Dispatch superpowers:code-reviewer subagent]
+[Dispatch code-quality-specialist subagent via Agent tool]
   WHAT_WAS_IMPLEMENTED: Verification and repair functions for conversation index
   PLAN_OR_REQUIREMENTS: Task 2 from docs/superpowers/plans/deployment-plan.md
   BASE_SHA: a7981ec

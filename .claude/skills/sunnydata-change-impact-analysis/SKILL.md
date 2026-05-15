@@ -33,7 +33,7 @@ Before AI implements code changes that touch any of these surfaces:
 - Documentation-only edits to tier-3 process guides
 - Bug fix where the bug is clearly inside one function with no contract impact
 
-For these, prefer `superpowers:writing-plans` or just write the code.
+For these, prefer `sunnydata-design` skill or just write the code.
 
 ## Procedure
 
@@ -52,7 +52,7 @@ If you can't write this in one sentence, the change isn't well-defined yet — s
 
 ### Step 3: Identify affected artifacts
 
-For each surface in scope, search and list. Use the project's Flow IDs (see `VibeCoding_Workflow_Templates/0-principles/flow-id-conventions.md`):
+For each surface in scope, search and list. Use the project's Flow IDs (see `VibeCoding_Workflow_Templates/0-principles/PRIN-0001-flow-id-conventions.md`):
 
 ```bash
 # Find existing flows the change might touch
@@ -60,13 +60,16 @@ grep -l "<keyword>" docs/2-contracts/flow-*.md
 grep -l "<keyword>" docs/2-contracts/api/openapi.yaml
 grep -l "<keyword>" docs/2-contracts/module-contract.*.md
 
+# Find SLO / pipeline / model contracts that may be affected
+grep -l "<keyword>" docs/2-contracts/slo-*.md docs/2-contracts/pipeline-*.md docs/2-contracts/model-*.md 2>/dev/null
+
 # Find tests already targeting affected behavior
 grep -rln "<keyword>" tests/
 ```
 
 ### Step 4: Fill the CIA template
 
-Open `VibeCoding_Workflow_Templates/4-exploration/change-impact-analysis.template.md` as the structure. Write the result to `docs/4-exploration/CR-NNNN-<short-kebab>.md`.
+Open `VibeCoding_Workflow_Templates/4-exploration/CIA-0000-change-impact-analysis.template.md` as the structure. Write the result to `docs/4-exploration/CR-NNNN-<short-kebab>.md`.
 
 Required sections (in order):
 1. **Change statement** (the one-sentence as-is/to-be/driver from Step 1)

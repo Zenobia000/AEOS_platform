@@ -9,6 +9,8 @@
 | :--- | :--- | :--- |
 | [01-architecture-stack.md](./01-architecture-stack.md) | 系統架構堆疊圖 | §5 / §5.4 / §29.11 |
 | [02-sa-process-flow.md](./02-sa-process-flow.md) | SA 流程架構圖 | §9 / §17 / §18 / §29.5~29.7 |
+| [03-architecture-philosophy.md](./03-architecture-philosophy.md) | 架構哲學圖 (Why Modular Monolith) | SAD-v0.1 / ADR-0004 |
+| [04-memory-architecture.md](./04-memory-architecture.md) | 記憶架構圖 (Five Layers + Three Risk Classes) | ADR-0010 |
 
 ## 通用使用流程
 

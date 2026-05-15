@@ -4,7 +4,7 @@ description: AEOS DDD 領域模型 v0 — aggregates, entities, value objects, i
 status: active
 type: contract
 created: 2026-05-14
-last-synced-with: efb63b3efff9a280e178f46124f39db8d0141b54
+last-synced-with: 868bfcc407b223db3767f62e3f431e17fb20f55e
 owner: CTO
 tier: 2
 ---
@@ -83,6 +83,7 @@ tier: 2
 | channel | enum(`line`, `web_chat`, `whatsapp`) | |
 | started_at, ended_at | timestamp | |
 | outcome | enum(`resolved`, `handoff_human`, `abandoned`, `error`) | |
+| summary | text? | 對話結束時 AI 產生的結構化摘要（≤ 200 token，已過 PII 遮罩）。見 ADR-0010 L2.5 |
 | metadata | jsonb | |
 
 **Child entities**：
@@ -234,6 +235,25 @@ tier: 2
 | `EmployeeStatusChanged` | draft → live 等 | Audit |
 | `KnowledgeCardApproved` | KC 過 review | Audit, Retrieval Index Rebuild |
 | `PolicyDenied` | Policy 拒絕某個動作 | Audit, Alerting |
+| `SummaryGenerated` | 對話結束時 L2.5 摘要產生 | Audit |
+
+---
+
+## 3.5 Memory Layer Mapping（對應 ADR-0010）
+
+AI 員工的記憶分為五層，對應到本文件的 aggregates：
+
+| Layer | 名稱 | 對應 Aggregate | Phase 1 |
+|---|---|---|---|
+| L1 Working Memory | 當前對話 context | Message buffer（§2.4）→ LLM prompt | ✅ |
+| L2 Session Memory | 單次對話歷程 | Conversation + Message（§2.3–2.4）+ Redis session | ✅ |
+| L2.5 Session Summary | 對話結束摘要（跨 session 事實記憶） | Conversation.summary 欄位（§2.3） | ✅ |
+| L3 Tenant Knowledge | KB + Skill | KnowledgeCard（§2.6）+ Skill/SkillVersion（§2.5） | ✅ |
+| L4 Operational Memory | 跨對話累積模式 | 待定（Phase 2，由 Training Room bounded context 負責） | ❌ |
+
+L2.5 的設計原則：Frozen Runtime 凍結「行為」不凍結「記憶」。記下事實觀察（「客戶問了退貨」）與 append-only Message 本質相同，不屬於自我改進。
+
+詳見 `ADR-0010-memory-architecture.md`。
 
 ---
 

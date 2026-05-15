@@ -4,7 +4,7 @@ title: LLM Cost / Rate-Limit / Budget Policy
 status: active
 type: quota-policy
 created: 2026-05-15
-last-synced-with: c22ad6cf305b5f5efeb2e2b2c998606181709f0b
+last-synced-with: 868bfcc407b223db3767f62e3f431e17fb20f55e
 owner: CTO
 tier: 2
 related: [ADR-0001, NFR-001, OBS-001, PILOT-001, SAD-v0.1]
@@ -99,6 +99,7 @@ US$ 150 預算 ≈ **312,500 次對話**（單 tenant 月）
 - 對話歷史超過 8K token → 自動摘要前 N 輪（保留最近 5 輪原文）
 - RAG retrieval 最多 top-5 chunks，每 chunk ≤ 500 token
 - System prompt 限 ≤ 1,000 token；超出 PR review block
+- 記憶四層模型與 context 注入策略見 `ADR-0010-memory-architecture.md`
 
 ## 5. 監控與告警（對應 OBS-001 §3 §7）
 

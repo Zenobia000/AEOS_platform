@@ -29,7 +29,7 @@ When asked about current code structure:
 When asked to update a view doc:
 1. Run the appropriate generator (tools like `pyan`, `madge`, `tree`, or AI-driven full reads)
 2. Replace the doc wholesale; do not patch in place
-3. The `/regenerate-views` skill (if available) handles this end-to-end
+3. The `sunnydata-auto-regen` skill (if available) handles this end-to-end
 
 ## How humans should maintain this tier
 
@@ -43,7 +43,29 @@ When asked to update a view doc:
 
 | File | Generator hint |
 |---|---|
-| `project-structure.template.md` | `tree` or `eza --tree` output, then annotate per directory |
-| `file-dependencies.template.md` | Language-specific (Python: `pyan`, JS: `madge`, Go: `go list`) |
-| `class-relationships.template.md` | UML extractor or AI-driven full read |
-| `frontend-route-map.template.md` | Page tree + nav + route table + page-to-page data flow; AI-generated from router config (per [ADR-0001](../../docs/1-decisions/ADR-0001-frontend-template-tier-realignment.md)) |
+| `VIEW-0001-project-structure.template.md` | `tree` or `eza --tree` output, then annotate per directory |
+| `VIEW-0002-file-dependencies.template.md` | Language-specific (Python: `pyan`, JS: `madge`, Go: `go list`) |
+| `VIEW-0003-class-relationships.template.md` | UML extractor or AI-driven full read |
+| `VIEW-0004-frontend-route-map.template.md` | Page tree + nav + route table + page-to-page data flow; AI-generated from router config (per [ADR-0001](../../docs/1-decisions/ADR-0001-frontend-template-tier-realignment.md)) |
+
+## Frontmatter Schema
+
+All files in this tier MUST carry this frontmatter:
+
+| Field | Required | Type | Description |
+|---|---|---|---|
+| `id` | YES | string | `VIEW-NNNN` |
+| `title` | YES | string | Human-readable title |
+| `status` | YES | enum | `active` / `stale` / `regenerating` |
+| `tier` | YES | const | `5-views` |
+| `owner` | YES | const | `AI-AUTO` |
+| `last-synced-with` | YES | string | Git commit SHA |
+| `sync-source` | YES | const | `code` |
+| `source-paths` | YES | list | Source file paths |
+| `synced-at` | YES | date | Last sync date |
+| `generated-by` | YES | string | Tool that generated this |
+| `generated-from` | opt | string | Analysis source |
+| `last-regenerated` | YES | date | Last regeneration date |
+| `product-version` | opt | string | Product version |
+| `supersedes` | opt | string | Predecessor VIEW ID |
+| `superseded-by` | opt | string | Successor VIEW ID |

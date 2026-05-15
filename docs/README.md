@@ -1,5 +1,7 @@
 # AI 員工作業系統 — 白皮書 (拆檔版)
 
+> **推進產品上線？** 從 [LAUNCH-DASHBOARD.md](./LAUNCH-DASHBOARD.md) 開始 — 狀態、阻塞項、下一步、必讀清單全在一頁。
+
 > 本目錄為 `whitepaper.md` v1.0 的主題拆檔版本，供內部團隊 reference 與個人寫作思路梳理使用。
 >
 > 對外發送 / 列印 / 完整閱讀請使用根目錄 `whitepaper.md`（4048 行單檔合併版）。

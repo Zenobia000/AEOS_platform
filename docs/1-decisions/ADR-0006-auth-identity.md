@@ -132,7 +132,7 @@ AEOS Phase 1 有 3 類「使用者」需要認證：
 - 主程式碼：`services/auth/`
 - 核心 lib：python `passlib[argon2]`、`pyjwt`、`pyotp`
 - DB schema 變更：`migrations/20260520_auth.sql`（users, sessions, mfa_secrets, refresh_tokens, audit_log）
-- 對應 contract：API-001 §auth endpoints（待補）
+- 對應 contract：API-001 §1.2 Authentication
 
 ## Related
 

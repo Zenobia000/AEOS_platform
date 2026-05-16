@@ -283,5 +283,5 @@ Tenant 後台必有的客服 console：
 - `RUNBOOK-001-incident-response.md` — S1/S2 對應的內部事故流程
 - `ADR-0009-prompt-versioning.md` — 從 escalation 學習改 prompt 流程
 - `PILOT-001-success-criteria.md` — Escalation 相關 KPI
-- `LEGAL-002-SOW-template.md` (TODO) — SLA 寫入合約
+- `LEGAL-002-SOW-template.md` — SLA 寫入合約
 - `OBS-001-observability-spec.md` — Escalation metrics

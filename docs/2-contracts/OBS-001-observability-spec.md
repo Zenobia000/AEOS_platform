@@ -4,7 +4,7 @@ title: Observability Specification — Phase 1
 status: active
 type: observability-spec
 created: 2026-05-15
-last-synced-with: a5d7a75bd822b8cf7d2b6d8c3157060f50848e86
+last-synced-with: abbd2b83fd1ec10383cb68850fff218c1ad57923
 owner: CTO
 tier: 2
 related: [SAD-v0.1, NFR-001, RUNBOOK-001, ADR-0008, PILOT-001]
@@ -22,7 +22,7 @@ related: [SAD-v0.1, NFR-001, RUNBOOK-001, ADR-0008, PILOT-001]
 | **Logs**（結構化事件） | Loki + Grafana | 30 天 hot + 90 天 cold S3 |
 | **Traces**（請求追蹤） | OpenTelemetry → Tempo | 7 天 |
 
-正式 stack 決策見 ADR-0008（待寫）。本文先定**規範**，stack 可替換。
+正式 stack 決策見 ADR-0008。本文先定**規範**，stack 可替換。
 
 ## 2. Golden Signals（每服務必出 4 指標）
 
@@ -199,4 +199,4 @@ Pilot 期最少 4 個 dashboard，定義於 `infra/grafana/dashboards/`：
 - `RUNBOOK-001-incident-response.md` §4 — 告警對應 playbook
 - `PILOT-001-success-criteria.md` §2 — 業務 KPI 來源
 - `ADR-0005-data-retention-pii.md` — PII 在 log 中的處理
-- `ADR-0008-observability-stack.md` (TODO) — stack 選型決策
+- `ADR-0008-observability-stack.md` — stack 選型決策

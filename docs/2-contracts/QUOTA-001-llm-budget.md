@@ -4,7 +4,7 @@ title: LLM Cost / Rate-Limit / Budget Policy
 status: active
 type: quota-policy
 created: 2026-05-15
-last-synced-with: 2b70986920c67fe4e9b80c76cefef998036ee957
+last-synced-with: abbd2b83fd1ec10383cb68850fff218c1ad57923
 owner: CTO
 tier: 2
 related: [ADR-0001, NFR-001, OBS-001, PILOT-001, SAD-v0.1]
@@ -235,4 +235,4 @@ GA 期再做 self-serve top-up 流程。
 - `OBS-001-observability-spec.md` §3 §7 — metric & alert
 - `PILOT-001-success-criteria.md` §2.2 §3 K3 — 商業健康與 kill criteria
 - `SAD-v0.1.md` — 系統架構中 quota-guard 位置
-- `SEC-001-threat-model.md` (TODO) — prompt injection 完整 threat model
+- `SEC-001-threat-model.md` — prompt injection 完整 threat model

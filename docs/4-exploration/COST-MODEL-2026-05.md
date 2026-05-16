@@ -342,5 +342,5 @@ Total runway need:   ~$97K
 - `ADR-0004-deployment-model.md` — Infra 選擇（Hetzner）
 - `ADR-0008-observability-stack.md` — Self-host vs cloud 成本權衡
 - `PILOT-ICP-2026-05.md` — 客戶月費假設來源
-- `HIRING-001-role-jds.md` (TODO) — hire 觸發條件
+- `HIRING-001-role-jds.md` — hire 觸發條件
 - `05-investor-thesis.md` — 投資人視角整合

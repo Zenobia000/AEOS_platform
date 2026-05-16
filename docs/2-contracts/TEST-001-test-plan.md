@@ -4,7 +4,7 @@ title: Test Plan + Traceability Matrix
 status: active
 type: test-plan
 created: 2026-05-15
-last-synced-with: a5d7a75bd822b8cf7d2b6d8c3157060f50848e86
+last-synced-with: abbd2b83fd1ec10383cb68850fff218c1ad57923
 owner: CTO
 tier: 2
 related: [BF-001, UF-001-to-005, SF-001-to-005, API-001-internal, API-002-line-webhook, AC-001-to-005, NFR-001, OBS-001]
@@ -216,4 +216,4 @@ def test_kb_ingest_pdf_basic():
 - `API-001-internal.md`, `API-002-line-webhook.md` — API contracts
 - `NFR-001-non-functional-requirements.md` §6 — coverage 基線
 - `OBS-001-observability-spec.md` §3 — test set pass rate metric
-- `SEC-001-threat-model.md` (TODO) — security TC 對應
+- `SEC-001-threat-model.md` — security TC 對應

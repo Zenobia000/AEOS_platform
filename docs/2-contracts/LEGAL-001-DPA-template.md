@@ -4,7 +4,7 @@ title: Data Processing Agreement (DPA) Template
 status: active
 type: legal-template
 created: 2026-05-15
-last-synced-with: a5d7a75bd822b8cf7d2b6d8c3157060f50848e86
+last-synced-with: abbd2b83fd1ec10383cb68850fff218c1ad57923
 owner: CEO + CTO
 tier: 2
 related: [ADR-0005, NFR-001, SEC-001, OBS-001]
@@ -276,8 +276,8 @@ In case of conflict:
 
 **See also**:
 - `ADR-0005-data-retention-pii.md` — 內部 PII 政策（與本 DPA 一致性必須維護）
-- `SEC-001-threat-model.md` (TODO) — 安全控管細節
+- `SEC-001-threat-model.md` — 安全控管細節
 - `OBS-001-observability-spec.md` §4.2, §9 — audit log 與 PII 處理
 - `RUNBOOK-001-incident-response.md` §4.4 — PII 洩漏事故處理
 - `RUNBOOK-003-backup-dr.md` — RTO/RPO 實作
-- `LEGAL-002-SOW-template.md` (TODO) — 商業合約範本
+- `LEGAL-002-SOW-template.md` — 商業合約範本

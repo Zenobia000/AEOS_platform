@@ -183,6 +183,6 @@ Pilot 5 家分布建議：U1 × 2, U2 × 1, U3 × 1, U4 × 1（多樣性學習�
 - `PILOT-001-success-criteria.md` — Pilot 整體標準
 - `PRD-001-7day-ai-cs-onboarding.md` — 產品定義
 - `BF-001-customer-onboarding.md` — Onboarding flow
-- `LEGAL-002-SOW-template.md` (TODO) — Pilot 合約範本
+- `LEGAL-002-SOW-template.md` — Pilot 合約範本
 - `04-strategy-business.md` — 整體 GTM 策略
 - `PLAYBOOK-001-cs-escalation.md` §8 — Pilot 客戶承諾

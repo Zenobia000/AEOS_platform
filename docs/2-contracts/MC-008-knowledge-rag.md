@@ -5,7 +5,7 @@ status: draft
 tier: 2-contracts
 owner: HYBRID (AI-drafts, human-approves)
 last-reviewed: 2026-05-15
-last-synced-with: 868bfcc407b223db3767f62e3f431e17fb20f55e
+last-synced-with: 90eaacb470567a3bf631af423e5dbf1ad8053a47
 sync-source: doc
 source-paths:
   - src/knowledge/

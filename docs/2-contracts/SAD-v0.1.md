@@ -4,7 +4,7 @@ title: System Architecture Document v0.1 — AEOS Phase 1
 status: active
 type: architecture
 created: 2026-05-14
-last-synced-with: efb63b3efff9a280e178f46124f39db8d0141b54
+last-synced-with: c22ad6cf305b5f5efeb2e2b2c998606181709f0b
 owner: CTO
 tier: 2
 related: [BF-001, UF-001, UF-002, UF-003, UF-004, UF-005, ADR-0001, ADR-0002, ADR-0003, ADR-0004, ADR-0005, NFR-001]

@@ -4,7 +4,7 @@ title: LLM Cost / Rate-Limit / Budget Policy
 status: active
 type: quota-policy
 created: 2026-05-15
-last-synced-with: 868bfcc407b223db3767f62e3f431e17fb20f55e
+last-synced-with: 2b70986920c67fe4e9b80c76cefef998036ee957
 owner: CTO
 tier: 2
 related: [ADR-0001, NFR-001, OBS-001, PILOT-001, SAD-v0.1]

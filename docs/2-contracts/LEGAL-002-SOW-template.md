@@ -4,7 +4,7 @@ title: Statement of Work (SOW) Template — Pilot
 status: active
 type: legal-template
 created: 2026-05-15
-last-synced-with: c22ad6cf305b5f5efeb2e2b2c998606181709f0b
+last-synced-with: a5d7a75bd822b8cf7d2b6d8c3157060f50848e86
 owner: CEO + CTO
 tier: 2
 related: [LEGAL-001, PILOT-001, PRD-001, AC-001-to-005, PLAYBOOK-001, NFR-001]

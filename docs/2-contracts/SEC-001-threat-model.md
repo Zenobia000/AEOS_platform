@@ -4,7 +4,7 @@ title: Threat Model (STRIDE + LLM Top 10)
 status: active
 type: threat-model
 created: 2026-05-15
-last-synced-with: c22ad6cf305b5f5efeb2e2b2c998606181709f0b
+last-synced-with: a5d7a75bd822b8cf7d2b6d8c3157060f50848e86
 owner: CTO
 tier: 2
 related: [SAD-v0.1, NFR-001, ADR-0005, ADR-0006, ADR-0007, QUOTA-001, OBS-001, LEGAL-001]

@@ -5,7 +5,7 @@ status: active
 tier: 2-contracts
 owner: HYBRID
 last-reviewed: 2026-05-15
-last-synced-with: 0881f25b2458b97c3ace08a4357fa2177d8d29c4
+last-synced-with: 9f85145cec3d0dae247b3304cac85fa75fe53015
 sync-source: doc
 related: [SAD-v0.1, MC-001, MC-002, MC-003, MC-004, MC-005, MC-006, MC-007, MC-008, MC-009, MC-010, MC-011]
 ---

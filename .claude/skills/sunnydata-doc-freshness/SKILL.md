@@ -62,11 +62,13 @@ Files without this frontmatter are reported as `UNMANAGED` so the user can decid
 
 6. **Compare sync** (only if `status` is `active` or `draft`):
    - If `last-synced-with` == latest source commit → FRESH
-   - If `last-synced-with` is an ancestor of latest source commit → STALE; count commits between
+   - **+1 self-commit tolerance** (`sync-source: doc` only): if the *only* commit between `last-synced-with` and the file's latest commit is the file's own most recent self-bump, treat as **FRESH (self-bump)**. Rationale: the post-write hook stamps `last-synced-with` at write time using current `HEAD`, but the file's own commit lands one step later — so a "+1 self-commit" lag is the steady-state of an in-sync doc, not real drift. Detect by: `git rev-list <lsw>..<latest> -- <file>` returns exactly the file's latest commit and that commit's diff for the file is limited to the lsw line itself (or the file's first commit).
+   - If `last-synced-with` is an ancestor of latest source commit (more than the self-bump tolerated above) → STALE; count commits between
    - If `last-synced-with` is unknown to git → BROKEN (probably squashed)
    - If source path doesn't exist → ORPHAN
+   - **Forward-declared source-paths** (`sync-source: doc` + non-existent `source-paths`): when the contract is intentionally pre-implementation (code not yet written), do not mark ORPHAN. Report as `PRE-IMPL` instead with a note that the source path is a forward declaration. To distinguish from a true ORPHAN: a `PRE-IMPL` file has `sync-source: doc` (doc drives code); a true ORPHAN has `sync-source: code` (code drove doc, but code was deleted).
 
-7. **Output a single table** sorted by severity (BROKEN > SUPERSEDED > ORPHAN > DEPRECATED > STALE > DRAFT(>N days) > UNMANAGED > FRESH):
+7. **Output a single table** sorted by severity (BROKEN > SUPERSEDED > ORPHAN > DEPRECATED > STALE > DRAFT(>N days) > UNMANAGED > PRE-IMPL > FRESH(self-bump) > FRESH):
 
 | Status | Doc | Source | Commits behind | Suggested action |
 |---|---|---|---|---|
@@ -77,9 +79,22 @@ Files without this frontmatter are reported as `UNMANAGED` so the user can decid
 | STALE | docs/2-contracts/payment.md | src/payment/ | 12 | Regenerate via vibecoding-write-api-contract |
 | DRAFT(stale) | docs/2-contracts/draft-feature.md | — | n/a | Promote to active or archive (45 days old) |
 | UNMANAGED | docs/2-contracts/notes.md | — | — | Add frontmatter (id, status) or move out of 2-contracts |
+| PRE-IMPL | docs/2-contracts/MC-008-knowledge-rag.md | src/knowledge/ (not yet) | n/a | Forward declaration — implementation pending |
+| FRESH(self-bump) | docs/2-contracts/BF-001-customer-onboarding.md | self | 1 (self) | None — tolerated steady state |
 | FRESH | docs/2-contracts/auth.md | src/auth/ | 0 | None |
 
 7. **Recommend remediation per row** — point to the relevant `vibecoding-*` skill for regeneration, or to the auto-frontmatter post-write hook for re-baselining.
+
+## Why the "+1 self-commit" tolerance exists
+
+The `post-write.sh` hook auto-stamps `last-synced-with` to `git rev-parse HEAD` at write time. At that moment, `HEAD` is the *parent* of the commit that will eventually contain the new file content — because the commit hasn't been made yet, and Claude tooling does not amend commits by default. The result: every freshly written tier-2 doc lands with `last-synced-with` pointing to its parent commit, exactly +1 commit behind its own latest commit. This is the **expected steady state**, not drift.
+
+The skill therefore treats "+1 commit behind, where that single commit is the file's own self-bump" as **FRESH (self-bump)**. Anything more than 1 commit behind (or where the intervening commit touched other files materially) is still STALE.
+
+Alternative fixes considered and rejected:
+- Make the hook `git commit --amend` after stamping → violates "never amend by default"
+- Use a sentinel like `last-synced-with: <PENDING>` resolved by a post-commit git hook → requires a `.git/hooks/post-commit` install step that we can't ship via the repo
+- Make `vibecoding-write-*` skills compute the next commit SHA → impossible without committing first
 
 ## What this skill does NOT do
 

@@ -4,7 +4,7 @@ title: Business Flow — 客戶 Onboarding 端到端（Day 0–7）
 status: active
 type: business-flow
 created: 2026-05-14
-last-synced-with: efb63b3efff9a280e178f46124f39db8d0141b54
+last-synced-with: c22ad6cf305b5f5efeb2e2b2c998606181709f0b
 owner: CTO + CEO
 tier: 2
 related: [PRD-001, UF-001, UF-002, UF-003, UF-004, UF-005]

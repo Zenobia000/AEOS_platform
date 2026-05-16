@@ -4,7 +4,7 @@ title: Data Processing Agreement (DPA) Template
 status: active
 type: legal-template
 created: 2026-05-15
-last-synced-with: c22ad6cf305b5f5efeb2e2b2c998606181709f0b
+last-synced-with: a5d7a75bd822b8cf7d2b6d8c3157060f50848e86
 owner: CEO + CTO
 tier: 2
 related: [ADR-0005, NFR-001, SEC-001, OBS-001]

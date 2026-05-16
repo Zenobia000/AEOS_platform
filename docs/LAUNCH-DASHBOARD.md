@@ -1,12 +1,12 @@
 ---
 id: LAUNCH-DASHBOARD
-title: CEO Launch Dashboard
+title: Launch Dashboard
 status: active
 type: view
 created: 2026-05-15
-owner: CEO
+owner: CEO + CTO
 tier: 5
-related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05]
+related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, OBS-001, RUNBOOK-001, TEST-001, SEC-001]
 ---
 
 # Launch Dashboard
@@ -55,6 +55,65 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05]
 | Test set 通過率 | n/a | >= 85% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
 | 程式碼行數 | 0 | — | — |
 
+## Engineering Health
+
+> CTO 本週主要追蹤。Pilot 期目標：W4 起所有指標脫離 n/a，W8 全綠。
+
+### 交付節奏
+
+| 指標 | 現值 | 目標 | 來源 |
+|---|---|---|---|
+| Deploy frequency（prod） | 0 / 週 | ≥ 1 / 週 | [RUNBOOK-002 §1](3-process/RUNBOOK-002-deploy-rollback.md) |
+| Lead time（commit → prod） | n/a | < 1 day | RUNBOOK-002 |
+| Change failure rate | n/a | < 15% | RUNBOOK-002 §4 |
+| MTTR（事故平均恢復時間） | n/a | < 2 hour | [RUNBOOK-001 §1](3-process/RUNBOOK-001-incident-response.md) |
+
+### 系統健康
+
+| 指標 | 現值 | 目標 | 來源 |
+|---|---|---|---|
+| 可用性（webhook，月度） | n/a | ≥ 99.5% | [OBS-001 §8](2-contracts/OBS-001-observability-spec.md) |
+| E2E p95 latency | n/a | ≤ 8s | [NFR-001 §1](2-contracts/NFR-001-non-functional-requirements.md) |
+| Open P0 incidents | 0 | 0 | RUNBOOK-001 |
+| Open P1 incidents | 0 | ≤ 2 / month | RUNBOOK-001 |
+| Error budget burn（月度） | n/a | < 100% | OBS-001 §8 |
+| 最後一次成功 backup | n/a | < 24h ago | [RUNBOOK-003 §7](3-process/RUNBOOK-003-backup-dr.md) |
+
+### 品質與安全
+
+| 指標 | 現值 | 目標 | 來源 |
+|---|---|---|---|
+| Test coverage（main） | n/a | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
+| CI pass rate（過去 7 天） | n/a | ≥ 95% | TEST-001 |
+| Flaky tests | n/a | ≤ 3 | TEST-001 §7 |
+| Open critical CVE | n/a | 0 | [SEC-001 §6.1](2-contracts/SEC-001-threat-model.md) |
+| Open S1/S2 support tickets | 0 | 0 active | [PLAYBOOK-001 §3.2](3-process/PLAYBOOK-001-cs-escalation.md) |
+| SEC-001 §6.1 Go/No-Go checklist | 0 / 13 ✅ | 13 / 13 ✅ | SEC-001 §6.1 |
+
+### 成本
+
+| 指標 | 現值 | 目標 | 來源 |
+|---|---|---|---|
+| LLM 月支出（全系統） | $0 | < $300（5 家 Pilot 上限） | [QUOTA-001 §1](2-contracts/QUOTA-001-llm-budget.md) |
+| Infra 月支出 | ~$50 | < $150 | [ADR-0008](1-decisions/ADR-0008-observability-stack.md) |
+| Single tenant 月毛利率 | n/a | ≥ 50%（Pilot）/ ≥ 75%（GA） | [COST-MODEL §1.4 §4.1](4-exploration/COST-MODEL-2026-05.md) |
+
+### Oncall
+
+| 項目 | 現值 |
+|---|---|
+| 本週 Primary | CTO |
+| 本週 Secondary | LLM eng |
+| 上次事故 | n/a |
+| 下次 incident drill | 待排（每月一次，RUNBOOK-001 §8） |
+
+## CTO 本週行動
+
+1. **OBS-001 §10 W1 交付**：Prometheus + Grafana + Loki on Hetzner；service 出 Golden Signals
+2. **TEST-001 §10 W1 交付**：測試骨架 + CI gates；TC-001, 010, 030 happy path
+3. **SEC-001 §6.1 Go/No-Go 開始打勾**：13 項中先攻 HMAC 驗證、RLS、secret scanning、TLS
+4. **接 RUNBOOK-001 primary oncall**：通報路徑（Slack / PagerDuty）設置完成
+
 ## 必讀文件（依角色）
 
 ### CEO 必讀（現在就要熟）
@@ -78,6 +137,12 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05]
 | [API-001](2-contracts/API-001-internal.md) | 內部 API 規格 |
 | [AC-001-005](2-contracts/AC-001-to-005-acceptance-criteria.md) | 驗收標準 |
 | [engineering-charter](0-principles/engineering-charter.md) | 工程原則 |
+| [ADR-0010](1-decisions/ADR-0010-memory-architecture.md) | 記憶四層架構 |
+| [OBS-001](2-contracts/OBS-001-observability-spec.md) | 可觀測性規範（W1 開工） |
+| [RUNBOOK-001](3-process/RUNBOOK-001-incident-response.md) | 事故回應（CTO 即 primary oncall） |
+| [QUOTA-001](2-contracts/QUOTA-001-llm-budget.md) | LLM 成本控制 |
+| [SEC-001](2-contracts/SEC-001-threat-model.md) | 威脅模型 + §6.1 上線前 checklist |
+| [TEST-001](2-contracts/TEST-001-test-plan.md) | 測試計畫與追溯矩陣 |
 
 ### 開發中按需查閱
 
@@ -89,4 +154,4 @@ UF/SF 流程、NFR、UX wireframe、threat model、test plan、observability spe
 
 ---
 
-*上次更新：2026-05-15 | 更新者：CEO*
+*上次更新：2026-05-16 | 更新者：CTO（新增 Engineering Health section）*

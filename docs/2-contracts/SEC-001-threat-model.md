@@ -4,7 +4,7 @@ title: Threat Model (STRIDE + LLM Top 10)
 status: active
 type: threat-model
 created: 2026-05-15
-last-synced-with: a5d7a75bd822b8cf7d2b6d8c3157060f50848e86
+last-synced-with: 4e352220e94bbf0af4ef2a5a77ccc6c543ad5f9f
 owner: CTO
 tier: 2
 related: [SAD-v0.1, NFR-001, ADR-0005, ADR-0006, ADR-0007, QUOTA-001, OBS-001, LEGAL-001]
@@ -175,9 +175,9 @@ related: [SAD-v0.1, NFR-001, ADR-0005, ADR-0006, ADR-0007, QUOTA-001, OBS-001, L
 - [ ] JWT 簽章驗證 + expired token 拒絕測試
 - [ ] MFA 強制 for tenant admin
 - [ ] RLS 啟用 + cross-tenant query 測試（TC-SEC-001）
-- [ ] Secret scanning（gitleaks）pre-commit + CI
-- [ ] Dependency scan（Dependabot）+ critical CVE 修完
-- [ ] Container image scan（Trivy）in CI
+- [x] Secret scanning（gitleaks）pre-commit + CI — 2026-05-17，`.pre-commit-config.yaml` + `.github/workflows/security.yml`
+- [ ] Dependency scan（Dependabot）+ critical CVE 修完 — 🟡 Dependabot 已設置（`.github/dependabot.yml`）；critical CVE 修完待首輪 PR
+- [ ] Container image scan（Trivy）in CI — 🟡 暫以 Trivy fs scan 代替（`security.yml`）；image scan 待 S2 Dockerfile 後切
 - [ ] TLS 1.2+ only + HSTS + 證書自動續期
 - [ ] OBS-001 §4.3 PII log 過濾驗證（PII scanner）
 - [ ] LLM provider 「不訓練我方資料」合約條款（ADR-0001）

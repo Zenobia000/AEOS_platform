@@ -57,15 +57,17 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 
 | ID | 任務 | 交付物 | 狀態 |
 |---|---|---|---|
-| S1-1 | 補 backend 語言 ADR | `docs/1-decisions/ADR-0011-backend-language.md` | ✅ |
-| S1-2 | 本 dev plan 進 repo | 本檔 | ✅ |
-| S1-3 | Day 1 開工 checklist | `docs/3-process/KICKOFF-CHECKLIST.md` | ✅ |
-| S1-4 | OBS-001 W1：Prom+Grafana+Loki on Hetzner | `infra/` 目錄 + Hetzner VM | 待 |
-| S1-5 | TEST-001 W1：測試骨架 + CI gates | `.github/workflows/ci.yml` + `tests/` | 待 |
-| S1-6 | SEC-001 §6.1 起步 4 項：HMAC / RLS / secret scanning / TLS | SEC §6.1 4/13 ✅ | 待 |
-| S1-7 | RUNBOOK-001 oncall 接線 | Slack / PagerDuty 通道完成 | 待 |
+| S1-1 | 補 backend 語言 ADR | `docs/1-decisions/ADR-0011-backend-language.md` | ✅ 2026-05-17 |
+| S1-2 | 本 dev plan 進 repo | 本檔 | ✅ 2026-05-17 |
+| S1-3 | Day 1 開工 checklist | `docs/3-process/KICKOFF-CHECKLIST.md` | ✅ 2026-05-17 |
+| S1-4 | OBS-001 W1：Prom+Grafana+Loki on Hetzner | `infra/` 目錄 + Hetzner VM | 🚫 blocked（無 Hetzner 帳號）— 詳 `docs/report/S1-BLOCKERS-2026-05-17.md` #1 |
+| S1-5 | TEST-001 W1：測試骨架 + CI gates | `pyproject.toml` + `app/` + `tests/` + `.github/workflows/ci.yml` | ✅ 2026-05-17 (`feat/s1-scaffold-ci`，coverage 100% / gate 80%) |
+| S1-6 | SEC-001 §6.1 起步 4 項：HMAC / RLS / secret scanning / TLS | SEC §6.1 4/13 ✅ | 🟡 部分 — secret scanning ✅；HMAC/RLS/TLS deferred 至 S2/S4/部署 |
+| S1-7 | RUNBOOK-001 oncall 接線 | Slack / PagerDuty 通道完成 | 🚫 blocked（無 Slack workspace + PagerDuty 訂閱） |
 
 **S1 Exit**：S1-1~S1-3 合入 main（本 PR）；S1-4~S1-7 至少各起一 PR，可橫跨 S2 完成。
+
+> **進度更新（2026-05-17）**：S1-1/2/3/5 完成；S1-6 部分（secret scanning）完成；S1-4/7 待外部資源解鎖。詳 `docs/report/S1-PROGRESS-2026-05-17.md`。
 
 ### 4.2 S2 — KB & KC（W3-4，hard gate：pilot 簽下）
 
@@ -213,3 +215,4 @@ S4 開始可同時推：
 | 日期 | 變更 | Owner |
 |---|---|---|
 | 2026-05-17 | 初版發布；S1-1~S1-3 ✅ | CTO |
+| 2026-05-17 | S1-5 ✅（FastAPI 骨架 + CI + 80% coverage gate，`feat/s1-scaffold-ci`）；S1-6 部分 ✅（gitleaks + Dependabot + Trivy fs scan + PR template）；S1-4/S1-7 標記受阻並引 blockers 報告 | CTO |

@@ -117,11 +117,13 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 - ✅ DraftProcessor：載入 conversation 歷史 + SkillLoader + EmployeeRuntime + 寫 assistant message + outbound_message (`feat/s2-draft-processor`)
 - ✅ LINE Push OutboundProcessor：429/5xx → retrying；4xx → failed；max_retries → DLQ；audit channel.message_pushed/failed (`feat/s2-outbound-worker`)
 - 🚫 L2.5 Session Summary：Haiku 對話結束摘要寫回 context
-- 🚫 Draft Mode 推播給 Expert（LINE Notify / web push）
-- 🚫 Expert review UI：1-click approve / edit-send / reject + diff 進 audit
-- 🚫 Worker polling loop：撿 new user message → DraftProcessor / 撿 pending outbound_message → OutboundProcessor（Phase 1 可用 asyncio loop / Phase 2 接 Redis）
+- 🚫 Draft Mode 推播給 Expert（LINE Notify / web push）— UI 已就緒，剩通知機制
+- ✅ Expert review 後端 API：approve / edit / reject + ExpertReviewError + audit (`feat/s2-expert-review-api`)
+- ✅ Expert Console UI：Vite + React + Tailwind；1-click approve / edit-send / reject + diff 進 audit (`feat/s2-expert-review-ui`)
+- ✅ Worker polling loop：DraftPoll + OutboundPoll + SKIP LOCKED + idle/exception backoff (`feat/s2-worker-loop`)
+- ✅ Draft Mode E2E smoke：inbound → AI draft → expert approve → LINE Push 全鏈路 + reject 路徑 (`test/draft-mode-e2e`)
 
-**Exit**：AC-003 三條全綠（webhook ≤1s ACK、draft 生成 p95 ≤5s、approve/edit/reject 全進 audit）。
+**Exit**：AC-003 三條全綠（webhook ≤1s ACK、draft 生成 p95 ≤5s、approve/edit/reject 全進 audit）。L2.5 + Draft 推播 留待 pilot 上線後依需要補。
 
 ### 4.5 S5 — Canary + Kill Switch + Audit UI（W9-10）
 
@@ -232,3 +234,4 @@ S4 開始可同時推：
 | 2026-05-22 | **S2 Tier 3 完成**：EmployeeRuntime (MC-009 借鑑 nanobot agent loop) + 3 governance hooks (Audit/Policy/Quota) — engineering-charter §1 三大支柱全部以 hook 形式串入 LLM/tool call 周圍。108 tests / 98.74% coverage。§4.4 S4 Employee Runtime 任務塊標 ✅；剩 LINE webhook + ToolExecutor + KC ingest worker (Tier 4)。`feat/s2-employee-runtime` 已 push | CTO |
 | 2026-05-22 | **MC-011 Channel Gateway DB schema 完成**：channel_binding (FK→employee CASCADE + unique(emp,channel)) + webhook_event (composite PK dedup) + outbound_message (4 態 status + partial idx_pending) + 3 RLS policies。DB 表 15→18 (72%)。119 tests / 98.82% coverage。§4.4 新增 MC-011 行標 🟡（schema ✅；application 層待）。`feat/s2-channel-gateway` 已 push | CTO |
 | 2026-05-22 | **S2 Tier 4 application 層完成**：(1) ToolExecutor + 2 builtin tools `feat/s2-tool-executor`；(2) LINE webhook endpoint (HMAC + dedup + 1s ACK) `feat/s2-line-webhook`；(3) SkillLoader + DraftProcessor `feat/s2-draft-processor`；(4) LINE Push OutboundProcessor (retry + DLQ + audit) `feat/s2-outbound-worker`。LINE 端到端鏈路 inbound → AI → outbound 在 DB 層全跑通。180 tests / 93.16% coverage。§4.4 S4 任務塊全部 ✅，剩 worker polling loop + Expert review UI（Phase 1 待） | CTO |
+| 2026-05-22 | **Worker polling + KB ingest + Draft Mode 端到端**：(1) Worker polling loop `feat/s2-worker-loop`；(2) KB ingest pipeline (parser + embedding + KC drafts) `feat/s2-kb-ingest`；(3) Expert review 後端 API (4 endpoint + service + migration 6 態 outbound status) `feat/s2-expert-review-api`；(4) Expert Console UI (Vite + React + Tailwind + 7 vitest) `feat/s2-expert-review-ui`；(5) CI 拆 backend + web-expert + path filter + ci-gate `ci/web-expert`；(6) Draft Mode E2E smoke (inbound→approve→Push + reject 路徑) `test/draft-mode-e2e`。238 tests / 93.30% coverage。§4.4 Expert review UI / Worker polling 標 ✅。剩外部 blocker：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 簽約 | CTO |

@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from testcontainers.postgres import PostgresContainer
 
+import app.api.admin as admin_module
 import app.api.expert as expert_module
 import app.api.kc as kc_module
 import app.api.webhooks.line as line_module
@@ -41,6 +42,7 @@ from app.db.models import (  # noqa: F401  (populate metadata)
     skill_binding,
     skill_version,
     tenant,
+    tenant_setting,
     tool,
     tool_invocation,
     tool_policy,
@@ -112,6 +114,7 @@ async def webhook_session(
         monkeypatch.setattr(line_module, "session_scope", patched_session_scope)
         monkeypatch.setattr(expert_module, "session_scope", patched_session_scope)
         monkeypatch.setattr(kc_module, "session_scope", patched_session_scope)
+        monkeypatch.setattr(admin_module, "session_scope", patched_session_scope)
         yield session
         await session.commit()
     finally:

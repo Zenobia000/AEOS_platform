@@ -39,10 +39,13 @@ from app.agent import (
 )
 from app.agent.runtime import TurnResult
 from app.db.models.conversation import Conversation
+from app.db.models.conversation_handoff import ConversationHandoff
 from app.db.models.employee import Employee
 from app.db.models.outbound_message import OutboundMessage
 from app.llm.client import LLMClient, LLMMessage, LLMToolDefinition
 from app.observability import e2e_latency_seconds, llm_tokens_total
+from app.services import audit as audit_service
+from app.services import kill_switch
 from app.skill import LoadedSkill, SkillLoader
 
 
@@ -113,6 +116,10 @@ class DraftProcessor:
         employee = (
             await session.execute(select(Employee).where(Employee.id == conv.employee_id))
         ).scalar_one()
+
+        # Kill switch — 每 turn 查 DB（< 1ms），30 秒內生效（UF-004）
+        if not await kill_switch.is_ai_enabled(session, conv.tenant_id):
+            return await self._handle_kill_switch(session, conv)
 
         skill = self._skill_loader.load(skill_slug, skill_version)
 
@@ -232,6 +239,48 @@ class DraftProcessor:
             assistant_text=assistant_text,
             outbound_message_id=outbound_id,
             turn_result=turn,
+        )
+
+    async def _handle_kill_switch(
+        self,
+        session: AsyncSession,
+        conv: Conversation,
+    ) -> DraftResult:
+        """Kill switch active：跳過 LLM，建 handoff + audit。不寫 outbound。"""
+        handoff = ConversationHandoff(
+            from_conversation_id=conv.id,
+            reason="policy_deny",
+            handoff_message="AI disabled by kill switch — escalate to human",
+            expert_id=None,
+        )
+        session.add(handoff)
+        await session.flush()
+
+        await audit_service.emit(
+            session,
+            event_type="kill_switch.intercepted",
+            tenant_id=conv.tenant_id,
+            actor_id="draft_processor",
+            resource_type="conversation",
+            resource_id=str(conv.id),
+            payload={"handoff_id": str(handoff.id)},
+        )
+        # 回傳空 turn 給 caller；外層 worker loop 看 outbound_message_id None
+        # 知道不要再嘗試 push
+        from app.agent.runtime import TurnResult
+        from app.llm.client import LLMResponse, LLMUsage
+
+        empty_response = LLMResponse(
+            text="",
+            tool_uses=[],
+            stop_reason="kill_switch",
+            usage=LLMUsage(input_tokens=0, output_tokens=0),
+        )
+        return DraftResult(
+            conversation_id=conv.id,
+            assistant_text="",
+            outbound_message_id=None,
+            turn_result=TurnResult(response=empty_response, tool_calls=[]),
         )
 
     async def _load_history(

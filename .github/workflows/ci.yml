@@ -11,8 +11,36 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint-type-test:
-    name: Lint + Type + Test
+  detect-changes:
+    name: Detect changed paths
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      web_expert: ${{ steps.filter.outputs.web_expert }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Path filter
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'app/**'
+              - 'tests/**'
+              - 'alembic/**'
+              - 'pyproject.toml'
+              - 'uv.lock'
+              - '.github/workflows/ci.yml'
+            web_expert:
+              - 'web/expert/**'
+              - '.github/workflows/ci.yml'
+
+  backend:
+    name: Backend (ruff + mypy + pytest)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
@@ -51,3 +79,54 @@ jobs:
             coverage.xml
           if-no-files-found: ignore
           retention-days: 7
+
+  web-expert:
+    name: Expert UI (typecheck + vitest + build)
+    needs: detect-changes
+    if: needs.detect-changes.outputs.web_expert == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: web/expert
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: web/expert/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Vitest
+        run: npm run test
+
+      - name: Build
+        run: npm run build
+
+  ci-gate:
+    name: CI gate
+    needs: [detect-changes, backend, web-expert]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify required jobs
+        run: |
+          backend="${{ needs.backend.result }}"
+          web="${{ needs.web-expert.result }}"
+          echo "backend=$backend web-expert=$web"
+          for r in "$backend" "$web"; do
+            if [[ "$r" != "success" && "$r" != "skipped" ]]; then
+              echo "::error::A required job failed: $r"
+              exit 1
+            fi
+          done

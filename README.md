@@ -18,6 +18,7 @@ AI Employee Operating System — Phase 1 MVP（7-Day AI 客服 Onboarding）。
 | Test | pytest + pytest-asyncio + pytest-cov | TEST-001 |
 | DB（S2 起）| PostgreSQL 15 + pgvector + RLS | ADR-0007 |
 | Cache / Queue（S2 起）| Redis 7 list + DLQ | ADR-0008 |
+| Frontend（Expert UI）| Vite 6 + React 19 + TypeScript + Tailwind 3 | S2.5 |
 
 ## 本機開發起手式
 
@@ -60,6 +61,16 @@ curl http://localhost:8000/health
 
 OpenAPI docs：`http://localhost:8000/docs`
 
+### 4.1 啟動 Expert Console UI（Draft Mode 審查介面）
+
+```bash
+cd web/expert
+npm install            # 首次
+npm run dev            # http://localhost:5173 → proxy /api → :8000
+```
+
+詳見 [`web/expert/README.md`](./web/expert/README.md)。CI 已涵蓋 typecheck + vitest + build。
+
 ### 5. Lint / Format / Type check
 
 ```bash
@@ -79,8 +90,9 @@ uv run pre-commit run --all-files
 
 ```
 AEOS_platform/
-├── app/                          # FastAPI source（S1: 僅 /health + /metrics placeholder）
+├── app/                          # FastAPI source（API / agent / worker / services）
 ├── tests/                        # pytest（80% coverage gate）
+├── web/expert/                   # Expert Console UI（Vite + React + Tailwind）
 ├── docs/                         # 6-tier 文件結構
 │   ├── 0-principles/            # 工程原則（年級變動）
 │   ├── 1-decisions/             # ADR（append-only）

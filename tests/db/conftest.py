@@ -20,7 +20,13 @@ from sqlalchemy.ext.asyncio import (
 from testcontainers.postgres import PostgresContainer
 
 from app.db.base import Base
-from app.db.models import api_key, audit_log, tenant  # noqa: F401  (populate metadata)
+from app.db.models import (  # noqa: F401  (populate metadata)
+    api_key,
+    audit_log,
+    ingestion_job,
+    knowledge_card,
+    tenant,
+)
 
 # RLS 與 trigger 的 SQL —— 由 migration 維護，本檔同步在測試 schema 套
 # 表名單數（依 db-schema.md §1 命名 convention）
@@ -44,6 +50,17 @@ _RLS_TRIGGER_SQL = [
     "FOR EACH ROW EXECUTE FUNCTION audit_log_block_modify()",
     "CREATE TRIGGER audit_log_block_delete BEFORE DELETE ON audit_log "
     "FOR EACH ROW EXECUTE FUNCTION audit_log_block_modify()",
+    # knowledge_card + ingestion_job RLS（migration be041f897325 同步）
+    "ALTER TABLE knowledge_card ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY knowledge_card_tenant_isolation ON knowledge_card "
+    "USING (tenant_id::text = current_setting('app.tenant_id', true))",
+    "ALTER TABLE ingestion_job ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY ingestion_job_tenant_isolation ON ingestion_job "
+    "USING (tenant_id::text = current_setting('app.tenant_id', true))",
+    # ivfflat / GIN indexes（讓 vector / array 查詢能用上）
+    "CREATE INDEX idx_kc_tags ON knowledge_card USING GIN (tags)",
+    "CREATE INDEX idx_kc_embedding ON knowledge_card "
+    "USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)",
 ]
 
 

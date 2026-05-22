@@ -5,6 +5,8 @@
 
 from app.db.models.api_key import ApiKey
 from app.db.models.audit_log import AuditLog
+from app.db.models.ingestion_job import IngestionJob
+from app.db.models.knowledge_card import KnowledgeCard
 from app.db.models.tenant import Tenant
 
-__all__ = ["ApiKey", "AuditLog", "Tenant"]
+__all__ = ["ApiKey", "AuditLog", "IngestionJob", "KnowledgeCard", "Tenant"]

@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
 
 from app.api.expert import router as expert_router
+from app.api.kc import router as kc_router
 from app.api.webhooks import line_router
 from app.config import get_settings
 
@@ -21,6 +22,7 @@ app = FastAPI(
 
 app.include_router(line_router)
 app.include_router(expert_router)
+app.include_router(kc_router)
 
 
 @app.get("/health", tags=["meta"])

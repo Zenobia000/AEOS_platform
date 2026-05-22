@@ -83,7 +83,9 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 - 🚫 KC CRUD UI (Web SPA)：list / edit / approve / archive（待 S2 前端 sprint）
 - ✅ Audit Service：append-only DB trigger + `app/services/audit.py:emit()`；KC 狀態變更發 AuditEvent 接線待業務 endpoint
 
-> **進度更新（2026-05-22）**：Tier 0 + Tier 1 資料層全部完成；3 個 feat branch 已 push (`feat/s2-db-foundation` + `feat/s2-knowledge-cards` + `feat/s2-conversation-engine`)。40 tests / 99.68% coverage。詳 `docs/report/S2-PROGRESS-2026-05-22.md`。
+> **進度更新（2026-05-22 早）**：Tier 0 + Tier 1 資料層全部完成；3 個 feat branch 已 push (`feat/s2-db-foundation` + `feat/s2-knowledge-cards` + `feat/s2-conversation-engine`)。40 tests / 99.68% coverage。詳 `docs/report/S2-PROGRESS-2026-05-22.md`。
+>
+> **進度更新（2026-05-22 中午）**：**Tier 2 完成**——LLMClient (ADR-0001 薄層 + AnthropicClient) + MC-005 Skill Registry (3 表 + git monorepo) + MC-006 Tool Registry (3 表) + faq-respond v1.0.0 skill scaffold。`feat/s2-llm-and-registries` 已 push。71 tests / 99.63% coverage。DB 表 15/25 (60%)。Skill production Quality Gate (`pass_rate ≥ 0.80 + approved`) 已落地為 DB CHECK constraint。
 
 **Exit**：AC-001 三條全綠（PDF ingest <3min/100頁、KC approve 進 audit、archive 不被檢索）— 仍受阻於 pilot 客戶 KB 來源 + Worker 實作。
 
@@ -92,12 +94,12 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 對應：`UF-002` / `AC-002` / `MC-005` / `MC-002`
 
 任務塊：
-- Skill 倉庫結構：`skills/customer-service/faq-respond/v1.0.0/{manifest.yaml, system.md, tools.yaml}`
-- Skill loader：API 讀 git，產 SkillVersion 快照，atomic symlink swap
-- Test set co-author UI：Expert 輸入 50 題 + expected outcome
-- Test runner (Worker)：批次跑 50 題、pass rate 計算
-- LLM judge：Haiku 自動判分；Expert 可 override
-- Quality Gate CI：Skill commit 觸發 test，pass rate ≥ 0.80 才可 promote
+- ✅ Skill 倉庫結構：`skills/customer-service/faq-respond/v1.0.0/{manifest.yaml, system.md, tools.yaml}`（提前完成於 S2 Tier 2，`feat/s2-llm-and-registries`）
+- 🚫 Skill loader：API 讀 git，產 SkillVersion 快照，atomic symlink swap
+- 🚫 Test set co-author UI：Expert 輸入 50 題 + expected outcome
+- 🚫 Test runner (Worker)：批次跑 50 題、pass rate 計算
+- 🚫 LLM judge：Haiku 自動判分；Expert 可 override
+- 🟡 Quality Gate CI：Skill commit 觸發 test，pass rate ≥ 0.80 才可 promote — **DB CHECK 守門已落地（`ck_skill_version_production_quality_gate`）**；CI test 跑流程仍待
 
 **Exit**：AC-002 三條全綠 + 第一個 Skill v1.0.0 過 quality gate。
 
@@ -106,13 +108,13 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 對應：`UF-003` / `AC-003` / `MC-011` / `MC-009` / `MC-010`
 
 任務塊：
-- LINE webhook 端點：HMAC-SHA256 驗簽 + dedup + ≤1s ACK
-- Conversation Engine：6 態狀態機 + monthly partition + 30min idle timeout
-- Employee Runtime：Frozen Runtime snapshot + 單次 LLM call + RAG top-K=5 + output validation
-- L2.5 Session Summary：Haiku 對話結束摘要寫回 context
-- Draft Mode：AI draft 不直發；Expert 通知（LINE Notify or web push）
-- Expert review UI：1-click approve / edit-send / reject + diff 進 audit
-- LINE Push 出站：429 backoff 60s + retry 2 次 + 5xx exp backoff + DLQ
+- 🚫 LINE webhook 端點：HMAC-SHA256 驗簽 + dedup + ≤1s ACK
+- 🟡 Conversation Engine：6 態狀態機 + monthly partition + 30min idle timeout — **DB schema 已完成**（`feat/s2-conversation-engine`）；application 層狀態機待
+- 🟡 Employee Runtime：Frozen Runtime snapshot + 單次 LLM call + RAG top-K=5 + output validation — **LLMClient (ADR-0001) + AnthropicClient 已就位**（`feat/s2-llm-and-registries`）；EmployeeRuntime application 層待（借鑑 nanobot agent loop, ADR-0012）
+- 🚫 L2.5 Session Summary：Haiku 對話結束摘要寫回 context
+- 🚫 Draft Mode：AI draft 不直發；Expert 通知（LINE Notify or web push）
+- 🚫 Expert review UI：1-click approve / edit-send / reject + diff 進 audit
+- 🚫 LINE Push 出站：429 backoff 60s + retry 2 次 + 5xx exp backoff + DLQ
 
 **Exit**：AC-003 三條全綠（webhook ≤1s ACK、draft 生成 p95 ≤5s、approve/edit/reject 全進 audit）。
 
@@ -221,3 +223,4 @@ S4 開始可同時推：
 | 2026-05-17 | S1-5 ✅（FastAPI 骨架 + CI + 80% coverage gate，`feat/s1-scaffold-ci`）；S1-6 部分 ✅（gitleaks + Dependabot + Trivy fs scan + PR template）；S1-4/S1-7 標記受阻並引 blockers 報告 | CTO |
 | 2026-05-18 | ADR-0012 觸發：§2 工程決策表加 Runtime 行（借鑑 nanobot 設計 + 自寫精簡版）；pi 評估報告 + nanobot 評估報告產出於 `docs/report/` | CTO |
 | 2026-05-22 | S2 Tier 0+1 完成：DB Foundation + KnowledgeCard/IngestionJob + Conversation Engine（9/25 表）。3 個 feat branch 已 push。§4.2 S2 任務塊 status 更新 | CTO |
+| 2026-05-22 | **S2 Tier 2 完成**：MC-005 Skill Registry (3 表 + git monorepo + faq-respond v1.0.0) + MC-006 Tool Registry (3 表 + YAML policy) + LLMClient (ADR-0001 薄層 + AnthropicClient) + DB Quality Gate CHECK 落地。DB 表 9→15 (60%)。71 tests / 99.63% coverage。§4.3/§4.4 部分任務提前完成標 🟡 | CTO |

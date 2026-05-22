@@ -50,7 +50,7 @@ async def test_audit_with_null_tenant(db_session: AsyncSession) -> None:
 
 
 async def test_audit_log_blocks_update(db_session: AsyncSession) -> None:
-    """UPDATE audit_logs → trigger raise exception (append-only)."""
+    """UPDATE audit_log → trigger raise exception (append-only)."""
     entry = await audit.emit(
         db_session,
         event_type="test.event",
@@ -61,7 +61,7 @@ async def test_audit_log_blocks_update(db_session: AsyncSession) -> None:
 
     with pytest.raises(DBAPIError) as exc_info:
         await db_session.execute(
-            text("UPDATE audit_logs SET event_type = 'tampered' WHERE id = :id"),
+            text("UPDATE audit_log SET event_type = 'tampered' WHERE id = :id"),
             {"id": entry.id},
         )
 
@@ -69,7 +69,7 @@ async def test_audit_log_blocks_update(db_session: AsyncSession) -> None:
 
 
 async def test_audit_log_blocks_delete(db_session: AsyncSession) -> None:
-    """DELETE audit_logs → trigger raise exception (append-only)."""
+    """DELETE audit_log → trigger raise exception (append-only)."""
     entry = await audit.emit(
         db_session,
         event_type="test.delete",
@@ -80,7 +80,7 @@ async def test_audit_log_blocks_delete(db_session: AsyncSession) -> None:
 
     with pytest.raises(DBAPIError) as exc_info:
         await db_session.execute(
-            text("DELETE FROM audit_logs WHERE id = :id"),
+            text("DELETE FROM audit_log WHERE id = :id"),
             {"id": entry.id},
         )
 

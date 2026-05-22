@@ -23,26 +23,27 @@ from app.db.base import Base
 from app.db.models import api_key, audit_log, tenant  # noqa: F401  (populate metadata)
 
 # RLS 與 trigger 的 SQL —— 由 migration 維護，本檔同步在測試 schema 套
+# 表名單數（依 db-schema.md §1 命名 convention）
 _RLS_TRIGGER_SQL = [
     "CREATE EXTENSION IF NOT EXISTS pgcrypto",
     "CREATE EXTENSION IF NOT EXISTS vector",
-    "ALTER TABLE tenants ENABLE ROW LEVEL SECURITY",
-    "CREATE POLICY tenant_self_isolation ON tenants "
+    "ALTER TABLE tenant ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY tenant_self_isolation ON tenant "
     "USING (id::text = current_setting('app.tenant_id', true))",
-    "ALTER TABLE api_keys ENABLE ROW LEVEL SECURITY",
-    "CREATE POLICY api_keys_tenant_isolation ON api_keys "
+    "ALTER TABLE api_key ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY api_key_tenant_isolation ON api_key "
     "USING (tenant_id::text = current_setting('app.tenant_id', true))",
-    "ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY",
-    "CREATE POLICY audit_logs_tenant_isolation ON audit_logs "
+    "ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY audit_log_tenant_isolation ON audit_log "
     "USING (tenant_id IS NULL "
     "OR tenant_id::text = current_setting('app.tenant_id', true))",
-    "CREATE OR REPLACE FUNCTION audit_logs_block_modify() RETURNS trigger AS $$ "
-    "BEGIN RAISE EXCEPTION 'audit_logs is append-only; % not allowed', TG_OP "
+    "CREATE OR REPLACE FUNCTION audit_log_block_modify() RETURNS trigger AS $$ "
+    "BEGIN RAISE EXCEPTION 'audit_log is append-only; % not allowed', TG_OP "
     "USING ERRCODE = 'insufficient_privilege'; END; $$ LANGUAGE plpgsql",
-    "CREATE TRIGGER audit_logs_block_update BEFORE UPDATE ON audit_logs "
-    "FOR EACH ROW EXECUTE FUNCTION audit_logs_block_modify()",
-    "CREATE TRIGGER audit_logs_block_delete BEFORE DELETE ON audit_logs "
-    "FOR EACH ROW EXECUTE FUNCTION audit_logs_block_modify()",
+    "CREATE TRIGGER audit_log_block_update BEFORE UPDATE ON audit_log "
+    "FOR EACH ROW EXECUTE FUNCTION audit_log_block_modify()",
+    "CREATE TRIGGER audit_log_block_delete BEFORE DELETE ON audit_log "
+    "FOR EACH ROW EXECUTE FUNCTION audit_log_block_modify()",
 ]
 
 

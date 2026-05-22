@@ -26,9 +26,9 @@ async def test_rls_policies_registered(db_session: AsyncSession) -> None:
         )
     )
     policies = {(row[0], row[1]) for row in result.all()}
-    assert ("tenants", "tenant_self_isolation") in policies
-    assert ("api_keys", "api_keys_tenant_isolation") in policies
-    assert ("audit_logs", "audit_logs_tenant_isolation") in policies
+    assert ("tenant", "tenant_self_isolation") in policies
+    assert ("api_key", "api_key_tenant_isolation") in policies
+    assert ("audit_log", "audit_log_tenant_isolation") in policies
 
 
 async def test_rls_enabled_on_tables(db_session: AsyncSession) -> None:
@@ -37,13 +37,13 @@ async def test_rls_enabled_on_tables(db_session: AsyncSession) -> None:
         text(
             "SELECT tablename, rowsecurity FROM pg_tables "
             "WHERE schemaname='public' "
-            "AND tablename IN ('tenants', 'api_keys', 'audit_logs')"
+            "AND tablename IN ('tenant', 'api_key', 'audit_log')"
         )
     )
     rls_map = {row[0]: row[1] for row in result.all()}
-    assert rls_map["tenants"] is True
-    assert rls_map["api_keys"] is True
-    assert rls_map["audit_logs"] is True
+    assert rls_map["tenant"] is True
+    assert rls_map["api_key"] is True
+    assert rls_map["audit_log"] is True
 
 
 async def test_set_config_local_works(db_session: AsyncSession) -> None:

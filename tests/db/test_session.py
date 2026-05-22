@@ -9,7 +9,7 @@ from app.db.models.tenant import Tenant, TenantStatus
 
 
 async def test_tenant_create_and_read(db_session: AsyncSession) -> None:
-    """tenants 表可建立 + 讀取，預設 status = pending。"""
+    """tenant 表可建立 + 讀取，預設 status = pending。"""
     tenant = Tenant(name="Acme Co", slug="acme")
     db_session.add(tenant)
     await db_session.flush()

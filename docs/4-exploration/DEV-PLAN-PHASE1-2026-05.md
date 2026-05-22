@@ -37,6 +37,7 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 | Prompt 版本 | Git YAML + SemVer + 系統/tenant 兩層疊加 | ADR-0009 |
 | Memory 架構 | L1 工作 + L2 會話 + L2.5 摘要 + L3 知識（L4 待定） | ADR-0010 |
 | 部署 | 單租戶 per customer、Docker Compose | ADR-0004 |
+| Runtime | 借鑑 nanobot 設計 + 自寫 AEOS 精簡版 EmployeeRuntime | ADR-0002 + ADR-0012 |
 
 ## 3. 13 週時間軸
 
@@ -74,15 +75,17 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 對應：`UF-001` / `AC-001` / `MC-008` / `MC-001` / `MC-004`
 
 任務塊：
-- 專案骨架：FastAPI app + Alembic + Docker Compose + CI pipeline
-- Auth 基礎：Tenant + API Key (bcrypt) + RLS context middleware（SQLAlchemy session-scoped variable）
-- DB migration：建立 25 張表（按 `db-schema.md`）含 monthly partition (Message)、append-only trigger (AuditLog)
-- KB ingest pipeline (Worker)：PDF / DOCX / MD / URL → chunks → KC draft
-- pgvector embedding 寫入：1024-dim + ivfflat index
-- KC CRUD UI (Web SPA)：list / edit / approve / archive
-- Audit Service：KC 所有狀態變更發 AuditEvent
+- ✅ 專案骨架：FastAPI app + Alembic + Docker Compose + CI pipeline（`feat/s1-scaffold-ci`、`feat/s2-db-foundation`）
+- ✅ Auth 基礎：Tenant + API Key (bcrypt) + RLS context middleware（SQLAlchemy session-scoped variable via `set_config`）
+- 🟡 DB migration：**9 / 25 表完成**（tenant / api_key / audit_log / knowledge_card / ingestion_job / employee / conversation / message + 8 monthly partition / conversation_handoff）；剩 16 表隨對應 sprint 加入
+- 🚫 KB ingest pipeline (Worker)：PDF / DOCX / MD / URL → chunks → KC draft（待 pilot 客戶提供真實 KB）
+- ✅ pgvector embedding：schema 層完成（1024-dim + ivfflat cosine index + GIN tags）；實際 embedding 寫入待 Worker
+- 🚫 KC CRUD UI (Web SPA)：list / edit / approve / archive（待 S2 前端 sprint）
+- ✅ Audit Service：append-only DB trigger + `app/services/audit.py:emit()`；KC 狀態變更發 AuditEvent 接線待業務 endpoint
 
-**Exit**：AC-001 三條全綠（PDF ingest <3min/100頁、KC approve 進 audit、archive 不被檢索）。
+> **進度更新（2026-05-22）**：Tier 0 + Tier 1 資料層全部完成；3 個 feat branch 已 push (`feat/s2-db-foundation` + `feat/s2-knowledge-cards` + `feat/s2-conversation-engine`)。40 tests / 99.68% coverage。詳 `docs/report/S2-PROGRESS-2026-05-22.md`。
+
+**Exit**：AC-001 三條全綠（PDF ingest <3min/100頁、KC approve 進 audit、archive 不被檢索）— 仍受阻於 pilot 客戶 KB 來源 + Worker 實作。
 
 ### 4.3 S3 — TestSet & Skill v1.0（W5-6）
 
@@ -216,3 +219,5 @@ S4 開始可同時推：
 |---|---|---|
 | 2026-05-17 | 初版發布；S1-1~S1-3 ✅ | CTO |
 | 2026-05-17 | S1-5 ✅（FastAPI 骨架 + CI + 80% coverage gate，`feat/s1-scaffold-ci`）；S1-6 部分 ✅（gitleaks + Dependabot + Trivy fs scan + PR template）；S1-4/S1-7 標記受阻並引 blockers 報告 | CTO |
+| 2026-05-18 | ADR-0012 觸發：§2 工程決策表加 Runtime 行（借鑑 nanobot 設計 + 自寫精簡版）；pi 評估報告 + nanobot 評估報告產出於 `docs/report/` | CTO |
+| 2026-05-22 | S2 Tier 0+1 完成：DB Foundation + KnowledgeCard/IngestionJob + Conversation Engine（9/25 表）。3 個 feat branch 已 push。§4.2 S2 任務塊 status 更新 | CTO |

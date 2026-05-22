@@ -5,7 +5,7 @@ status: active
 date: 2026-05-17
 owner: CTO
 tier: 3
-related: [DEV-PLAN-PHASE1-2026-05, PROJ-001, ADR-0011, SEC-001, OBS-001, TEST-001, RUNBOOK-001]
+related: [DEV-PLAN-PHASE1-2026-05, PROJ-001, ADR-0011, ADR-0012, SEC-001, OBS-001, TEST-001, RUNBOOK-001]
 ---
 
 # Phase 1 Day 1 開工 Checklist
@@ -77,7 +77,7 @@ related: [DEV-PLAN-PHASE1-2026-05, PROJ-001, ADR-0011, SEC-001, OBS-001, TEST-00
 - [ ] `docs/2-contracts/domain-model.md` — DDD aggregate
 - [ ] `docs/2-contracts/db-schema.md` — 25 張表
 - [ ] `docs/2-contracts/MC-008-knowledge-rag.md` — S2 主要依循
-- [ ] `docs/1-decisions/ADR-0001` ~ `ADR-0011` — 全部讀過一次（重點 ADR-0006 auth、ADR-0007 隔離、ADR-0011 backend 語言）
+- [ ] `docs/1-decisions/ADR-0001` ~ `ADR-0012` — 全部讀過一次（重點 ADR-0006 auth、ADR-0007 隔離、ADR-0011 backend 語言、ADR-0012 Runtime 策略修正）
 
 ### D.4 上線就緒（60 分鐘）
 
@@ -175,3 +175,4 @@ S2 開工前必須齊備（無此資訊則 S2 不啟動）：
 | 日期 | 變更 | Owner |
 |---|---|---|
 | 2026-05-17 | 初版發布 | CTO |
+| 2026-05-22 | §D.3 必讀補 ADR-0012（Runtime 策略修正）；frontmatter related 同步 | CTO |

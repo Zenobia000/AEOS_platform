@@ -4,7 +4,7 @@ title: Threat Model (STRIDE + LLM Top 10)
 status: active
 type: threat-model
 created: 2026-05-15
-last-synced-with: 4e352220e94bbf0af4ef2a5a77ccc6c543ad5f9f
+last-synced-with: 1a67dd9f29ec3a6881f65ba77cf46a3ceaa8e2d3
 owner: CTO
 tier: 2
 related: [SAD-v0.1, NFR-001, ADR-0005, ADR-0006, ADR-0007, QUOTA-001, OBS-001, LEGAL-001]
@@ -174,7 +174,7 @@ related: [SAD-v0.1, NFR-001, ADR-0005, ADR-0006, ADR-0007, QUOTA-001, OBS-001, L
 - [ ] HMAC webhook 驗證 + 拒絕無簽章請求測試
 - [ ] JWT 簽章驗證 + expired token 拒絕測試
 - [ ] MFA 強制 for tenant admin
-- [ ] RLS 啟用 + cross-tenant query 測試（TC-SEC-001）
+- [ ] RLS 啟用 + cross-tenant query 測試（TC-SEC-001） — 🟡 9 表全 ENABLE RLS + policy 已建（2026-05-22，`feat/s2-*` branches）；cross-tenant e2e 行為測試待 non-owner role 設置後補
 - [x] Secret scanning（gitleaks）pre-commit + CI — 2026-05-17，`.pre-commit-config.yaml` + `.github/workflows/security.yml`
 - [ ] Dependency scan（Dependabot）+ critical CVE 修完 — 🟡 Dependabot 已設置（`.github/dependabot.yml`）；critical CVE 修完待首輪 PR
 - [ ] Container image scan（Trivy）in CI — 🟡 暫以 Trivy fs scan 代替（`security.yml`）；image scan 待 S2 Dockerfile 後切

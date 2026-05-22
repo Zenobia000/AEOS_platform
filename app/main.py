@@ -1,11 +1,12 @@
 """AEOS FastAPI application entry point.
 
-S1 骨架：僅暴露 /health 與 /metrics（後者為 S1-4 OBS infra 解鎖前的 placeholder）。
+S1 骨架 + S2 webhook：暴露 /health, /metrics + /api/v1/webhooks/line/{channel_id}。
 """
 
 from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
 
+from app.api.webhooks import line_router
 from app.config import get_settings
 
 settings = get_settings()
@@ -16,6 +17,8 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url=None,
 )
+
+app.include_router(line_router)
 
 
 @app.get("/health", tags=["meta"])

@@ -11,7 +11,13 @@ from app.db.models.employee import Employee
 from app.db.models.ingestion_job import IngestionJob
 from app.db.models.knowledge_card import KnowledgeCard
 from app.db.models.message import Message
+from app.db.models.skill import Skill
+from app.db.models.skill_binding import SkillBinding
+from app.db.models.skill_version import SkillVersion
 from app.db.models.tenant import Tenant
+from app.db.models.tool import Tool
+from app.db.models.tool_invocation import ToolInvocation
+from app.db.models.tool_policy import ToolPolicy
 
 __all__ = [
     "ApiKey",
@@ -22,5 +28,11 @@ __all__ = [
     "IngestionJob",
     "KnowledgeCard",
     "Message",
+    "Skill",
+    "SkillBinding",
+    "SkillVersion",
     "Tenant",
+    "Tool",
+    "ToolInvocation",
+    "ToolPolicy",
 ]

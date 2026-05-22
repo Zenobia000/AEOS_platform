@@ -29,7 +29,13 @@ from app.db.models import (  # noqa: F401  (populate metadata)
     ingestion_job,
     knowledge_card,
     message,
+    skill,
+    skill_binding,
+    skill_version,
     tenant,
+    tool,
+    tool_invocation,
+    tool_policy,
 )
 
 # RLS 與 trigger 的 SQL —— 由 migration 維護，本檔同步在測試 schema 套
@@ -72,6 +78,34 @@ _RLS_TRIGGER_SQL = [
     "ALTER TABLE conversation ENABLE ROW LEVEL SECURITY",
     "CREATE POLICY conversation_tenant_isolation ON conversation "
     "USING (tenant_id::text = current_setting('app.tenant_id', true))",
+    # MC-005 + MC-006 RLS + unique partial index（migration 89c67361deb1 同步）
+    "CREATE UNIQUE INDEX idx_skill_tenant_slug ON skill "
+    "(COALESCE(tenant_id, '00000000-0000-0000-0000-000000000000'::uuid), slug)",
+    "ALTER TABLE skill ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY skill_tenant_isolation ON skill USING ("
+    "tenant_id IS NULL OR "
+    "tenant_id::text = current_setting('app.tenant_id', true))",
+    "ALTER TABLE skill_version ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY skill_version_tenant_isolation ON skill_version USING ("
+    "tenant_id IS NULL OR "
+    "tenant_id::text = current_setting('app.tenant_id', true))",
+    "ALTER TABLE skill_binding ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY skill_binding_tenant_isolation ON skill_binding USING ("
+    "tenant_id::text = current_setting('app.tenant_id', true))",
+    "CREATE UNIQUE INDEX idx_tool_tenant_slug ON tool "
+    "(COALESCE(tenant_id, '00000000-0000-0000-0000-000000000000'::uuid), slug)",
+    "CREATE INDEX idx_tool_type ON tool (tool_type, enabled)",
+    "ALTER TABLE tool ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY tool_tenant_isolation ON tool USING ("
+    "tenant_id IS NULL OR "
+    "tenant_id::text = current_setting('app.tenant_id', true))",
+    "ALTER TABLE tool_invocation ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY tool_invocation_tenant_isolation ON tool_invocation USING ("
+    "tenant_id::text = current_setting('app.tenant_id', true))",
+    "ALTER TABLE tool_policy ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY tool_policy_tenant_isolation ON tool_policy USING ("
+    "tenant_id IS NULL OR "
+    "tenant_id::text = current_setting('app.tenant_id', true))",
 ]
 
 

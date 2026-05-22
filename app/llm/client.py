@@ -68,7 +68,7 @@ class LLMUsage:
 class LLMResponse:
     """`complete()` 回傳值。"""
 
-    text: str
+    text: str = ""
     tool_uses: Sequence[LLMToolUse] = field(default_factory=list)
     stop_reason: str = "end_turn"
     model: str = ""

@@ -19,6 +19,7 @@ dependencies = [
     "pgvector>=0.3",
     "bcrypt>=4.2",
     "anthropic>=0.45",
+    "pyyaml>=6.0",
 ]
 
 [dependency-groups]
@@ -97,7 +98,7 @@ disallow_untyped_defs = false
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ["testcontainers.*", "pgvector.*"]
+module = ["testcontainers.*", "pgvector.*", "yaml"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

@@ -21,6 +21,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.db.models.outbound_message import OutboundMessage
+from app.services.conversation_idle import close_idle_conversations
 from app.worker.draft_processor import DraftProcessor, DraftResult
 from app.worker.outbound_processor import OutboundProcessor, PushResult
 
@@ -37,6 +38,7 @@ class IterationResult:
     drafts_failed: int
     outbounds_processed: int
     outbounds_failed: int
+    idle_closed: int = 0
 
     @property
     def did_work(self) -> bool:
@@ -45,6 +47,7 @@ class IterationResult:
             + self.drafts_failed
             + self.outbounds_processed
             + self.outbounds_failed
+            + self.idle_closed
         ) > 0
 
 
@@ -124,6 +127,9 @@ async def run_iteration(
     outbounds_processed = 0
     outbounds_failed = 0
 
+    # ── Idle close cycle（先跑，免得 draft cycle 處理已 stale 的對話）
+    idle_result = await close_idle_conversations(session)
+
     # ── Draft cycle ──────────────────────────────
     for _ in range(max_drafts_per_iter):
         conv_ids = await find_conversation_needing_draft(session, limit=1)
@@ -158,6 +164,7 @@ async def run_iteration(
         drafts_failed=drafts_failed,
         outbounds_processed=outbounds_processed,
         outbounds_failed=outbounds_failed,
+        idle_closed=idle_result.closed_count,
     )
 
 

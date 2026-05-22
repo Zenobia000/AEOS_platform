@@ -108,14 +108,15 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 對應：`UF-003` / `AC-003` / `MC-011` / `MC-009` / `MC-010`
 
 任務塊：
-- 🚫 LINE webhook 端點：HMAC-SHA256 驗簽 + dedup + ≤1s ACK
+- 🟡 MC-011 Channel Gateway: webhook_event dedup + channel_binding + outbound_message retry — **DB schema 全完成**（`feat/s2-channel-gateway`）；webhook endpoint + outbound worker application 層待
+- 🚫 LINE webhook 端點：HMAC-SHA256 驗簽 + dedup (via webhook_event PK) + ≤1s ACK
 - 🟡 Conversation Engine：6 態狀態機 + monthly partition + 30min idle timeout — **DB schema 已完成**（`feat/s2-conversation-engine`）；application 層狀態機待
 - ✅ Employee Runtime：Frozen Runtime snapshot + 單次 LLM call + output validation — **EmployeeRuntime + LLMClient + AnthropicClient 已就位**（`feat/s2-employee-runtime` / `feat/s2-llm-and-registries`，借鑑 nanobot agent loop）；剩 RAG top-K=5 retrieval 接線（待 KC ingest worker）
 - ✅ Governance Hooks (Audit / Policy / Quota)：全部以 hook 形式串入 LLM/tool call 周圍（charter §1 Governance-first 三大支柱）
 - 🚫 L2.5 Session Summary：Haiku 對話結束摘要寫回 context
 - 🚫 Draft Mode：AI draft 不直發；Expert 通知（LINE Notify or web push）
 - 🚫 Expert review UI：1-click approve / edit-send / reject + diff 進 audit
-- 🚫 LINE Push 出站：429 backoff 60s + retry 2 次 + 5xx exp backoff + DLQ
+- 🚫 LINE Push 出站：429 backoff 60s + retry 2 次 + 5xx exp backoff + DLQ（DB outbound_message 已就位）
 - 🚫 ToolExecutor：依 MC-006 tool_type (internal/http_api/db_query/function) 分派執行
 
 **Exit**：AC-003 三條全綠（webhook ≤1s ACK、draft 生成 p95 ≤5s、approve/edit/reject 全進 audit）。
@@ -227,3 +228,4 @@ S4 開始可同時推：
 | 2026-05-22 | S2 Tier 0+1 完成：DB Foundation + KnowledgeCard/IngestionJob + Conversation Engine（9/25 表）。3 個 feat branch 已 push。§4.2 S2 任務塊 status 更新 | CTO |
 | 2026-05-22 | **S2 Tier 2 完成**：MC-005 Skill Registry (3 表 + git monorepo + faq-respond v1.0.0) + MC-006 Tool Registry (3 表 + YAML policy) + LLMClient (ADR-0001 薄層 + AnthropicClient) + DB Quality Gate CHECK 落地。DB 表 9→15 (60%)。71 tests / 99.63% coverage。§4.3/§4.4 部分任務提前完成標 🟡 | CTO |
 | 2026-05-22 | **S2 Tier 3 完成**：EmployeeRuntime (MC-009 借鑑 nanobot agent loop) + 3 governance hooks (Audit/Policy/Quota) — engineering-charter §1 三大支柱全部以 hook 形式串入 LLM/tool call 周圍。108 tests / 98.74% coverage。§4.4 S4 Employee Runtime 任務塊標 ✅；剩 LINE webhook + ToolExecutor + KC ingest worker (Tier 4)。`feat/s2-employee-runtime` 已 push | CTO |
+| 2026-05-22 | **MC-011 Channel Gateway DB schema 完成**：channel_binding (FK→employee CASCADE + unique(emp,channel)) + webhook_event (composite PK dedup) + outbound_message (4 態 status + partial idx_pending) + 3 RLS policies。DB 表 15→18 (72%)。119 tests / 98.82% coverage。§4.4 新增 MC-011 行標 🟡（schema ✅；application 層待）。`feat/s2-channel-gateway` 已 push | CTO |

@@ -28,7 +28,14 @@ from sqlalchemy.types import DateTime
 from app.db.base import Base
 
 OUTBOUND_CHANNELS = ("line", "web_chat", "whatsapp")
-OUTBOUND_STATUSES = ("pending", "sent", "failed", "retrying")
+OUTBOUND_STATUSES = (
+    "pending",
+    "sent",
+    "failed",
+    "retrying",
+    "awaiting_review",  # Draft Mode：AI 產出後等 expert 審
+    "rejected",  # Expert 拒絕；不 push
+)
 
 
 class OutboundMessage(Base):

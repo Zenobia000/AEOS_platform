@@ -6,6 +6,7 @@ S1 骨架 + S2 webhook：暴露 /health, /metrics + /api/v1/webhooks/line/{chann
 from fastapi import FastAPI
 from fastapi.responses import PlainTextResponse
 
+from app.api.expert import router as expert_router
 from app.api.webhooks import line_router
 from app.config import get_settings
 
@@ -19,6 +20,7 @@ app = FastAPI(
 )
 
 app.include_router(line_router)
+app.include_router(expert_router)
 
 
 @app.get("/health", tags=["meta"])

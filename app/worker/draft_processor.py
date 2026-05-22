@@ -73,12 +73,18 @@ class DraftProcessor:
         registry: InternalToolRegistry,
         hook: AgentHook | None = None,
         max_history: int = 20,
+        outbound_initial_status: str = "pending",
     ) -> None:
+        """outbound_initial_status:
+        - 'pending' (預設 / Canary mode): OutboundProcessor 立即撿並 Push
+        - 'awaiting_review' (Draft Mode, PRD §5.4): 等 expert 審後才轉 pending
+        """
         self._llm = llm
         self._skill_loader = skill_loader
         self._registry = registry
         self._hook = hook or AgentHook()
         self._max_history = max_history
+        self._outbound_initial_status = outbound_initial_status
 
     async def process_message(
         self,
@@ -201,7 +207,7 @@ class DraftProcessor:
                 message_id=new_message_id,
                 channel=conv.channel,
                 channel_user_id=conv.channel_user_id,
-                status="pending",
+                status=self._outbound_initial_status,
             )
             session.add(outbound)
             await session.flush()

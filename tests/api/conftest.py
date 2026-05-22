@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import (
 )
 from testcontainers.postgres import PostgresContainer
 
+import app.api.expert as expert_module
 import app.api.webhooks.line as line_module
 from app.db.base import Base
 from app.db.models import (  # noqa: F401  (populate metadata)
@@ -108,6 +109,7 @@ async def webhook_session(
             yield session
 
         monkeypatch.setattr(line_module, "session_scope", patched_session_scope)
+        monkeypatch.setattr(expert_module, "session_scope", patched_session_scope)
         yield session
         await session.commit()
     finally:

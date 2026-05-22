@@ -23,8 +23,12 @@ from app.db.base import Base
 from app.db.models import (  # noqa: F401  (populate metadata)
     api_key,
     audit_log,
+    conversation,
+    conversation_handoff,
+    employee,
     ingestion_job,
     knowledge_card,
+    message,
     tenant,
 )
 
@@ -61,6 +65,51 @@ _RLS_TRIGGER_SQL = [
     "CREATE INDEX idx_kc_tags ON knowledge_card USING GIN (tags)",
     "CREATE INDEX idx_kc_embedding ON knowledge_card "
     "USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)",
+    # MC-010 RLS（migration 7b2dc371f434 同步）
+    "ALTER TABLE employee ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY employee_tenant_isolation ON employee "
+    "USING (tenant_id::text = current_setting('app.tenant_id', true))",
+    "ALTER TABLE conversation ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY conversation_tenant_isolation ON conversation "
+    "USING (tenant_id::text = current_setting('app.tenant_id', true))",
+]
+
+
+# message 表必須是 partitioned，create_all 不認得；需手動重建
+_MESSAGE_PARTITION_SQL = [
+    "DROP TABLE IF EXISTS message CASCADE",
+    """
+    CREATE TABLE message (
+        id UUID NOT NULL DEFAULT gen_random_uuid(),
+        conversation_id UUID NOT NULL,
+        seq INT NOT NULL,
+        role TEXT NOT NULL,
+        content TEXT NOT NULL,
+        content_raw_ref UUID,
+        skill_invocation_id UUID,
+        tool_invocations JSONB NOT NULL DEFAULT '[]',
+        token_count INT,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (id, created_at),
+        UNIQUE (conversation_id, seq, created_at),
+        CONSTRAINT ck_message_role_check CHECK (
+            role IN ('user', 'assistant', 'tool', 'system')
+        )
+    ) PARTITION BY RANGE (created_at)
+    """,
+    # 建 2026 全年 partition（測試足用）
+    *[
+        f"CREATE TABLE message_2026_{m:02d} PARTITION OF message "
+        f"FOR VALUES FROM ('2026-{m:02d}-01') TO "
+        f"('2026-{m + 1:02d}-01')"
+        for m in range(5, 12)
+    ],
+    "CREATE TABLE message_2026_12 PARTITION OF message "
+    "FOR VALUES FROM ('2026-12-01') TO ('2027-01-01')",
+    "ALTER TABLE message ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY message_allow_all ON message USING (true)",
+    "ALTER TABLE conversation_handoff ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY conversation_handoff_allow_all ON conversation_handoff USING (true)",
 ]
 
 
@@ -97,6 +146,9 @@ async def db_engine(pg_container: PostgresContainer) -> AsyncIterator[AsyncEngin
             await conn.exec_driver_sql(stmt)
         await conn.run_sync(Base.metadata.create_all)
         for stmt in _RLS_TRIGGER_SQL[2:]:
+            await conn.exec_driver_sql(stmt)
+        # message 表 create_all 後重建為 partitioned
+        for stmt in _MESSAGE_PARTITION_SQL:
             await conn.exec_driver_sql(stmt)
 
     try:

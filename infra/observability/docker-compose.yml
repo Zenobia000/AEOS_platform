@@ -1,0 +1,100 @@
+# AEOS Observability Stack — OBS-001 §10 W1 交付
+#
+# Phase 1：Prometheus + Loki + Grafana（self-host on Hetzner CX22）
+# - Prometheus 拉 AEOS API / Worker / node-exporter 的 /metrics
+# - Loki 收 docker container 的 JSON logs（OBS-001 §4.1）
+# - Grafana 提供 dashboard + alert 通知
+# - nginx 在前面接 TLS（Let's Encrypt by certbot；見 nginx/aeos.conf）
+#
+# 部署：見 README.md
+# Env file：複製 .env.example → .env 後修改密碼
+
+services:
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    container_name: aeos-prometheus
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d  # OBS-001 §1：30 天高解析
+      - --web.enable-lifecycle              # 支援 /-/reload
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    networks:
+      - obs
+    expose:
+      - "9090"
+
+  loki:
+    image: grafana/loki:3.3.2
+    container_name: aeos-loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki-config.yml
+    volumes:
+      - ./loki/loki-config.yml:/etc/loki/loki-config.yml:ro
+      - loki-data:/loki
+    networks:
+      - obs
+    expose:
+      - "3100"
+
+  promtail:
+    image: grafana/promtail:3.3.2
+    container_name: aeos-promtail
+    restart: unless-stopped
+    command: -config.file=/etc/promtail/promtail-config.yml
+    volumes:
+      - ./loki/promtail-config.yml:/etc/promtail/promtail-config.yml:ro
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - obs
+    depends_on:
+      - loki
+
+  node-exporter:
+    image: prom/node-exporter:v1.8.2
+    container_name: aeos-node-exporter
+    restart: unless-stopped
+    command:
+      - --path.rootfs=/host
+      - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
+    volumes:
+      - /:/host:ro,rslave
+    pid: host
+    networks:
+      - obs
+    expose:
+      - "9100"
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: aeos-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:?must set in .env}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?must set in .env}
+      GF_INSTALL_PLUGINS: ""
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-http://localhost:3000}
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    networks:
+      - obs
+    ports:
+      - "127.0.0.1:3000:3000"  # 只開內網；nginx 反代到 443
+
+networks:
+  obs:
+    driver: bridge
+
+volumes:
+  prometheus-data: {}
+  loki-data: {}
+  grafana-data: {}

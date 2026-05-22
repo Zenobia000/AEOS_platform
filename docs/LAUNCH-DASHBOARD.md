@@ -53,8 +53,8 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | MRR | $0 | ~$2,300/月 (5 家 Pilot) | [COST-MODEL §3.1](4-exploration/COST-MODEL-2026-05.md) |
 | AI auto-reply 採用率 | n/a | >= 70% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
 | Test set 通過率 | n/a | >= 85% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
-| 程式碼行數 | 6767 (app 2567 + tests 2614 + alembic 1350 + skills 236) | — | `feat/s2-employee-runtime` |
-| DB 表完成數 | 15 / 25 (60%) | 25 | [db-schema.md](2-contracts/db-schema.md) |
+| 程式碼行數 | 7400+ (含 channel gateway) | — | `feat/s2-channel-gateway` |
+| DB 表完成數 | 18 / 25 (72%) | 25 | [db-schema.md](2-contracts/db-schema.md) |
 | Governance Layer (Audit/Policy/Quota) | 3 / 3 ✅ | 3 | engineering-charter §1 |
 
 ## Engineering Health
@@ -85,8 +85,8 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 
 | 指標 | 現值 | 目標 | 來源 |
 |---|---|---|---|
-| Test coverage（main） | 98.74% (108 tests, `feat/s2-employee-runtime`) | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
-| Test 數量 | 108 (health 2 + db 38 + skill/tool 23 + LLM 8 + agent 37) | — | tests/ |
+| Test coverage（main） | 98.82% (119 tests, `feat/s2-channel-gateway`) | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
+| Test 數量 | 119 (health 2 + db 49 + skill/tool 23 + LLM 8 + agent 37) | — | tests/ |
 | CI pass rate（過去 7 天） | n/a（首次 push 後可量） | ≥ 95% | TEST-001 |
 | Flaky tests | 0 | ≤ 3 | TEST-001 §7 |
 | Open critical CVE | 0（Dependabot 首掃待跑） | 0 | [SEC-001 §6.1](2-contracts/SEC-001-threat-model.md) |
@@ -117,10 +117,11 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 2. ~~**SEC-001 §6.1 secret scanning**~~ ✅
 3. ~~**DB Foundation Tier 0+1**~~ ✅ 9 表（`feat/s2-db-foundation` / `feat/s2-knowledge-cards` / `feat/s2-conversation-engine`）
 4. ~~**Tier 2 — LLMClient + Skill/Tool Registry + faq-respond v1.0.0**~~ ✅ +6 表
-5. ~~**Tier 3 — EmployeeRuntime (MC-009) + 3 Governance Hooks (Audit/Policy/Quota)**~~ ✅ (`feat/s2-employee-runtime`，借鑑 nanobot agent loop)
-6. **OBS-001 §10 W1 交付**：Prometheus + Grafana + Loki on Hetzner — 🚫 待 CTO 開 Hetzner 帳號
-7. **接 RUNBOOK-001 primary oncall**：Slack / PagerDuty — 🚫 待 CEO/CTO 註冊 workspace + Free tier
-8. **下一波（pilot-independent）**：Tier 4 — ToolExecutor (依 MC-006 tool_type 分派) + MC-011 Channel tables + LINE webhook + KB ingest worker
+5. ~~**Tier 3 — EmployeeRuntime (MC-009) + 3 Governance Hooks**~~ ✅
+6. ~~**MC-011 Channel Gateway 3 表**~~ ✅ (`feat/s2-channel-gateway`，含 channel_binding / webhook_event dedup / outbound_message)
+7. **OBS-001 §10 W1 交付**：Prometheus + Grafana + Loki on Hetzner — 🚫 待 CTO 開 Hetzner 帳號
+8. **接 RUNBOOK-001 primary oncall**：Slack / PagerDuty — 🚫 待 CEO/CTO 註冊 workspace + Free tier
+9. **下一波（pilot-independent）**：ToolExecutor (依 MC-006 tool_type 分派) + LINE webhook 端點 + KB ingest worker
 
 詳見 [`docs/report/S2-PROGRESS-2026-05-22.md`](report/S2-PROGRESS-2026-05-22.md)、[`docs/report/S1-PROGRESS-2026-05-17.md`](report/S1-PROGRESS-2026-05-17.md) 與 [`docs/report/S1-BLOCKERS-2026-05-17.md`](report/S1-BLOCKERS-2026-05-17.md)。
 
@@ -164,4 +165,4 @@ UF/SF 流程、NFR、UX wireframe、threat model、test plan、observability spe
 
 ---
 
-*上次更新：2026-05-22 | 更新者：CTO（Tier 0+1+2+3 完成；15/25 表 + EmployeeRuntime + 3 governance hooks 全到位；108 tests / 98.74% coverage；engineering-charter §1 Governance-first 三大支柱 (Audit/Policy/Quota) 落地）*
+*上次更新：2026-05-22 | 更新者：CTO（Tier 0~3 完成 + MC-011 Channel Gateway 表落地；18/25 表 (72%)；119 tests / 98.82% coverage；剩 ToolExecutor + LINE webhook + KB worker 即達 S4 Exit Gate AC-003）*

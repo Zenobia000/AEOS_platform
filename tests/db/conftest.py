@@ -23,12 +23,14 @@ from app.db.base import Base
 from app.db.models import (  # noqa: F401  (populate metadata)
     api_key,
     audit_log,
+    channel_binding,
     conversation,
     conversation_handoff,
     employee,
     ingestion_job,
     knowledge_card,
     message,
+    outbound_message,
     skill,
     skill_binding,
     skill_version,
@@ -36,6 +38,7 @@ from app.db.models import (  # noqa: F401  (populate metadata)
     tool,
     tool_invocation,
     tool_policy,
+    webhook_event,
 )
 
 # RLS 與 trigger 的 SQL —— 由 migration 維護，本檔同步在測試 schema 套
@@ -106,6 +109,14 @@ _RLS_TRIGGER_SQL = [
     "CREATE POLICY tool_policy_tenant_isolation ON tool_policy USING ("
     "tenant_id IS NULL OR "
     "tenant_id::text = current_setting('app.tenant_id', true))",
+    # MC-011 Channel Gateway RLS（migration 71c271e944a4 同步）
+    "ALTER TABLE channel_binding ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY channel_binding_allow_all ON channel_binding USING (true)",
+    "ALTER TABLE webhook_event ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY webhook_event_allow_all ON webhook_event USING (true)",
+    "ALTER TABLE outbound_message ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY outbound_message_tenant_isolation ON outbound_message "
+    "USING (tenant_id::text = current_setting('app.tenant_id', true))",
 ]
 
 

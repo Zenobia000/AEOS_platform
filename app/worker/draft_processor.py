@@ -165,19 +165,24 @@ class DraftProcessor:
             )
         ).scalar()
         next_seq = int(max_seq_row or 0) + 1
-        await session.execute(
-            text(
-                "INSERT INTO message "
-                "(id, conversation_id, seq, role, content, token_count, created_at) "
-                "VALUES (gen_random_uuid(), :cid, :seq, 'assistant', :c, :tk, NOW())"
-            ),
-            {
-                "cid": str(conv.id),
-                "seq": next_seq,
-                "c": assistant_text,
-                "tk": turn.response.usage.output_tokens,
-            },
-        )
+        # RETURNING id 拿回剛寫進去的 message UUID，給 outbound_message.message_id 用
+        new_message_row = (
+            await session.execute(
+                text(
+                    "INSERT INTO message "
+                    "(id, conversation_id, seq, role, content, token_count, created_at) "
+                    "VALUES (gen_random_uuid(), :cid, :seq, 'assistant', :c, :tk, NOW()) "
+                    "RETURNING id"
+                ),
+                {
+                    "cid": str(conv.id),
+                    "seq": next_seq,
+                    "c": assistant_text,
+                    "tk": turn.response.usage.output_tokens,
+                },
+            )
+        ).first()
+        new_message_id: uuid.UUID = uuid.UUID(str(new_message_row[0]))  # type: ignore[index]
         await session.execute(
             text(
                 "UPDATE conversation "
@@ -193,7 +198,7 @@ class DraftProcessor:
             outbound = OutboundMessage(
                 tenant_id=ctx.tenant_id,
                 conversation_id=conv.id,
-                message_id=uuid.uuid4(),  # 邏輯指向上面剛寫的 message（不查 id）
+                message_id=new_message_id,
                 channel=conv.channel,
                 channel_user_id=conv.channel_user_id,
                 status="pending",

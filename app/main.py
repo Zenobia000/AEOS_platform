@@ -10,6 +10,7 @@ from starlette.responses import Response
 from app.api.admin import router as admin_router
 from app.api.expert import router as expert_router
 from app.api.kc import router as kc_router
+from app.api.testset import router as testset_router
 from app.api.webhooks import line_router
 from app.config import get_settings
 from app.observability import instrument_app, register_app_info
@@ -27,6 +28,7 @@ app.include_router(line_router)
 app.include_router(expert_router)
 app.include_router(kc_router)
 app.include_router(admin_router)
+app.include_router(testset_router)
 
 # Prometheus instrumentation — auto HTTP histogram + per-handler labels
 instrument_app(app)

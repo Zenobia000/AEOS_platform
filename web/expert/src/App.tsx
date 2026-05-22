@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { DraftsInbox } from "./pages/DraftsInbox";
 import { KCInbox } from "./pages/KCInbox";
+import { TestSetInbox } from "./pages/TestSetInbox";
 import { cn } from "./lib/cn";
 
-type Tab = "drafts" | "kc";
+type Tab = "drafts" | "kc" | "testset";
 const DEFAULT_EXPERT_ID = "expert-local";
 
 export default function App() {
@@ -56,10 +57,14 @@ export default function App() {
         <TabButton current={tab} value="kc" onClick={setTab}>
           KC 知識卡
         </TabButton>
+        <TabButton current={tab} value="testset" onClick={setTab}>
+          Test Set
+        </TabButton>
       </nav>
 
       {tab === "drafts" && <DraftsInbox expertId={expertId} />}
       {tab === "kc" && <KCInbox expertId={expertId} />}
+      {tab === "testset" && <TestSetInbox expertId={expertId} />}
     </div>
   );
 }

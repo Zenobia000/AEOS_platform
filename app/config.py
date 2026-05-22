@@ -21,6 +21,15 @@ class Settings(BaseSettings):
     app_env: str = Field(default="dev", description="dev / staging / prod")
     app_version: str = Field(default="0.0.1")
 
+    database_url: str = Field(
+        default="postgresql+asyncpg://aeos:aeos_dev_only@localhost:5432/aeos",
+        description="Async PG DSN (asyncpg driver)",
+    )
+    database_url_sync: str = Field(
+        default="postgresql+psycopg://aeos:aeos_dev_only@localhost:5432/aeos",
+        description="Sync PG DSN for Alembic migrations",
+    )
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

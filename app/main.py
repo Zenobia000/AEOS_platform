@@ -1,15 +1,17 @@
 """AEOS FastAPI application entry point.
 
-S1 骨架 + S2 webhook：暴露 /health, /metrics + /api/v1/webhooks/line/{channel_id}。
+S1 骨架 + S2 webhook + Expert Console + KC Review + Prometheus 量測。
 """
 
 from fastapi import FastAPI
-from fastapi.responses import PlainTextResponse
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
+from starlette.responses import Response
 
 from app.api.expert import router as expert_router
 from app.api.kc import router as kc_router
 from app.api.webhooks import line_router
 from app.config import get_settings
+from app.observability import instrument_app, register_app_info
 
 settings = get_settings()
 
@@ -24,16 +26,17 @@ app.include_router(line_router)
 app.include_router(expert_router)
 app.include_router(kc_router)
 
+# Prometheus instrumentation — auto HTTP histogram + per-handler labels
+instrument_app(app)
+register_app_info(version=settings.app_version, env=settings.app_env)
+
 
 @app.get("/health", tags=["meta"])
 async def health() -> dict[str, str]:
     return {"status": "ok", "env": settings.app_env, "version": settings.app_version}
 
 
-@app.get("/metrics", response_class=PlainTextResponse, tags=["meta"])
-async def metrics() -> str:
-    return (
-        "# placeholder until OBS-001 W1 (Prometheus instrumentation) lands\n"
-        "# see docs/2-contracts/OBS-001-observability-spec.md\n"
-        "aeos_build_info 1\n"
-    )
+@app.get("/metrics", tags=["meta"], include_in_schema=False)
+async def metrics() -> Response:
+    """Prometheus scrape 端點 — 暴露所有 default registry counter/histogram."""
+    return Response(content=generate_latest(), media_type=CONTENT_TYPE_LATEST)

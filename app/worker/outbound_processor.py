@@ -31,6 +31,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models.channel_binding import ChannelBinding
 from app.db.models.conversation import Conversation
 from app.db.models.outbound_message import OutboundMessage
+from app.observability import outbound_failed_total, outbound_sent_total
 from app.services import audit
 
 LINE_PUSH_URL = "https://api.line.me/v2/bot/message/push"
@@ -162,6 +163,7 @@ class OutboundProcessor:
 
         outbound.sent_at = datetime.now(UTC)
         await session.flush()
+        outbound_sent_total.labels(channel=outbound.channel).inc()
         await audit.emit(
             session,
             event_type="channel.message_pushed",
@@ -223,6 +225,7 @@ class OutboundProcessor:
         outbound.retry_count = rc
         outbound.error_message = error[:500]
         await session.flush()
+        outbound_failed_total.labels(channel=outbound.channel).inc()
         await audit.emit(
             session,
             event_type="channel.message_push_failed",

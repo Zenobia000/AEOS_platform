@@ -21,6 +21,7 @@ F-DFT-02 1-click approve/edit/reject → F-DFT-03 全進 audit。本 commit 落�
 
 from __future__ import annotations
 
+import time
 import uuid
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -41,6 +42,7 @@ from app.db.models.conversation import Conversation
 from app.db.models.employee import Employee
 from app.db.models.outbound_message import OutboundMessage
 from app.llm.client import LLMClient, LLMMessage, LLMToolDefinition
+from app.observability import e2e_latency_seconds, llm_tokens_total
 from app.skill import LoadedSkill, SkillLoader
 
 
@@ -127,6 +129,7 @@ class DraftProcessor:
 
         messages = await self._load_history(session, conv.id)
         tools = _build_tool_definitions(skill)
+        _llm_start = time.perf_counter()
 
         # ToolExecutor 用同一個 session 跑（共享 transaction → audit/policy hook 看得到 seed）
         tool_exec = ToolExecutor(
@@ -158,6 +161,17 @@ class DraftProcessor:
             tools=tools,
             max_tokens=1024,
             temperature=0.3,
+        )
+
+        # Prometheus：LLM 延遲 + token usage
+        e2e_latency_seconds.labels(step="llm").observe(time.perf_counter() - _llm_start)
+        _model = turn.response.model or "unknown"
+        _tenant = str(ctx.tenant_id)
+        llm_tokens_total.labels(tenant_id=_tenant, model=_model, type="prompt").inc(
+            turn.response.usage.input_tokens
+        )
+        llm_tokens_total.labels(tenant_id=_tenant, model=_model, type="completion").inc(
+            turn.response.usage.output_tokens
         )
 
         assistant_text = turn.response.text

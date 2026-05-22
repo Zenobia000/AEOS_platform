@@ -27,6 +27,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models.ingestion_job import IngestionJob
 from app.db.models.knowledge_card import KnowledgeCard
 from app.embeddings import EmbeddingClient
+from app.observability import kb_ingest_jobs_total
 
 # Chunking 預設（PRD-001 §5.1 F-KB-03）
 DEFAULT_CHUNK_SIZE = 800  # 字元
@@ -146,6 +147,7 @@ class KbIngestProcessor:
             {"jid": str(job.id)},
         )
         await session.flush()
+        kb_ingest_jobs_total.labels(tenant_id=str(job.tenant_id), status="completed").inc()
         return IngestResult(
             ingestion_job_id=job.id,
             status="completed",
@@ -162,6 +164,7 @@ class KbIngestProcessor:
         job.status = "failed"
         job.error_message = error[:1000]
         await session.flush()
+        kb_ingest_jobs_total.labels(tenant_id=str(job.tenant_id), status="failed").inc()
         return IngestResult(
             ingestion_job_id=job.id,
             status="failed",

@@ -18,6 +18,7 @@ dependencies = [
     "psycopg[binary]>=3.2",
     "pgvector>=0.3",
     "bcrypt>=4.2",
+    "anthropic>=0.45",
 ]
 
 [dependency-groups]

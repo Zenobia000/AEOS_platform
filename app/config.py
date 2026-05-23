@@ -30,6 +30,12 @@ class Settings(BaseSettings):
         description="Sync PG DSN for Alembic migrations",
     )
 
+    # Slack incident webhook（kill switch / P0 incident 通知）
+    slack_webhook_url: str | None = Field(
+        default=None,
+        description="Slack incoming webhook URL；未設 → 通知 silently skip",
+    )
+
 
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:

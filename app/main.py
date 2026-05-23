@@ -8,6 +8,7 @@ from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from starlette.responses import Response
 
 from app.api.admin import router as admin_router
+from app.api.audit import router as audit_router
 from app.api.auth import router as auth_router
 from app.api.expert import router as expert_router
 from app.api.kc import router as kc_router
@@ -31,6 +32,7 @@ app.include_router(expert_router)
 app.include_router(kc_router)
 app.include_router(admin_router)
 app.include_router(testset_router)
+app.include_router(audit_router)
 
 # Prometheus instrumentation — auto HTTP histogram + per-handler labels
 instrument_app(app)

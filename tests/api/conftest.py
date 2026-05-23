@@ -23,6 +23,8 @@ from sqlalchemy.ext.asyncio import (
 from testcontainers.postgres import PostgresContainer
 
 import app.api.admin as admin_module
+import app.api.auth as auth_module
+import app.api.auth_dependency as auth_dep_module
 import app.api.expert as expert_module
 import app.api.kc as kc_module
 import app.api.testset as testset_module
@@ -35,6 +37,8 @@ from app.db.models import (  # noqa: F401  (populate metadata)
     conversation,
     conversation_handoff,
     employee,
+    expert_account,
+    expert_session,
     ingestion_job,
     knowledge_card,
     message,
@@ -120,6 +124,8 @@ async def webhook_session(
         monkeypatch.setattr(kc_module, "session_scope", patched_session_scope)
         monkeypatch.setattr(admin_module, "session_scope", patched_session_scope)
         monkeypatch.setattr(testset_module, "session_scope", patched_session_scope)
+        monkeypatch.setattr(auth_module, "session_scope", patched_session_scope)
+        monkeypatch.setattr(auth_dep_module, "session_scope", patched_session_scope)
         yield session
         await session.commit()
     finally:

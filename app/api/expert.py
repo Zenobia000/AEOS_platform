@@ -17,13 +17,18 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 
+from app.api.auth_dependency import current_expert
 from app.db.session import session_scope
 from app.services import expert_review
 
-router = APIRouter(prefix="/api/v1/expert", tags=["expert"])
+router = APIRouter(
+    prefix="/api/v1/expert",
+    tags=["expert"],
+    dependencies=[Depends(current_expert)],
+)
 
 
 # ── Request schemas ────────────────────────────────

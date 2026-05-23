@@ -27,6 +27,8 @@ from app.db.models import (  # noqa: F401  (populate metadata)
     conversation,
     conversation_handoff,
     employee,
+    expert_account,
+    expert_session,
     ingestion_job,
     knowledge_card,
     message,

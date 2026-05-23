@@ -16,16 +16,21 @@ from __future__ import annotations
 import uuid
 from typing import Annotated
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 
+from app.api.auth_dependency import current_expert
 from app.db.models.test_case import TestCase
 from app.db.models.test_run_case import TestRunCase
 from app.db.session import session_scope
 from app.services import test_set
 
-router = APIRouter(prefix="/api/v1/testset", tags=["testset"])
+router = APIRouter(
+    prefix="/api/v1/testset",
+    tags=["testset"],
+    dependencies=[Depends(current_expert)],
+)
 
 
 class CaseCreateRequest(BaseModel):

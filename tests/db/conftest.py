@@ -36,6 +36,9 @@ from app.db.models import (  # noqa: F401  (populate metadata)
     skill_version,
     tenant,
     tenant_setting,
+    test_case,
+    test_run,
+    test_run_case,
     tool,
     tool_invocation,
     tool_policy,
@@ -121,6 +124,13 @@ _RLS_TRIGGER_SQL = [
     # tenant_setting (migration 7bd48e428868)
     "ALTER TABLE tenant_setting ENABLE ROW LEVEL SECURITY",
     "CREATE POLICY tenant_setting_tenant_isolation ON tenant_setting "
+    "USING (tenant_id::text = current_setting('app.tenant_id', true))",
+    # test_case / test_run (migration 9575402d6485)
+    "ALTER TABLE test_case ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY test_case_tenant_isolation ON test_case "
+    "USING (tenant_id::text = current_setting('app.tenant_id', true))",
+    "ALTER TABLE test_run ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY test_run_tenant_isolation ON test_run "
     "USING (tenant_id::text = current_setting('app.tenant_id', true))",
 ]
 

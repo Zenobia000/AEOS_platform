@@ -45,6 +45,8 @@ class TestSetRunner:
         pass_threshold: keyword judge score threshold（預設 0.8）
     """
 
+    __test__ = False  # 阻止 pytest 把這個 class 當測試類別收集
+
     def __init__(
         self,
         *,

@@ -1,0 +1,63 @@
+# OBS-001 §7 告警規則 — Phase 1 起手 5 條，先把骨架建好；
+# 真實閾值待生產資料校準（SLO §8）。
+
+groups:
+  - name: aeos.golden-signals
+    interval: 30s
+    rules:
+      - alert: AeosApiDown
+        expr: up{job="aeos-api"} == 0
+        for: 2m
+        labels:
+          severity: P0
+        annotations:
+          summary: "AEOS API not responding (job={{ $labels.job }})"
+          runbook: https://github.com/Zenobia000/AEOS_platform/blob/main/docs/3-process/RUNBOOK-001-incident-response.md
+
+      - alert: AeosWebhookHighErrorRate
+        # placeholder：5xx > 5% over 5 min；待 service 真實導入 prom client lib 後微調
+        expr: |
+          (
+            sum(rate(http_requests_total{job="aeos-api", status=~"5.."}[5m]))
+            /
+            sum(rate(http_requests_total{job="aeos-api"}[5m]))
+          ) > 0.05
+        for: 5m
+        labels:
+          severity: P1
+        annotations:
+          summary: "AEOS API 5xx rate > 5% (current value: {{ $value | humanizePercentage }})"
+
+      - alert: AeosE2eLatencyHigh
+        # NFR-001 §1：p95 E2E ≤ 8s；超過視為 P1
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(aeos_e2e_latency_seconds_bucket[5m]))
+          ) > 8
+        for: 10m
+        labels:
+          severity: P1
+        annotations:
+          summary: "AEOS E2E p95 latency > 8s ({{ $value }}s)"
+
+      - alert: AeosOutboundDLQGrowing
+        # outbound_message status='failed' 持續增長 = DLQ 累積
+        expr: rate(aeos_outbound_failed_total[15m]) > 0.1
+        for: 15m
+        labels:
+          severity: P1
+        annotations:
+          summary: "Outbound DLQ accumulating (> 0.1 msg/s over 15m)"
+
+      - alert: AeosHostDiskAlmostFull
+        expr: |
+          (
+            node_filesystem_avail_bytes{mountpoint="/"}
+            /
+            node_filesystem_size_bytes{mountpoint="/"}
+          ) < 0.10
+        for: 10m
+        labels:
+          severity: P2
+        annotations:
+          summary: "Host disk < 10% free on {{ $labels.instance }}"

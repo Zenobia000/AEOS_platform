@@ -1,0 +1,40 @@
+# OBS-001 §2 Golden Signals + §3 業務 KPI metrics 抓取
+# AEOS API 暴露 /metrics 在 8000 port（app/main.py），目前是 placeholder；
+# W1 接 Prometheus client lib 後本檔不需改。
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: aeos-pilot
+    env: prod
+
+rule_files:
+  - /etc/prometheus/alerts.yml
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  - job_name: aeos-api
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - host.docker.internal:8000  # 同台 VM 跑 AEOS API 時
+        labels:
+          service: api
+
+  - job_name: aeos-worker
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - host.docker.internal:8001  # Worker 若另開 port 暴露 metrics
+        labels:
+          service: worker
+
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
+        labels:
+          service: host

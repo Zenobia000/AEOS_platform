@@ -128,7 +128,7 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 11. ~~**Expert Console UI**~~ ✅ （`feat/s2-expert-review-ui`）— Vite + React + Tailwind + 7 vitest
 12. ~~**CI 拆 backend / web-expert**~~ ✅ （`ci/web-expert`）— path filter + ci-gate
 13. ~~**Draft Mode E2E smoke**~~ ✅ （`test/draft-mode-e2e`）— inbound→draft→approve→Push 全鏈路
-14. **OBS-001 §10 W1 交付**：Prometheus + Grafana + Loki on Hetzner — 🚫 待 CTO 開 Hetzner 帳號
+14. **OBS-001 §10 W1 IaC 預備** ✅ （`chore/obs-iac-prep`）— `infra/observability/` Prometheus + Loki + Grafana docker-compose + dashboards + nginx TLS template + Hetzner CX22 runbook；🚫 部署仍待 CTO 開 Hetzner 帳號
 15. **接 RUNBOOK-001 primary oncall**：Slack / PagerDuty — 🚫 待 CEO/CTO 註冊 workspace + Free tier
 16. **LINE sandbox channel 註冊** — 🚫 待 CTO 登入 LINE Developers Console
 17. **下一波 (pilot-independent)**：S3 KC review UI（產品上 expert 審 KC drafts）+ OBS IaC 預備（無 Hetzner 帳號也可先寫好 docker-compose.observability.yml）

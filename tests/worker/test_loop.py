@@ -110,6 +110,9 @@ def _make_processors(
         llm=llm,
         skill_loader=SkillLoader(root=_repo_root() / "skills"),
         registry=registry,
+        # 測試強制 auto-reply（pending），避免 S5 canary 0% 預設把所有 draft
+        # 卡在 awaiting_review，導致 outbound poller 撿不到。
+        outbound_initial_status="pending",
     )
     out = OutboundProcessor(http_client=http_client)
     return draft, out

@@ -142,7 +142,8 @@ async def test_process_message_writes_assistant_and_outbound(
             select(OutboundMessage).where(OutboundMessage.id == result.outbound_message_id)
         )
     ).scalar_one()
-    assert out.status == "pending"
+    # S5 canary 預設 0% → 'awaiting_review' (Draft Mode)
+    assert out.status == "awaiting_review"
     assert out.channel == "line"
     assert out.tenant_id == tenant.id
 

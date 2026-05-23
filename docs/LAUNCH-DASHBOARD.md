@@ -53,11 +53,17 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | MRR | $0 | ~$2,300/月 (5 家 Pilot) | [COST-MODEL §3.1](4-exploration/COST-MODEL-2026-05.md) |
 | AI auto-reply 採用率 | n/a | >= 70% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
 | Test set 通過率 | n/a | >= 85% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
-| 程式碼行數 | 13881 (app 5233 + tests 6062 + alembic 1649 + skills 236 + web/expert/src 701) | — | `test/draft-mode-e2e` |
-| DB 表完成數 | 18 / 25 (72%) | 25 | [db-schema.md](2-contracts/db-schema.md) |
+| 程式碼行數 | 18,500+ (app 6960 + tests 7700 + alembic 1880 + skills 236 + web/expert/src 2090) | — | `dev` |
+| DB 表完成數 | 22 / 25 (88%) | 25 | [db-schema.md](2-contracts/db-schema.md) |
 | Governance Layer (Audit/Policy/Quota) | 3 / 3 ✅ | 3 | engineering-charter §1 |
 | LINE 端到端鏈路 (DB 層) | inbound + draft + outbound 全跑通 ✅ | ✓ | AC-003 |
-| Draft Mode 鏈路（Expert review） | 後端 API + UI + E2E smoke ✅ | ✓ | PRD-001 §5.4 / `feat/s2-expert-review-api` + `feat/s2-expert-review-ui` |
+| Draft Mode 鏈路（Expert review） | 後端 API + UI + E2E smoke ✅ | ✓ | PRD-001 §5.4 |
+| KC review 鏈路 | service + API + UI（policy/faq/etc 4 endpoint）✅ | ✓ | MC-008 / `feat/s2-kc-review` |
+| Kill switch（per-tenant） | tenant_setting + admin API + DraftProcessor 攔截 ✅ | ✓ | PRD-001 §5.5 |
+| Worker polling | idle / draft / outbound / test_run 4 cycle 全跑通 ✅ | ✓ | `feat/s3-testset-auto-runner` |
+| Worker entrypoint | `python -m app.worker` graceful shutdown ✅ | ✓ | `chore/worker-entrypoint` |
+| TestSet 鏈路 | schema + runner + keyword judge + REST API + UI tab + 背景自動跑 ✅ | ✓ | AC-001 / S3 |
+| Prometheus 量測 | FastAPI middleware + 7 業務 metric + 2 Grafana dashboard ✅ | ✓ | OBS-001 §2-3 |
 
 ## Engineering Health
 
@@ -87,8 +93,8 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 
 | 指標 | 現值 | 目標 | 來源 |
 |---|---|---|---|
-| Test coverage（main） | 93.30% (238 tests, `test/draft-mode-e2e`) | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
-| Test 數量 | 238 (health 2 + db 49 + skill/tool 23 + LLM 8 + agent 59 + api 18 + skill 5 + worker 49 + services 8 + e2e 2 + parsers 5 + embeddings 6 + +front-end 7 vitest) | — | tests/ + web/expert/src |
+| Test coverage（dev） | 93.07% (312 tests, `dev`) | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
+| Test 數量 | 312 Python + 18 vitest = **330** | — | tests/ + web/expert/src |
 | CI pass rate（過去 7 天） | n/a（首次 push 後可量） | ≥ 95% | TEST-001 |
 | Flaky tests | 0 | ≤ 3 | TEST-001 §7 |
 | Open critical CVE | 0（Dependabot 首掃待跑） | 0 | [SEC-001 §6.1](2-contracts/SEC-001-threat-model.md) |
@@ -128,10 +134,20 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 11. ~~**Expert Console UI**~~ ✅ （`feat/s2-expert-review-ui`）— Vite + React + Tailwind + 7 vitest
 12. ~~**CI 拆 backend / web-expert**~~ ✅ （`ci/web-expert`）— path filter + ci-gate
 13. ~~**Draft Mode E2E smoke**~~ ✅ （`test/draft-mode-e2e`）— inbound→draft→approve→Push 全鏈路
-14. **OBS-001 §10 W1 IaC 預備** ✅ （`chore/obs-iac-prep`）— `infra/observability/` Prometheus + Loki + Grafana docker-compose + dashboards + nginx TLS template + Hetzner CX22 runbook；🚫 部署仍待 CTO 開 Hetzner 帳號
-15. **接 RUNBOOK-001 primary oncall**：Slack / PagerDuty — 🚫 待 CEO/CTO 註冊 workspace + Free tier
-16. **LINE sandbox channel 註冊** — 🚫 待 CTO 登入 LINE Developers Console
-17. **下一波 (pilot-independent)**：S3 KC review UI（產品上 expert 審 KC drafts）+ OBS IaC 預備（無 Hetzner 帳號也可先寫好 docker-compose.observability.yml）
+14. ~~**OBS-001 §10 W1 IaC 預備**~~ ✅ （`chore/obs-iac-prep`）— `infra/observability/` Prometheus + Loki + Grafana docker-compose + dashboards + nginx TLS template + Hetzner CX22 runbook
+15. ~~**Prometheus instrumentation**~~ ✅ （`feat/s5-prometheus-instrumentation`）— FastAPI middleware + 7 業務 metric + 3 worker 接入
+16. ~~**Kill switch (per-tenant)**~~ ✅ （`feat/s5-kill-switch`）— tenant_setting + admin API + DraftProcessor 攔截
+17. ~~**Conversation idle timeout**~~ ✅ （`feat/s4-idle-timeout`）— S4 收尾
+18. ~~**S3 TestSet schema + runner + judge**~~ ✅ （`feat/s3-testset-schema`）
+19. ~~**S3 TestSet REST API + UI tab**~~ ✅ （`feat/s3-testset-ui`）
+20. ~~**TestSet auto-runner in worker loop**~~ ✅ （`feat/s3-testset-auto-runner`）— pending run 自動跑
+21. ~~**Worker entrypoint**~~ ✅ （`chore/worker-entrypoint`）— `python -m app.worker` graceful shutdown
+22. ~~**Seed demo script**~~ ✅ （`chore/seed-demo-script`）— 1 鍵餵 3 個 tab
+23. ~~**所有 branch 合入 `dev`**~~ ✅ — 14 個 merge commit；`main` 仍未動
+24. **OBS infra 部署**：Prometheus + Grafana 跑在 Hetzner — 🚫 待 CTO 開 Hetzner 帳號
+25. **接 RUNBOOK-001 primary oncall**：Slack / PagerDuty — 🚫 待 CEO/CTO 註冊
+26. **LINE sandbox channel 註冊** — 🚫 待 CTO 登入 LINE Developers Console
+27. **下一波 (pilot-independent)**：MFA / Auth for Expert Console（S5 hard gate）+ Canary 路由 + Audit browse UI
 
 詳見 [`docs/report/S2-PROGRESS-2026-05-22-expert-review.md`](report/S2-PROGRESS-2026-05-22-expert-review.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4-complete.md`](report/S2-PROGRESS-2026-05-22-tier4-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4.md`](report/S2-PROGRESS-2026-05-22-tier4.md)、[`docs/report/S2-PROGRESS-2026-05-22.md`](report/S2-PROGRESS-2026-05-22.md)、[`docs/report/S1-PROGRESS-2026-05-17.md`](report/S1-PROGRESS-2026-05-17.md) 與 [`docs/report/S1-BLOCKERS-2026-05-17.md`](report/S1-BLOCKERS-2026-05-17.md)。
 
@@ -175,4 +191,4 @@ UF/SF 流程、NFR、UX wireframe、threat model、test plan、observability spe
 
 ---
 
-*上次更新：2026-05-22 | 更新者：CTO（**Tier 0~4 全部完成 + Draft Mode 後端 + Expert Console UI + Worker polling + KB ingest + E2E smoke**；238 tests / 93.30% coverage；CI 拆 backend+web-expert + path filter + ci-gate；剩外部 blocker：Hetzner 帳號 / Slack-PagerDuty / LINE sandbox / pilot 簽約）*
+*上次更新：2026-05-23 | 更新者：CTO（**S2/S4 完成 + S3 backend/UI/auto-runner + S5 第一波：metrics/kill switch/idle**；312 Python + 18 vitest = 330 tests / 93.07% coverage；22/25 表；14 支 branch 合入 `dev`；剩外部 blocker：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 簽約；S5 剩 MFA + Canary + Audit UI）*

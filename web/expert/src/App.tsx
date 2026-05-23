@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { DraftsInbox } from "./pages/DraftsInbox";
 import { KCInbox } from "./pages/KCInbox";
 import { TestSetInbox } from "./pages/TestSetInbox";
+import { AuditBrowser } from "./pages/AuditBrowser";
 import { Login } from "./pages/Login";
 import { fetchMe, logout as apiLogout } from "./api/auth";
 import { ApiError } from "./api/expert";
@@ -14,7 +15,7 @@ import {
 import { Button } from "./components/Button";
 import { cn } from "./lib/cn";
 
-type Tab = "drafts" | "kc" | "testset";
+type Tab = "drafts" | "kc" | "testset" | "audit";
 
 type AuthState =
   | { kind: "loading" }
@@ -129,11 +130,15 @@ function AuthenticatedApp({ expert, tab, setTab, onLogout }: AuthedProps) {
         <TabButton current={tab} value="testset" onClick={setTab}>
           Test Set
         </TabButton>
+        <TabButton current={tab} value="audit" onClick={setTab}>
+          Audit
+        </TabButton>
       </nav>
 
       {tab === "drafts" && <DraftsInbox expertId={expert.email} />}
       {tab === "kc" && <KCInbox expertId={expert.email} />}
       {tab === "testset" && <TestSetInbox expertId={expert.email} />}
+      {tab === "audit" && <AuditBrowser />}
     </div>
   );
 }

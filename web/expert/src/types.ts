@@ -107,3 +107,67 @@ export interface TestRunCaseListResponse {
   items: TestRunCaseItem[];
   count: number;
 }
+
+// ── Audit types ──
+
+export interface AuditEvent {
+  id: string;
+  tenant_id: string | null;
+  actor_id: string | null;
+  event_type: string;
+  resource_type: string | null;
+  resource_id: string | null;
+  payload: Record<string, unknown>;
+  occurred_at: string;
+}
+
+export interface AuditEventListResponse {
+  items: AuditEvent[];
+  count: number;
+}
+
+export interface ConversationSummary {
+  conversation_id: string;
+  tenant_id: string;
+  employee_id: string;
+  channel: string;
+  channel_user_id: string;
+  status: string;
+  outcome: string | null;
+  message_count: number;
+  started_at: string | null;
+  last_message_at: string | null;
+  ended_at: string | null;
+}
+
+export interface ConversationListResponse {
+  items: ConversationSummary[];
+  count: number;
+}
+
+export interface ConversationMessage {
+  id: string;
+  seq: number;
+  role: string;
+  content: string;
+  token_count: number | null;
+  created_at: string | null;
+}
+
+export interface ConversationOutbound {
+  id: string;
+  message_id: string;
+  channel: string;
+  status: string;
+  retry_count: number;
+  error_message: string | null;
+  sent_at: string | null;
+  created_at: string;
+}
+
+export interface ConversationDetail {
+  conversation: ConversationSummary & { id: string };
+  messages: ConversationMessage[];
+  outbounds: ConversationOutbound[];
+  audit_events: AuditEvent[];
+}

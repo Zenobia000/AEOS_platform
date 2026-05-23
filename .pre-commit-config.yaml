@@ -1,0 +1,44 @@
+# Pre-commit hooks — local + CI 共用
+# 對應 SEC-001 §6.1 Go/No-Go #5 (secret scanning)
+# 安裝：uv run pre-commit install
+# 全跑：uv run pre-commit run --all-files
+
+# 排除第三方/模板/文檔，僅針對本專案 source code
+exclude: |
+  (?x)^(
+    \.claude/.* |
+    VibeCoding_Workflow_Templates/.* |
+    docs/.* |
+    whitepaper\.md |
+    agent_x\.md |
+    .*\.lock |
+    uv\.lock
+  )$
+
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+        name: gitleaks (secret scanning)
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.4
+    hooks:
+      - id: ruff
+        name: ruff lint
+        args: [--fix]
+      - id: ruff-format
+        name: ruff format
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        exclude: ^\.github/workflows/  # GitHub Actions 有自訂語法
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=500]

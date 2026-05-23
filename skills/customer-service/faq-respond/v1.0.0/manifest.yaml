@@ -1,0 +1,70 @@
+# Skill Version Manifest — customer-service/faq-respond v1.0.0
+#
+# 依 db-schema.md §3.2 + MC-005：
+# 本檔即 skill_version row 的 source of truth；DB row 由 Skill Loader
+# 從 git 讀本檔後 upsert。git_commit_sha 由 loader 在 INSERT 時填。
+
+id: customer-service/faq-respond
+version: 1.0.0
+status: draft  # draft → testing → approved → production → deprecated
+
+# 對應 DB skill 表
+skill:
+  slug: customer-service/faq-respond
+  vertical: customer-service
+  name: FAQ Responder
+  description: |
+    Phase 1 唯一 skill — 用客戶 KB 回答常見問題。
+    用 RAG top-K=5 取 approved KnowledgeCard，若無相關 KC 觸發
+    handoff_human。
+  owner: cto@aeos.dev
+
+# system prompt 模板路徑（相對於本 manifest）
+prompt_template_ref: system.md
+
+# 該版本可呼叫的 tool slugs（DB skill_version.tool_bindings）
+tool_bindings:
+  - search_knowledge      # MC-008 KC retrieval
+  - request_human_handoff # MC-010 handoff trigger
+
+# 該版本套用的 policy（DB skill_version.policy_refs）
+policy_refs:
+  - policy-no-restricted-tool-in-canary
+  - policy-block-pii-leak
+
+# input/output JSON Schema（給 LLM function calling + AEOS output validation）
+io_contract:
+  input:
+    type: object
+    properties:
+      user_message:
+        type: string
+        description: 終端用戶的訊息（已 PII pseudonymize）
+      conversation_id:
+        type: string
+        format: uuid
+    required: [user_message, conversation_id]
+  output:
+    type: object
+    properties:
+      response_text:
+        type: string
+      confidence:
+        type: number
+        minimum: 0.0
+        maximum: 1.0
+      cited_kc_ids:
+        type: array
+        items: { type: string, format: uuid }
+      requires_handoff:
+        type: boolean
+    required: [response_text, confidence, requires_handoff]
+
+# 測試集（S3 加；對應 DB skill_version.test_set_ref）
+test_set_ref: test_set.yaml
+
+# Quality Gate 目標（pass_rate >= 0.80 強制；其他指標 informational）
+quality_gate_targets:
+  pass_rate: 0.80
+  latency_p95_ms: 5000   # NFR-001 §1 draft 生成 p95 ≤ 5s
+  human_override_rate: 0.20  # Canary 期 expert override < 20%

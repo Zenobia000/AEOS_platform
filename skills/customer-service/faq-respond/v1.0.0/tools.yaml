@@ -1,0 +1,72 @@
+# 該 Skill 版本可呼叫的工具 — 對應 DB tool 表 + skill_version.tool_bindings
+#
+# 注意：本檔僅描述 schema；實際 tool definition 由 DB tool 表 owner（CTO 配
+# 置）建立，本檔為「declaration of intent」+ test/CI 對齊用。
+#
+# Skill Loader 上線時會驗證：
+# 1. 每個 slug 都在 DB tool 表存在且 enabled=true
+# 2. input_schema 與 DB tool.input_schema 一致（或為其子集）
+# 3. risk_tier 符合 skill 的 policy_refs 限制
+
+tools:
+  - slug: search_knowledge
+    description: |
+      在當前 tenant 的 approved KnowledgeCard 中搜尋與 query 最相關的 top-K 張卡。
+      回傳結果含 KC id、title、body_markdown 前 500 字、相關度分數。
+    risk_tier: safe
+    input_schema:
+      type: object
+      properties:
+        query:
+          type: string
+          description: 用戶問題（已 pseudonymize）
+        top_k:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 5
+        min_score:
+          type: number
+          minimum: 0.0
+          maximum: 1.0
+          default: 0.7
+      required: [query]
+    output_schema:
+      type: array
+      items:
+        type: object
+        properties:
+          kc_id:
+            type: string
+            format: uuid
+          title:
+            type: string
+          excerpt:
+            type: string
+          score:
+            type: number
+
+  - slug: request_human_handoff
+    description: |
+      將對話轉給 expert（人工客服）。會建立 conversation_handoff row（status=pending）
+      並通知 expert review queue。
+    risk_tier: safe
+    input_schema:
+      type: object
+      properties:
+        reason:
+          type: string
+          enum: [low_confidence, restricted_tool, user_request, policy_deny]
+        handoff_message:
+          type: string
+          description: 給 expert 的補充說明（會看到完整對話歷史）
+      required: [reason]
+    output_schema:
+      type: object
+      properties:
+        handoff_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending]

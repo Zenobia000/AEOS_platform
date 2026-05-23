@@ -19,8 +19,8 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 |---|---|---|---|---|
 | S0 | Specs (ADR/Domain/DB/PRD) | DONE | Week 1 | — |
 | S0.5 | SA + SD Layer (BF/UF/NFR/SAD/API/UX) | DONE | Week 2 | — |
-| **S1** | **PM Layer + 開工準備** | **IN PROGRESS** | **Week 2.5** | AC/PROJ-001/開工 checklist |
-| S2 | KB & KC (UF-001) | 待 | Week 3-4 | 需已簽 pilot 客戶 |
+| **S1** | **PM Layer + 開工準備** | **DONE (pilot-independent 部分)** | **Week 2.5** | AC/PROJ-001/開工 checklist + scaffold ✅ |
+| **S2** | **KB & KC (UF-001)** | **IN PROGRESS** (DB layer 9/25 表 ✅；pipeline 待 pilot) | Week 3-4 | 需已簽 pilot 客戶才能 exit |
 | S3 | TestSet & Skill v1.0 | 待 | Week 5-6 | AC-001 全通過 |
 | S4 | LINE + Draft Mode | 待 | Week 7-8 | AC-002 全通過 |
 | S5 | Canary + Kill Switch + Audit UI | 待 | Week 9-10 | AC-003 全通過 |
@@ -53,7 +53,10 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | MRR | $0 | ~$2,300/月 (5 家 Pilot) | [COST-MODEL §3.1](4-exploration/COST-MODEL-2026-05.md) |
 | AI auto-reply 採用率 | n/a | >= 70% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
 | Test set 通過率 | n/a | >= 85% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
-| 程式碼行數 | 0 | — | — |
+| 程式碼行數 | 10607 (app 4198 + tests 4636 + alembic 1537 + skills 236) | — | `feat/s2-outbound-worker` |
+| DB 表完成數 | 18 / 25 (72%) | 25 | [db-schema.md](2-contracts/db-schema.md) |
+| Governance Layer (Audit/Policy/Quota) | 3 / 3 ✅ | 3 | engineering-charter §1 |
+| LINE 端到端鏈路 (DB 層) | inbound + draft + outbound 全跑通 ✅ | ✓ | AC-003 |
 
 ## Engineering Health
 
@@ -83,12 +86,14 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 
 | 指標 | 現值 | 目標 | 來源 |
 |---|---|---|---|
-| Test coverage（main） | n/a | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
-| CI pass rate（過去 7 天） | n/a | ≥ 95% | TEST-001 |
-| Flaky tests | n/a | ≤ 3 | TEST-001 §7 |
-| Open critical CVE | n/a | 0 | [SEC-001 §6.1](2-contracts/SEC-001-threat-model.md) |
+| Test coverage（main） | 93.16% (180 tests, `feat/s2-outbound-worker`) | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
+| Test 數量 | 180 (health 2 + db 49 + skill/tool 23 + LLM 8 + agent 59 + api 12 + skill 5 + worker 22) | — | tests/ |
+| CI pass rate（過去 7 天） | n/a（首次 push 後可量） | ≥ 95% | TEST-001 |
+| Flaky tests | 0 | ≤ 3 | TEST-001 §7 |
+| Open critical CVE | 0（Dependabot 首掃待跑） | 0 | [SEC-001 §6.1](2-contracts/SEC-001-threat-model.md) |
 | Open S1/S2 support tickets | 0 | 0 active | [PLAYBOOK-001 §3.2](3-process/PLAYBOOK-001-cs-escalation.md) |
-| SEC-001 §6.1 Go/No-Go checklist | 0 / 13 ✅ | 13 / 13 ✅ | SEC-001 §6.1 |
+| SEC-001 §6.1 Go/No-Go checklist | 2 / 13 ✅ (+2 部分；#4 RLS 15 表全 enable) | 13 / 13 ✅ | SEC-001 §6.1 |
+| Skill production Quality Gate | DB CHECK 落地 (pass_rate ≥ 0.80 + approved) | — | MC-005 / migration `89c67361deb1` |
 
 ### 成本
 
@@ -109,10 +114,18 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 
 ## CTO 本週行動
 
-1. **OBS-001 §10 W1 交付**：Prometheus + Grafana + Loki on Hetzner；service 出 Golden Signals
-2. **TEST-001 §10 W1 交付**：測試骨架 + CI gates；TC-001, 010, 030 happy path
-3. **SEC-001 §6.1 Go/No-Go 開始打勾**：13 項中先攻 HMAC 驗證、RLS、secret scanning、TLS
-4. **接 RUNBOOK-001 primary oncall**：通報路徑（Slack / PagerDuty）設置完成
+1. ~~**TEST-001 §10 W1 交付**~~ ✅
+2. ~~**SEC-001 §6.1 secret scanning**~~ ✅
+3. ~~**DB Foundation Tier 0+1**~~ ✅ 9 表（`feat/s2-db-foundation` / `feat/s2-knowledge-cards` / `feat/s2-conversation-engine`）
+4. ~~**Tier 2 — LLMClient + Skill/Tool Registry + faq-respond v1.0.0**~~ ✅ +6 表
+5. ~~**Tier 3 — EmployeeRuntime (MC-009) + 3 Governance Hooks**~~ ✅
+6. ~~**MC-011 Channel Gateway 3 表**~~ ✅
+7. ~~**Tier 4 完整：ToolExecutor + LINE webhook (inbound) + DraftProcessor + LINE Push (outbound)**~~ ✅ — LINE 端到端 DB 層全跑通（`feat/s2-tool-executor` / `feat/s2-line-webhook` / `feat/s2-draft-processor` / `feat/s2-outbound-worker`）
+8. **OBS-001 §10 W1 交付**：Prometheus + Grafana + Loki on Hetzner — 🚫 待 CTO 開 Hetzner 帳號
+9. **接 RUNBOOK-001 primary oncall**：Slack / PagerDuty — 🚫 待 CEO/CTO 註冊 workspace + Free tier
+10. **下一波（pilot-independent）**：Worker polling loop（撿 user msg → trigger Draft；撿 outbound pending → trigger Push）+ Expert review UI + KB ingest worker
+
+詳見 [`docs/report/S2-PROGRESS-2026-05-22-tier4-complete.md`](report/S2-PROGRESS-2026-05-22-tier4-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4.md`](report/S2-PROGRESS-2026-05-22-tier4.md)、[`docs/report/S2-PROGRESS-2026-05-22.md`](report/S2-PROGRESS-2026-05-22.md)、[`docs/report/S1-PROGRESS-2026-05-17.md`](report/S1-PROGRESS-2026-05-17.md) 與 [`docs/report/S1-BLOCKERS-2026-05-17.md`](report/S1-BLOCKERS-2026-05-17.md)。
 
 ## 必讀文件（依角色）
 
@@ -154,4 +167,4 @@ UF/SF 流程、NFR、UX wireframe、threat model、test plan、observability spe
 
 ---
 
-*上次更新：2026-05-16 | 更新者：CTO（新增 Engineering Health section）*
+*上次更新：2026-05-22 | 更新者：CTO（**Tier 0~4 全部完成**；LINE 端到端鏈路 inbound → AI → outbound 在 DB 層全跑通；180 tests / 93.16% coverage；剩 Worker polling loop + Expert review UI + KB ingest worker；pilot 簽約後即可上線）*

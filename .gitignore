@@ -17,8 +17,29 @@ node_modules/
 # Python
 __pycache__/
 *.py[cod]
+*.pyo
+*.egg-info/
+build/
+dist/
+.eggs/
 venv/
+.venv/
 .env
+.env.*
+!.env.example
+
+# uv
+# uv.lock 入 git；快取與虛擬環境不入
+.python-version-cache/
+
+# Test / Coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+.mypy_cache/
+.ruff_cache/
 
 # OS
 .DS_Store

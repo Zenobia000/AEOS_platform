@@ -1,9 +1,11 @@
-"""Admin API — kill switch + 未來的 canary toggle (S5).
+"""Admin API — kill switch + canary toggle (S5).
 
-Phase 1：無 auth；S5 接 MFA + RBAC 後改 server-side。
-- GET  /api/v1/admin/kill-switch/{tenant_id}    — 查狀態
+Phase 1：受 auth dependency 保護（AEOS_AUTH_REQUIRED=true 時強制）。
+- GET  /api/v1/admin/kill-switch/{tenant_id}             — 查 kill switch
 - POST /api/v1/admin/kill-switch/{tenant_id}/disable
 - POST /api/v1/admin/kill-switch/{tenant_id}/enable
+- GET  /api/v1/admin/canary/{tenant_id}                  — 查 canary %
+- POST /api/v1/admin/canary/{tenant_id}                  — 設 canary %
 """
 
 from __future__ import annotations
@@ -15,7 +17,7 @@ from pydantic import BaseModel, Field
 
 from app.api.auth_dependency import current_expert
 from app.db.session import session_scope
-from app.services import kill_switch
+from app.services import canary, kill_switch
 
 router = APIRouter(
     prefix="/api/v1/admin",
@@ -92,3 +94,38 @@ async def enable_kill_switch(tenant_id: uuid.UUID, body: EnableRequest) -> dict[
         except kill_switch.KillSwitchError as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
         return _state_to_json(state)
+
+
+# ── Canary toggle ──────────────────────────────────
+
+
+class CanarySetRequest(BaseModel):
+    percent: int = Field(ge=0, le=100)
+    actor_id: str = Field(min_length=1, max_length=255)
+    reason: str = Field(min_length=1, max_length=500)
+
+
+@router.get("/canary/{tenant_id}", summary="Get canary percent for tenant")
+async def get_canary(tenant_id: uuid.UUID) -> dict[str, object]:
+    async with session_scope() as session:
+        percent = await canary.get_canary_percent(session, tenant_id=tenant_id)
+        return {"tenant_id": str(tenant_id), "canary_percent": percent}
+
+
+@router.post("/canary/{tenant_id}", summary="Set canary percent for tenant")
+async def set_canary(tenant_id: uuid.UUID, body: CanarySetRequest) -> dict[str, object]:
+    async with session_scope() as session:
+        try:
+            state = await canary.set_canary_percent(
+                session,
+                tenant_id=tenant_id,
+                percent=body.percent,
+                actor_id=body.actor_id,
+                reason=body.reason,
+            )
+        except canary.CanaryError as exc:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+        return {
+            "tenant_id": str(state.tenant_id),
+            "canary_percent": state.canary_percent,
+        }

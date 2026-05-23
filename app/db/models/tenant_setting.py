@@ -10,7 +10,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, ForeignKey, Text, func
+from sqlalchemy import Boolean, CheckConstraint, ForeignKey, Integer, Text, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import DateTime
@@ -30,9 +30,17 @@ class TenantSetting(Base):
     disabled_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     disabled_by: Mapped[str | None] = mapped_column(Text, nullable=True)
     disable_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    canary_percent: Mapped[int] = mapped_column(Integer, nullable=False, server_default="0")
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
         onupdate=func.now(),
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "canary_percent >= 0 AND canary_percent <= 100",
+            name="tenant_setting_canary_percent_check",
+        ),
     )

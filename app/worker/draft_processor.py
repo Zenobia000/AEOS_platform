@@ -45,7 +45,7 @@ from app.db.models.outbound_message import OutboundMessage
 from app.llm.client import LLMClient, LLMMessage, LLMToolDefinition
 from app.observability import e2e_latency_seconds, llm_tokens_total
 from app.services import audit as audit_service
-from app.services import kill_switch
+from app.services import canary, kill_switch
 from app.skill import LoadedSkill, SkillLoader
 
 
@@ -78,11 +78,14 @@ class DraftProcessor:
         registry: InternalToolRegistry,
         hook: AgentHook | None = None,
         max_history: int = 20,
-        outbound_initial_status: str = "pending",
+        outbound_initial_status: str | None = None,
     ) -> None:
         """outbound_initial_status:
-        - 'pending' (預設 / Canary mode): OutboundProcessor 立即撿並 Push
-        - 'awaiting_review' (Draft Mode, PRD §5.4): 等 expert 審後才轉 pending
+        - None (預設, S5 canary): 每 turn 查 tenant_setting.canary_percent +
+          hash(conversation.id) 決定 'pending' (auto-reply) 或 'awaiting_review'
+          (Draft Mode)。canary_percent=0 全 Draft，100 全 auto，中間比例分流。
+        - 'pending' (強制 auto-reply 模式): 立即撿並 Push（測試用）
+        - 'awaiting_review' (強制 Draft Mode): 永遠等 expert 審（測試用 / 早期 pilot）
         """
         self._llm = llm
         self._skill_loader = skill_loader
@@ -219,16 +222,26 @@ class DraftProcessor:
             {"cid": str(conv.id)},
         )
 
-        # 寫 outbound_message (status=pending) — LINE Push worker 撿
+        # 寫 outbound_message — canary 決定 status:
+        # 'pending'         (auto-reply): OutboundProcessor 立刻 Push
+        # 'awaiting_review' (Draft Mode): 等 expert 審
         outbound_id: uuid.UUID | None = None
         if assistant_text:
+            if self._outbound_initial_status is not None:
+                # 測試 / 早期 pilot 強制覆寫
+                initial_status = self._outbound_initial_status
+            else:
+                percent = await canary.get_canary_percent(session, tenant_id=ctx.tenant_id)
+                initial_status = canary.decide_outbound_status(
+                    conversation_id=conv.id, canary_percent=percent
+                )
             outbound = OutboundMessage(
                 tenant_id=ctx.tenant_id,
                 conversation_id=conv.id,
                 message_id=new_message_id,
                 channel=conv.channel,
                 channel_user_id=conv.channel_user_id,
-                status=self._outbound_initial_status,
+                status=initial_status,
             )
             session.add(outbound)
             await session.flush()

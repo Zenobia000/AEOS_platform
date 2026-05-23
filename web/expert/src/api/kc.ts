@@ -1,4 +1,5 @@
 import { ApiError } from "./expert";
+import { authHeader } from "../lib/authStore";
 import type {
   KCActionResponse,
   KCCardType,
@@ -32,7 +33,9 @@ export async function listDrafts(opts?: {
   if (opts?.limit) params.set("limit", String(opts.limit));
   const qs = params.toString();
   const url = `${BASE}/drafts${qs ? `?${qs}` : ""}`;
-  return parseJson<KCListResponse>(await fetch(url, { signal: opts?.signal }));
+  return parseJson<KCListResponse>(
+    await fetch(url, { signal: opts?.signal, headers: authHeader() }),
+  );
 }
 
 export async function approveDraft(
@@ -41,7 +44,7 @@ export async function approveDraft(
 ): Promise<KCActionResponse> {
   const resp = await fetch(`${BASE}/drafts/${kcId}/approve`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...authHeader() },
     body: JSON.stringify({ expert_id: expertId }),
   });
   return parseJson<KCActionResponse>(resp);
@@ -61,7 +64,7 @@ export async function editDraft(
 ): Promise<KCActionResponse> {
   const resp = await fetch(`${BASE}/drafts/${kcId}/edit`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...authHeader() },
     body: JSON.stringify({ expert_id: expertId, ...payload }),
   });
   return parseJson<KCActionResponse>(resp);
@@ -74,7 +77,7 @@ export async function archiveDraft(
 ): Promise<KCActionResponse> {
   const resp = await fetch(`${BASE}/drafts/${kcId}/archive`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...authHeader() },
     body: JSON.stringify({ expert_id: expertId, reason }),
   });
   return parseJson<KCActionResponse>(resp);

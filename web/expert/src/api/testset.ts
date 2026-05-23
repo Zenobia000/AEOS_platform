@@ -1,4 +1,5 @@
 import { ApiError } from "./expert";
+import { authHeader } from "../lib/authStore";
 import type {
   TestCaseItem,
   TestCaseListResponse,
@@ -35,6 +36,7 @@ export async function listCases(opts: {
   }
   const resp = await fetch(`${BASE}/cases?${params.toString()}`, {
     signal: opts.signal,
+    headers: authHeader(),
   });
   return parseJson<TestCaseListResponse>(resp);
 }
@@ -53,7 +55,7 @@ export async function createCase(
 ): Promise<TestCaseItem> {
   const resp = await fetch(`${BASE}/cases`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...authHeader() },
     body: JSON.stringify(payload),
   });
   return parseJson<TestCaseItem>(resp);
@@ -62,6 +64,7 @@ export async function createCase(
 export async function disableCase(caseId: string): Promise<TestCaseItem> {
   const resp = await fetch(`${BASE}/cases/${caseId}/disable`, {
     method: "POST",
+    headers: authHeader(),
   });
   return parseJson<TestCaseItem>(resp);
 }
@@ -74,20 +77,22 @@ export async function createRun(payload: {
 }): Promise<TestRunCreated> {
   const resp = await fetch(`${BASE}/runs`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...authHeader() },
     body: JSON.stringify(payload),
   });
   return parseJson<TestRunCreated>(resp);
 }
 
 export async function getRun(runId: string): Promise<TestRunSummary> {
-  const resp = await fetch(`${BASE}/runs/${runId}`);
+  const resp = await fetch(`${BASE}/runs/${runId}`, { headers: authHeader() });
   return parseJson<TestRunSummary>(resp);
 }
 
 export async function getRunCases(
   runId: string,
 ): Promise<TestRunCaseListResponse> {
-  const resp = await fetch(`${BASE}/runs/${runId}/cases`);
+  const resp = await fetch(`${BASE}/runs/${runId}/cases`, {
+    headers: authHeader(),
+  });
   return parseJson<TestRunCaseListResponse>(resp);
 }

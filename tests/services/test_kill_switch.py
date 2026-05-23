@@ -134,3 +134,77 @@ async def test_enable_when_already_enabled_raises(
     tenant = await _seed_tenant(db_session, "alren")
     with pytest.raises(kill_switch.KillSwitchError, match="already enabled"):
         await kill_switch.enable_ai(db_session, tenant_id=tenant.id, actor_id="x", reason="r")
+
+
+# ── Slack notify integration ────────────────────
+
+
+async def test_disable_triggers_slack_notify(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """kill switch disable 應 best-effort 呼叫 notify_slack."""
+    from app.services import notifications
+
+    calls: list[dict[str, object]] = []
+
+    async def _fake_notify(**kwargs: object) -> bool:
+        calls.append(kwargs)
+        return True
+
+    monkeypatch.setattr(notifications, "notify_slack", _fake_notify)
+    # kill_switch.py 也直接 import 了 notify_slack；patch 那邊的 binding
+    from app.services import kill_switch as ks_module
+
+    monkeypatch.setattr(ks_module, "notify_slack", _fake_notify)
+
+    tenant = await _seed_tenant(db_session, "notify")
+    await kill_switch.disable_ai(
+        db_session,
+        tenant_id=tenant.id,
+        confirm_tenant_id=tenant.id,
+        actor_id="cto",
+        reason="incident",
+    )
+    assert len(calls) == 1
+    assert calls[0]["severity"] == "P0"
+    title = calls[0]["title"]
+    msg = calls[0]["message"]
+    assert isinstance(title, str) and "Kill switch ACTIVATED" in title
+    assert isinstance(msg, str) and str(tenant.id) in msg
+
+
+async def test_enable_triggers_slack_info_notify(
+    db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from app.services import kill_switch as ks_module
+    from app.services import notifications
+
+    calls: list[dict[str, object]] = []
+
+    async def _fake_notify(**kwargs: object) -> bool:
+        calls.append(kwargs)
+        return True
+
+    monkeypatch.setattr(notifications, "notify_slack", _fake_notify)
+    monkeypatch.setattr(ks_module, "notify_slack", _fake_notify)
+
+    tenant = await _seed_tenant(db_session, "notify-en")
+    await kill_switch.disable_ai(
+        db_session,
+        tenant_id=tenant.id,
+        confirm_tenant_id=tenant.id,
+        actor_id="x",
+        reason="r",
+    )
+    calls.clear()
+
+    await kill_switch.enable_ai(
+        db_session,
+        tenant_id=tenant.id,
+        actor_id="cto",
+        reason="resolved",
+    )
+    assert len(calls) == 1
+    assert calls[0]["severity"] == "info"
+    en_title = calls[0]["title"]
+    assert isinstance(en_title, str) and "RESTORED" in en_title

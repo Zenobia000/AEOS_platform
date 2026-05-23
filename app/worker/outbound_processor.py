@@ -33,6 +33,7 @@ from app.db.models.conversation import Conversation
 from app.db.models.outbound_message import OutboundMessage
 from app.observability import outbound_failed_total, outbound_sent_total
 from app.services import audit
+from app.services.notifications import notify_slack
 
 LINE_PUSH_URL = "https://api.line.me/v2/bot/message/push"
 DEFAULT_MAX_RETRIES = 3
@@ -238,6 +239,18 @@ class OutboundProcessor:
                 "retry_count": rc,
                 "http_status": http_status,
                 "error_excerpt": error[:200],
+            },
+        )
+        # P1 incident — outbound 永久失敗（DLQ 累積前兆）；best-effort 通知
+        await notify_slack(
+            severity="P1",
+            title="Outbound push failed permanently",
+            message=f"Channel `{outbound.channel}` push to outbound `{outbound.id}` failed after {rc} retries",
+            fields={
+                "tenant_id": str(outbound.tenant_id),
+                "channel": outbound.channel,
+                "http_status": http_status,
+                "error": error[:120],
             },
         )
         return PushResult(

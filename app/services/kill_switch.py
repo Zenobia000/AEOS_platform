@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.tenant_setting import TenantSetting
 from app.services import audit
+from app.services.notifications import notify_slack
 
 
 class KillSwitchError(RuntimeError):
@@ -114,6 +115,13 @@ async def disable_ai(
         resource_id=str(tenant_id),
         payload={"reason": reason[:500]},
     )
+    # Best-effort Slack 通知（無 webhook 設定就 skip；失敗不阻擋）
+    await notify_slack(
+        severity="P0",
+        title="Kill switch ACTIVATED",
+        message=f"AI disabled for tenant `{tenant_id}` by `{actor_id}`",
+        fields={"tenant_id": str(tenant_id), "reason": reason[:200]},
+    )
     return await get_state(session, tenant_id)
 
 
@@ -146,5 +154,11 @@ async def enable_ai(
         resource_type="tenant_setting",
         resource_id=str(tenant_id),
         payload={"reason": reason[:500]},
+    )
+    await notify_slack(
+        severity="info",
+        title="Kill switch RESTORED",
+        message=f"AI re-enabled for tenant `{tenant_id}` by `{actor_id}`",
+        fields={"tenant_id": str(tenant_id), "reason": reason[:200]},
     )
     return await get_state(session, tenant_id)

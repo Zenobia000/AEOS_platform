@@ -1,14 +1,15 @@
-"""Worker main loop — 兩個 polling cycles 串接 Tier 0~4 的執行流程.
+"""Worker main loop — 串接 Tier 0~4 + S3 TestSet 的 polling cycles.
 
-依 MC-009 + MC-010 + MC-011 + PRD-001 §5.4-5.5：
+依 MC-009 + MC-010 + MC-011 + PRD-001 §5.2 + §5.4-5.5：
+- IdlePoll: 先把 30min 沒互動的 conversation 收 closed
 - DraftPoll: 找「最後一則 message 是 user」的 active conversation → DraftProcessor
 - OutboundPoll: 找 status IN ('pending','retrying') 的 outbound_message → OutboundProcessor
+- TestRunPoll: 找 status='pending' 的 test_run → TestSetRunner（可選；無 LLM 時略過）
 
 Phase 1 簡化：
 - 用 SELECT ... FOR UPDATE SKIP LOCKED 避免並發處理同一筆
-- 單 process 內 sequential（先 draft、再 outbound）；Phase 2 多 worker + Redis queue
-- 沒做 backoff scheduling — retrying 的 outbound 立即下次 cycle 再嘗試（無 delay）
-- DraftProcessor 失敗目前不寫 conversation 狀態（仍待重試）— Phase 2 加 dead_letter
+- 單 process 內 sequential；Phase 2 多 worker + Redis queue
+- TestRunPoll 預設 max 1/iter（test run 跑時間長，避免阻塞 draft cycle）
 """
 
 from __future__ import annotations
@@ -17,13 +18,15 @@ import asyncio
 import uuid
 from dataclasses import dataclass
 
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.db.models.outbound_message import OutboundMessage
+from app.db.models.test_run import TestRun
 from app.services.conversation_idle import close_idle_conversations
 from app.worker.draft_processor import DraftProcessor, DraftResult
 from app.worker.outbound_processor import OutboundProcessor, PushResult
+from app.worker.test_runner import TestSetRunner
 
 # 預設 skill — Phase 1 唯一 skill
 DEFAULT_SKILL_SLUG = "customer-service/faq-respond"
@@ -39,6 +42,8 @@ class IterationResult:
     outbounds_processed: int
     outbounds_failed: int
     idle_closed: int = 0
+    test_runs_processed: int = 0
+    test_runs_failed: int = 0
 
     @property
     def did_work(self) -> bool:
@@ -48,6 +53,8 @@ class IterationResult:
             + self.outbounds_processed
             + self.outbounds_failed
             + self.idle_closed
+            + self.test_runs_processed
+            + self.test_runs_failed
         ) > 0
 
 
@@ -88,16 +95,31 @@ async def find_pending_outbound(
     *,
     limit: int = 1,
 ) -> list[OutboundMessage]:
-    """找 pending / retrying 的 outbound_message，依 created_at asc.
-
-    SELECT FOR UPDATE SKIP LOCKED 避免並發處理。
-    """
-    from sqlalchemy import select
-
+    """找 pending / retrying 的 outbound_message，依 created_at asc."""
     stmt = (
         select(OutboundMessage)
         .where(OutboundMessage.status.in_(["pending", "retrying"]))
         .order_by(OutboundMessage.created_at.asc())
+        .limit(limit)
+        .with_for_update(skip_locked=True)
+    )
+    return list((await session.execute(stmt)).scalars().all())
+
+
+async def find_pending_test_runs(
+    session: AsyncSession,
+    *,
+    limit: int = 1,
+) -> list[TestRun]:
+    """找 status='pending' 的 test_run，依 created_at asc.
+
+    SELECT FOR UPDATE SKIP LOCKED 避免並發處理（test run 跑 LLM 開銷
+    高，並發抓重複會浪費 token）。
+    """
+    stmt = (
+        select(TestRun)
+        .where(TestRun.status == "pending")
+        .order_by(TestRun.created_at.asc())
         .limit(limit)
         .with_for_update(skip_locked=True)
     )
@@ -109,23 +131,28 @@ async def run_iteration(
     *,
     draft_processor: DraftProcessor,
     outbound_processor: OutboundProcessor,
+    test_set_runner: TestSetRunner | None = None,
     skill_slug: str = DEFAULT_SKILL_SLUG,
     skill_version: str = DEFAULT_SKILL_VERSION,
     max_drafts_per_iter: int = 5,
     max_outbounds_per_iter: int = 5,
+    max_test_runs_per_iter: int = 1,
 ) -> IterationResult:
-    """跑一次完整 iteration：draft cycle + outbound cycle.
+    """跑一次完整 iteration：idle close + draft + outbound + test_run cycles.
 
     Args:
         session: async DB session（caller 管理 transaction; 本函式 flush 但不 commit）
-        draft_processor / outbound_processor: 已初始化好的 processors
+        draft_processor / outbound_processor: 必要 processors
+        test_set_runner: 可選；None 則跳過 test_run cycle（無 LLM 環境 / 純 demo）
         skill_slug / skill_version: Phase 1 唯一 skill
-        max_drafts_per_iter / max_outbounds_per_iter: 每 iter 上限避免長 transaction
+        max_*_per_iter: 每 iter 上限避免長 transaction
     """
     drafts_processed = 0
     drafts_failed = 0
     outbounds_processed = 0
     outbounds_failed = 0
+    test_runs_processed = 0
+    test_runs_failed = 0
 
     # ── Idle close cycle（先跑，免得 draft cycle 處理已 stale 的對話）
     idle_result = await close_idle_conversations(session)
@@ -159,12 +186,27 @@ async def run_iteration(
         except Exception:
             outbounds_failed += 1
 
+    # ── Test run cycle（可選） ───────────────────
+    if test_set_runner is not None:
+        for _ in range(max_test_runs_per_iter):
+            runs = await find_pending_test_runs(session, limit=1)
+            if not runs:
+                break
+            run = runs[0]
+            try:
+                await test_set_runner.run(session, run_id=run.id)
+                test_runs_processed += 1
+            except Exception:
+                test_runs_failed += 1
+
     return IterationResult(
         drafts_processed=drafts_processed,
         drafts_failed=drafts_failed,
         outbounds_processed=outbounds_processed,
         outbounds_failed=outbounds_failed,
         idle_closed=idle_result.closed_count,
+        test_runs_processed=test_runs_processed,
+        test_runs_failed=test_runs_failed,
     )
 
 
@@ -173,6 +215,7 @@ async def run_loop(
     *,
     draft_processor: DraftProcessor,
     outbound_processor: OutboundProcessor,
+    test_set_runner: TestSetRunner | None = None,
     interval_s: float = 1.0,
     stop_event: asyncio.Event | None = None,
     skill_slug: str = DEFAULT_SKILL_SLUG,
@@ -191,6 +234,7 @@ async def run_loop(
                     session,
                     draft_processor=draft_processor,
                     outbound_processor=outbound_processor,
+                    test_set_runner=test_set_runner,
                     skill_slug=skill_slug,
                     skill_version=skill_version,
                 )
@@ -213,6 +257,7 @@ __all__ = [
     "PushResult",
     "find_conversation_needing_draft",
     "find_pending_outbound",
+    "find_pending_test_runs",
     "run_iteration",
     "run_loop",
 ]

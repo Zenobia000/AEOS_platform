@@ -1,3 +1,4 @@
+import { authHeader } from "../lib/authStore";
 import type { ActionResponse, ReviewListResponse } from "../types";
 
 const BASE = "/api/v1/expert";
@@ -38,7 +39,9 @@ export async function listReviews(opts?: {
   if (opts?.limit) params.set("limit", String(opts.limit));
   const qs = params.toString();
   const url = `${BASE}/reviews${qs ? `?${qs}` : ""}`;
-  return parseJson<ReviewListResponse>(await fetch(url, { signal: opts?.signal }));
+  return parseJson<ReviewListResponse>(
+    await fetch(url, { signal: opts?.signal, headers: authHeader() }),
+  );
 }
 
 export async function approveReview(
@@ -47,7 +50,7 @@ export async function approveReview(
 ): Promise<ActionResponse> {
   const resp = await fetch(`${BASE}/reviews/${outboundId}/approve`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...authHeader() },
     body: JSON.stringify({ expert_id: expertId }),
   });
   return parseJson<ActionResponse>(resp);
@@ -60,7 +63,7 @@ export async function editReview(
 ): Promise<ActionResponse> {
   const resp = await fetch(`${BASE}/reviews/${outboundId}/edit`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...authHeader() },
     body: JSON.stringify({ expert_id: expertId, new_content: newContent }),
   });
   return parseJson<ActionResponse>(resp);
@@ -74,7 +77,7 @@ export async function rejectReview(
 ): Promise<ActionResponse> {
   const resp = await fetch(`${BASE}/reviews/${outboundId}/reject`, {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...authHeader() },
     body: JSON.stringify({
       expert_id: expertId,
       reason,

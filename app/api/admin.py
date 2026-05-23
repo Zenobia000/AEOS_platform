@@ -10,13 +10,18 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
+from app.api.auth_dependency import current_expert
 from app.db.session import session_scope
 from app.services import kill_switch
 
-router = APIRouter(prefix="/api/v1/admin", tags=["admin"])
+router = APIRouter(
+    prefix="/api/v1/admin",
+    tags=["admin"],
+    dependencies=[Depends(current_expert)],
+)
 
 
 class DisableRequest(BaseModel):

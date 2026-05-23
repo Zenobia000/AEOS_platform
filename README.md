@@ -71,6 +71,29 @@ npm run dev            # http://localhost:5173 → proxy /api → :8000
 
 詳見 [`web/expert/README.md`](./web/expert/README.md)。CI 已涵蓋 typecheck + vitest + build。
 
+### 4.2 啟動 Worker（polling loop）
+
+```bash
+# 可選：設真實 LLM key（否則用 StubLLM，draft/test_run 不會有真內容）
+export ANTHROPIC_API_KEY=sk-ant-...
+
+uv run python -m app.worker
+```
+
+跑 4 個 polling cycle：idle close / draft / outbound / test_run。
+- 預設 1s interval（`WORKER_INTERVAL_S=2.5` 可調）
+- SIGINT/SIGTERM → graceful shutdown
+- 不設 `ANTHROPIC_API_KEY` 仍可起，僅 draft/test_run 會輸出 stub 字串
+
+### 4.3 一鍵 seed demo 資料
+
+```bash
+uv run python -m scripts.seed_demo
+```
+
+建 1 個 tenant + 3 KC drafts + 5 test cases + 1 awaiting_review draft，
+Expert UI 3 個 tab 都會有資料可玩。冪等，重跑 skip。
+
 ### 5. Lint / Format / Type check
 
 ```bash

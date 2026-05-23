@@ -35,6 +35,7 @@ from app.db.models import (  # noqa: F401  (populate metadata)
     skill_binding,
     skill_version,
     tenant,
+    tenant_setting,
     tool,
     tool_invocation,
     tool_policy,
@@ -116,6 +117,10 @@ _RLS_TRIGGER_SQL = [
     "CREATE POLICY webhook_event_allow_all ON webhook_event USING (true)",
     "ALTER TABLE outbound_message ENABLE ROW LEVEL SECURITY",
     "CREATE POLICY outbound_message_tenant_isolation ON outbound_message "
+    "USING (tenant_id::text = current_setting('app.tenant_id', true))",
+    # tenant_setting (migration 7bd48e428868)
+    "ALTER TABLE tenant_setting ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY tenant_setting_tenant_isolation ON tenant_setting "
     "USING (tenant_id::text = current_setting('app.tenant_id', true))",
 ]
 

@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from starlette.responses import Response
 
+from app.api.admin import router as admin_router
 from app.api.expert import router as expert_router
 from app.api.kc import router as kc_router
 from app.api.webhooks import line_router
@@ -25,6 +26,7 @@ app = FastAPI(
 app.include_router(line_router)
 app.include_router(expert_router)
 app.include_router(kc_router)
+app.include_router(admin_router)
 
 # Prometheus instrumentation — auto HTTP histogram + per-handler labels
 instrument_app(app)

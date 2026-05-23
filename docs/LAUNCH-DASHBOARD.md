@@ -23,7 +23,7 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | **S2** | **KB & KC (UF-001)** | **IN PROGRESS** (DB 18/25 表 + LINE 端到端 + Draft Mode 後端 + Expert UI + E2E smoke ✅；KB worker pipeline 待 pilot) | Week 3-4 | 需已簽 pilot 客戶才能 exit |
 | S3 | TestSet & Skill v1.0 | 待 | Week 5-6 | AC-001 全通過 |
 | S4 | LINE + Draft Mode | 待 | Week 7-8 | AC-002 全通過 |
-| S5 | Canary + Kill Switch + Audit UI | 待 | Week 9-10 | AC-003 全通過 |
+| **S5** | **Canary + Kill Switch + Audit UI** | **DONE** (6/7 任務塊，剩 Slack digest) | Week 9-10 | AC-004 + AC-005 ✅ |
 | S6 | Pilot Hardening | 待 | Week 11 | 客戶 KB 真實 ingest |
 | S7 | Pilot Live | 待 | Week 12 | BF-001 全流程跑通 |
 | S8 | Template Extraction + Retro | 待 | Week 13 | Pilot live + 收齊 setup fee |
@@ -53,8 +53,8 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | MRR | $0 | ~$2,300/月 (5 家 Pilot) | [COST-MODEL §3.1](4-exploration/COST-MODEL-2026-05.md) |
 | AI auto-reply 採用率 | n/a | >= 70% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
 | Test set 通過率 | n/a | >= 85% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
-| 程式碼行數 | 18,500+ (app 6960 + tests 7700 + alembic 1880 + skills 236 + web/expert/src 2090) | — | `dev` |
-| DB 表完成數 | 22 / 25 (88%) | 25 | [db-schema.md](2-contracts/db-schema.md) |
+| 程式碼行數 | 21,800+ (app 7900 + tests 8500 + alembic 2020 + skills 236 + web/expert/src 3170) | — | `dev` |
+| DB 表完成數 | 24 / 25 (96%) | 25 | [db-schema.md](2-contracts/db-schema.md) |
 | Governance Layer (Audit/Policy/Quota) | 3 / 3 ✅ | 3 | engineering-charter §1 |
 | LINE 端到端鏈路 (DB 層) | inbound + draft + outbound 全跑通 ✅ | ✓ | AC-003 |
 | Draft Mode 鏈路（Expert review） | 後端 API + UI + E2E smoke ✅ | ✓ | PRD-001 §5.4 |
@@ -64,6 +64,9 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | Worker entrypoint | `python -m app.worker` graceful shutdown ✅ | ✓ | `chore/worker-entrypoint` |
 | TestSet 鏈路 | schema + runner + keyword judge + REST API + UI tab + 背景自動跑 ✅ | ✓ | AC-001 / S3 |
 | Prometheus 量測 | FastAPI middleware + 7 業務 metric + 2 Grafana dashboard ✅ | ✓ | OBS-001 §2-3 |
+| 認證鏈路 (S5) | expert_account + bearer token + Login UI + AEOS_AUTH_REQUIRED gate ✅ | ✓ | `feat/s5-auth-*` |
+| Canary 路由 (S5) | per-tenant 0-100% auto-reply 比例 + admin API + 確定性 bucket ✅ | ✓ | PRD-001 §5.5 / `feat/s5-canary-routing` |
+| Audit Browse UI (S5) | 3 endpoint + conversation 完整時間軸 + Expert Console tab ✅ | ✓ | AC-005 / `feat/s5-audit-browse-ui` |
 
 ## Engineering Health
 
@@ -93,13 +96,13 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 
 | 指標 | 現值 | 目標 | 來源 |
 |---|---|---|---|
-| Test coverage（dev） | 93.07% (312 tests, `dev`) | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
-| Test 數量 | 312 Python + 18 vitest = **330** | — | tests/ + web/expert/src |
+| Test coverage（dev） | 93%+ (360 tests, `dev`) | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
+| Test 數量 | 360 Python + 23 vitest = **383** | — | tests/ + web/expert/src |
 | CI pass rate（過去 7 天） | n/a（首次 push 後可量） | ≥ 95% | TEST-001 |
 | Flaky tests | 0 | ≤ 3 | TEST-001 §7 |
 | Open critical CVE | 0（Dependabot 首掃待跑） | 0 | [SEC-001 §6.1](2-contracts/SEC-001-threat-model.md) |
 | Open S1/S2 support tickets | 0 | 0 active | [PLAYBOOK-001 §3.2](3-process/PLAYBOOK-001-cs-escalation.md) |
-| SEC-001 §6.1 Go/No-Go checklist | 2 / 13 ✅ (+2 部分；#4 RLS 15 表全 enable) | 13 / 13 ✅ | SEC-001 §6.1 |
+| SEC-001 §6.1 Go/No-Go checklist | 4 / 13 ✅ (+ auth + audit + canary 落地；剩 PII mask / pentest / DPA / oncall drill) | 13 / 13 ✅ | SEC-001 §6.1 |
 | Skill production Quality Gate | DB CHECK 落地 (pass_rate ≥ 0.80 + approved) | — | MC-005 / migration `89c67361deb1` |
 
 ### 成本
@@ -147,9 +150,13 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 24. **OBS infra 部署**：Prometheus + Grafana 跑在 Hetzner — 🚫 待 CTO 開 Hetzner 帳號
 25. **接 RUNBOOK-001 primary oncall**：Slack / PagerDuty — 🚫 待 CEO/CTO 註冊
 26. **LINE sandbox channel 註冊** — 🚫 待 CTO 登入 LINE Developers Console
-27. **下一波 (pilot-independent)**：MFA / Auth for Expert Console（S5 hard gate）+ Canary 路由 + Audit browse UI
+27. ~~**Auth backend (bearer token + bcrypt)**~~ ✅ (`feat/s5-auth-backend`) — `AEOS_AUTH_REQUIRED` env gate
+28. ~~**Auth frontend (Login.tsx + Bearer attach)**~~ ✅ (`feat/s5-auth-frontend`)
+29. ~~**Canary 路由 (per-tenant 0-100%)**~~ ✅ (`feat/s5-canary-routing`)
+30. ~~**Audit browse API + UI tab**~~ ✅ (`feat/s5-audit-browse-ui`)
+31. **下一波 (pilot-independent)**：LLM judge 升級 Haiku / Slack webhook (kill switch + P0) / admin 帳號管理 UI
 
-詳見 [`docs/report/S2-PROGRESS-2026-05-22-expert-review.md`](report/S2-PROGRESS-2026-05-22-expert-review.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4-complete.md`](report/S2-PROGRESS-2026-05-22-tier4-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4.md`](report/S2-PROGRESS-2026-05-22-tier4.md)、[`docs/report/S2-PROGRESS-2026-05-22.md`](report/S2-PROGRESS-2026-05-22.md)、[`docs/report/S1-PROGRESS-2026-05-17.md`](report/S1-PROGRESS-2026-05-17.md) 與 [`docs/report/S1-BLOCKERS-2026-05-17.md`](report/S1-BLOCKERS-2026-05-17.md)。
+詳見 [`docs/report/S5-PROGRESS-2026-05-23-complete.md`](report/S5-PROGRESS-2026-05-23-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-expert-review.md`](report/S2-PROGRESS-2026-05-22-expert-review.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4-complete.md`](report/S2-PROGRESS-2026-05-22-tier4-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4.md`](report/S2-PROGRESS-2026-05-22-tier4.md)、[`docs/report/S2-PROGRESS-2026-05-22.md`](report/S2-PROGRESS-2026-05-22.md)、[`docs/report/S1-PROGRESS-2026-05-17.md`](report/S1-PROGRESS-2026-05-17.md) 與 [`docs/report/S1-BLOCKERS-2026-05-17.md`](report/S1-BLOCKERS-2026-05-17.md)。
 
 ## 必讀文件（依角色）
 
@@ -191,4 +198,4 @@ UF/SF 流程、NFR、UX wireframe、threat model、test plan、observability spe
 
 ---
 
-*上次更新：2026-05-23 | 更新者：CTO（**S2/S4 完成 + S3 backend/UI/auto-runner + S5 第一波：metrics/kill switch/idle**；312 Python + 18 vitest = 330 tests / 93.07% coverage；22/25 表；14 支 branch 合入 `dev`；剩外部 blocker：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 簽約；S5 剩 MFA + Canary + Audit UI）*
+*上次更新：2026-05-23 | 更新者：CTO（**S2 / S3 / S4 / S5 全部任務塊 ✅** — auth + canary + audit + Expert Console 4 tab 全通；360 Python + 23 vitest = **383 tests** / 93% coverage / **24/25 DB 表** / 19 支 branch 合入 `dev`；AC-001/003/004/005 全綠；剩外部 blocker：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 簽約）*

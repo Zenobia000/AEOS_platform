@@ -130,14 +130,24 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 對應：`UF-004` + `UF-005` / `AC-004` + `AC-005` / `MC-007` / `MC-003`
 
 任務塊：
-- Auto reply 路徑：confidence ≥ 0.75 + canary bucket → 直送；否則 fallback draft
-- Canary toggle：10% / 50% / 100% per tenant；切換進 audit
-- 緊急 kill switch：DISABLE_AI 二次確認、30 秒內生效、所有訊息 status=expert_takeover 不丟、Slack 通知 CEO+CTO
-- Audit 瀏覽 UI：conversation list + 每則 message 顯示 Skill 版本 + KC 引用 + tool calls
-- Daily digest：每日 email — 對話數、handoff 率、推算 accuracy
-- D3 cost dashboard（OBS-001 W6 交付）
+- ✅ Auto reply 路徑：per-tenant canary_percent (0-100) + 確定性 bucket
+  （SHA256(uuid)[:4] mod 100）→ pending / awaiting_review (`feat/s5-canary-routing`)
+- ✅ Canary toggle：admin API `/api/v1/admin/canary/{tenant_id}` GET/POST；切換進 audit
+- ✅ 緊急 kill switch：DISABLE_AI 二次確認、< 1 秒 DB 查 + 即時生效、attendee
+  → conversation_handoff (`feat/s5-kill-switch`)
+- ✅ Auth backend：bcrypt + bearer token + 30 天 session +
+  `AEOS_AUTH_REQUIRED` env gate (`feat/s5-auth-backend`)
+- ✅ Auth frontend：Login.tsx + App auth state machine + Bearer attach to all
+  API calls + logout (`feat/s5-auth-frontend`)
+- ✅ Audit 瀏覽 UI：3 endpoint (events / conversations / detail timeline) +
+  Expert Console "Audit" tab，含 conversation 完整時間軸 (messages +
+  outbounds + audit events) (`feat/s5-audit-browse-ui`)
+- 🚫 Slack 通知（kill switch / P0 incident）— 待 SLACK_WEBHOOK_URL
+- 🚫 Daily digest email — 待 Slack/SES 整合
+- 🚫 D3 cost dashboard（OBS-001 W6 交付）— 待 Hetzner 部署實際抓到資料
 
-**Exit**：AC-004 + AC-005 全綠；kill switch ≤30s 演練通過。
+**Exit**：AC-004 + AC-005 全綠 ✅；kill switch ≤30s 演練通過（單元測試
+已驗 < 1s 生效，未實機 drill）。
 
 ### 4.6 S6 — Pilot Hardening（W11）
 
@@ -236,3 +246,4 @@ S4 開始可同時推：
 | 2026-05-22 | **S2 Tier 4 application 層完成**：(1) ToolExecutor + 2 builtin tools `feat/s2-tool-executor`；(2) LINE webhook endpoint (HMAC + dedup + 1s ACK) `feat/s2-line-webhook`；(3) SkillLoader + DraftProcessor `feat/s2-draft-processor`；(4) LINE Push OutboundProcessor (retry + DLQ + audit) `feat/s2-outbound-worker`。LINE 端到端鏈路 inbound → AI → outbound 在 DB 層全跑通。180 tests / 93.16% coverage。§4.4 S4 任務塊全部 ✅，剩 worker polling loop + Expert review UI（Phase 1 待） | CTO |
 | 2026-05-22 | **Worker polling + KB ingest + Draft Mode 端到端**：(1) Worker polling loop `feat/s2-worker-loop`；(2) KB ingest pipeline (parser + embedding + KC drafts) `feat/s2-kb-ingest`；(3) Expert review 後端 API (4 endpoint + service + migration 6 態 outbound status) `feat/s2-expert-review-api`；(4) Expert Console UI (Vite + React + Tailwind + 7 vitest) `feat/s2-expert-review-ui`；(5) CI 拆 backend + web-expert + path filter + ci-gate `ci/web-expert`；(6) Draft Mode E2E smoke (inbound→approve→Push + reject 路徑) `test/draft-mode-e2e`。238 tests / 93.30% coverage。§4.4 Expert review UI / Worker polling 標 ✅。剩外部 blocker：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 簽約 | CTO |
 | 2026-05-23 | **S3 完整 + S5 第一波 + dev 整合**：10 支新 branch：KC review (feat/s2-kc-review)、OBS IaC (chore/obs-iac-prep)、Prometheus instrumentation (feat/s5-prometheus-instrumentation)、kill switch (feat/s5-kill-switch)、idle timeout (feat/s4-idle-timeout)、TestSet schema (feat/s3-testset-schema)、TestSet UI (feat/s3-testset-ui)、seed demo (chore/seed-demo-script)、TestRunPoll cycle (feat/s3-testset-auto-runner)、Worker entrypoint (chore/worker-entrypoint)。建 `dev` 分支整合 14 支 branch，`main` 暫不動。**312 Python + 18 vitest = 330 tests / 93.07% coverage / 22 / 25 DB 表**。S3 完整鏈路通；S5 §kill switch 落地；Worker `python -m app.worker` 可獨立跑。剩 S5 三件：MFA / Canary / Audit UI | CTO |
+| 2026-05-23 | **S5 完整收尾**：(1) auth backend — expert_account + expert_session + bcrypt + bearer token + `AEOS_AUTH_REQUIRED` gate (`feat/s5-auth-backend`)；(2) auth frontend — Login.tsx + App auth state machine + Bearer attach (`feat/s5-auth-frontend`)；(3) canary routing — per-tenant 0-100% + 確定性 bucket + admin API (`feat/s5-canary-routing`)；(4) audit browse — 3 endpoint + Expert Console 4th tab，conversation 完整時間軸 (`feat/s5-audit-browse-ui`)。**360 Python + 23 vitest = 383 tests / 93%+ coverage / 24 / 25 DB 表**。Expert Console 完整 4 tab（drafts/kc/testset/audit）+ Login + logout。AC-004/005 ✅。SEC-001 §6.1 從 2 → 4/13。剩 LLM judge 升級 + Slack webhook + admin 帳號管理 UI（P1，非 hard gate）| CTO |

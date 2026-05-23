@@ -150,3 +150,59 @@ async def test_runner_marks_error_on_llm_exception(
     )
     assert trcs[0].status == "error"
     assert "LLM API down" in (trcs[0].judge_reason or "")
+
+
+# ── LLM judge integration ─────────────────
+
+
+async def test_runner_with_llm_judge(db_session: AsyncSession) -> None:
+    """注入 LLMJudge — 一支 case 跑兩個 LLM 呼叫：skill response + judge eval."""
+    from app.services.test_judge import LLMJudge
+
+    tenant = await _seed_tenant(db_session, "llmj")
+    await test_set.create_test_case(
+        db_session,
+        tenant_id=tenant.id,
+        name="退貨期限",
+        user_input="退貨多久",
+        expected_outcome="7 天",
+        expected_keywords=["7 天"],
+    )
+    run = await test_set.create_test_run(
+        db_session,
+        tenant_id=tenant.id,
+        skill_slug="customer-service/faq-respond",
+        skill_version="v1.0.0",
+    )
+
+    # Skill LLM 回貼近 expected 的答案
+    skill_llm = _StubLLM(answers_by_input={"退貨多久": "可在 7 天內辦理退貨"})
+
+    # Judge LLM 回高分
+    class _JudgeLLM(LLMClient):
+        async def complete(self, **_kwargs: Any) -> LLMResponse:
+            return LLMResponse(
+                text='{"score": 0.95, "reason": "完整且正確"}',
+                tool_uses=[],
+                stop_reason="end_turn",
+                usage=LLMUsage(input_tokens=30, output_tokens=20),
+                model="claude-haiku-4-5",
+            )
+
+    runner = TestSetRunner(
+        llm=skill_llm,
+        skill_loader=SkillLoader(root=_repo_root() / "skills"),
+        judge=LLMJudge(llm=_JudgeLLM(), keyword_fallback_on_error=False),
+    )
+    result = await runner.run(db_session, run_id=run.id)
+    assert result.passed == 1
+    assert result.pass_rate == 1.0
+
+    trcs = (
+        (await db_session.execute(select(TestRunCase).where(TestRunCase.test_run_id == run.id)))
+        .scalars()
+        .all()
+    )
+    assert trcs[0].status == "passed"
+    assert trcs[0].judge_score == 0.95
+    assert "完整" in (trcs[0].judge_reason or "")

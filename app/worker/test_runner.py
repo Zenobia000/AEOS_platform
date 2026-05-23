@@ -3,7 +3,7 @@
 設計：
 - 每個 case 用一個 LLMClient.complete() one-shot 呼叫（不走 DraftProcessor，
   避免污染 conversation / message 表；test_run 是離線品質驗證）
-- judge 用 test_judge.judge_keywords()（Phase 1 簡單版）
+- judge 透過 Judge 介面注入（KeywordJudge / LLMJudge 可換）
 - 失敗也算進 failed_count；exception 進 status='error'
 
 對應 PRD-001 §5.2 F-TS-02 + AC-001 §pass rate ≥ 0.80 measurement。
@@ -22,7 +22,11 @@ from app.db.models.test_case import TestCase
 from app.db.models.test_run_case import TestRunCase
 from app.llm.client import LLMClient, LLMMessage
 from app.services import test_set
-from app.services.test_judge import DEFAULT_PASS_THRESHOLD, judge_keywords
+from app.services.test_judge import (
+    DEFAULT_PASS_THRESHOLD,
+    Judge,
+    KeywordJudge,
+)
 from app.skill import SkillLoader
 
 
@@ -40,9 +44,11 @@ class TestSetRunner:
     """跑單一 test_run。
 
     Args:
-        llm: LLMClient（real or fake）
+        llm: LLMClient — 跑 skill 的對話用
         skill_loader: 取 system prompt
-        pass_threshold: keyword judge score threshold（預設 0.8）
+        judge: 評分策略 (KeywordJudge / LLMJudge)；None 預設 KeywordJudge
+            搭配 pass_threshold（向後相容）
+        pass_threshold: 預設 KeywordJudge 的 threshold（judge 已傳則忽略）
     """
 
     __test__ = False  # 阻止 pytest 把這個 class 當測試類別收集
@@ -52,11 +58,12 @@ class TestSetRunner:
         *,
         llm: LLMClient,
         skill_loader: SkillLoader,
+        judge: Judge | None = None,
         pass_threshold: float = DEFAULT_PASS_THRESHOLD,
     ) -> None:
         self._llm = llm
         self._skill_loader = skill_loader
-        self._pass_threshold = pass_threshold
+        self._judge: Judge = judge or KeywordJudge(pass_threshold=pass_threshold)
 
     async def run(
         self,
@@ -89,10 +96,11 @@ class TestSetRunner:
                     max_tokens=512,
                     temperature=0.0,
                 )
-                judgement = judge_keywords(
-                    actual_output=response.text,
+                judgement = await self._judge.evaluate(
+                    user_input=tc.user_input,
+                    expected_outcome=tc.expected_outcome,
                     expected_keywords=list(tc.expected_keywords),
-                    pass_threshold=self._pass_threshold,
+                    actual_output=response.text,
                 )
                 trc.status = judgement.status
                 trc.actual_output = response.text

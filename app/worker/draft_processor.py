@@ -147,6 +147,9 @@ class DraftProcessor:
             record_invocations=True,
         )
 
+        # 收集本 turn 的 tool 呼叫紀錄；turn 結束後寫入 message.tool_invocations
+        tool_invocations: list[dict[str, object]] = []
+
         async def _dispatch(name: str, args: dict[str, object]) -> object:
             tool_ctx = ToolExecutionContext(
                 tenant_id=ctx.tenant_id,
@@ -156,6 +159,18 @@ class DraftProcessor:
                 session=session,
             )
             result = await tool_exec.dispatch(name, args, ctx=tool_ctx)
+            invocation_record: dict[str, object] = {
+                "name": name,
+                "input": _sanitize_input(args),
+                "ok": result.error_message is None,
+            }
+            if result.error_message:
+                invocation_record["error"] = result.error_message[:300]
+            # Audit UI 顯示「這則回答引用了哪幾張 KC」
+            kc_refs = _extract_kc_refs(name, result.output)
+            if kc_refs:
+                invocation_record["kc_refs"] = kc_refs
+            tool_invocations.append(invocation_record)
             return result.output
 
         runtime = EmployeeRuntime(
@@ -196,12 +211,17 @@ class DraftProcessor:
         ).scalar()
         next_seq = int(max_seq_row or 0) + 1
         # RETURNING id 拿回剛寫進去的 message UUID，給 outbound_message.message_id 用
+        # tool_invocations 序列化為 JSON（含 kc_refs 給 Audit UI 顯示）
+        import json as _json
+
         new_message_row = (
             await session.execute(
                 text(
                     "INSERT INTO message "
-                    "(id, conversation_id, seq, role, content, token_count, created_at) "
-                    "VALUES (gen_random_uuid(), :cid, :seq, 'assistant', :c, :tk, NOW()) "
+                    "(id, conversation_id, seq, role, content, token_count, "
+                    " tool_invocations, created_at) "
+                    "VALUES (gen_random_uuid(), :cid, :seq, 'assistant', :c, :tk, "
+                    " CAST(:ti AS JSONB), NOW()) "
                     "RETURNING id"
                 ),
                 {
@@ -209,6 +229,7 @@ class DraftProcessor:
                     "seq": next_seq,
                     "c": assistant_text,
                     "tk": turn.response.usage.output_tokens,
+                    "ti": _json.dumps(tool_invocations),
                 },
             )
         ).first()
@@ -319,6 +340,36 @@ class DraftProcessor:
             if role in ("user", "assistant"):
                 items.append(LLMMessage(role=role, content=content))
         return items
+
+
+# ── tool_invocations helpers ──────────────────────
+
+
+_INPUT_REDACT_KEYS = {"query_embedding"}  # 太長 + 對 audit 無價值
+
+
+def _sanitize_input(args: dict[str, object]) -> dict[str, object]:
+    """過濾 tool input：去掉超大 / 對 audit 不需要的欄位."""
+    return {k: v for k, v in args.items() if k not in _INPUT_REDACT_KEYS}
+
+
+def _extract_kc_refs(tool_name: str, output: object) -> list[str]:
+    """從 tool output 抓出引用到的 KC ID（給 Audit UI 顯示）.
+
+    search_knowledge → list[{kc_id, ...}]
+    其他 tool → []
+    """
+    if tool_name != "search_knowledge":
+        return []
+    if not isinstance(output, list):
+        return []
+    refs: list[str] = []
+    for item in output:
+        if isinstance(item, dict):
+            kc_id = item.get("kc_id")
+            if isinstance(kc_id, str):
+                refs.append(kc_id)
+    return refs
 
 
 def _build_tool_definitions(skill: LoadedSkill) -> list[LLMToolDefinition]:

@@ -128,6 +128,7 @@ describe("AuditBrowser", () => {
                 role: "user",
                 content: "退貨多久",
                 token_count: null,
+                tool_invocations: [],
                 created_at: null,
               },
               {
@@ -136,6 +137,7 @@ describe("AuditBrowser", () => {
                 role: "assistant",
                 content: "7 天",
                 token_count: 5,
+                tool_invocations: [],
                 created_at: null,
               },
             ],
@@ -211,5 +213,101 @@ describe("AuditBrowser", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "missing Bearer token",
     );
+  });
+});
+
+describe("AuditBrowser tool_invocations", () => {
+  beforeEach(() => {
+    try { window.localStorage.clear(); } catch { /* ignore */ }
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  it("renders KC refs in assistant message detail", async () => {
+    const fn = vi.fn(async (input: RequestInfo | URL) => {
+      const url = typeof input === "string" ? input : String(input);
+      if (url.startsWith("/api/v1/audit/conversations/c-tool")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            conversation: {
+              id: "c-tool",
+              conversation_id: "c-tool",
+              tenant_id: "t",
+              employee_id: "e",
+              channel: "line",
+              channel_user_id: "U",
+              status: "active",
+              outcome: null,
+              message_count: 1,
+              started_at: null,
+              last_message_at: null,
+              ended_at: null,
+            },
+            messages: [
+              {
+                id: "m-assistant",
+                seq: 1,
+                role: "assistant",
+                content: "您好，退貨可於 7 天內",
+                token_count: 20,
+                tool_invocations: [
+                  {
+                    name: "search_knowledge",
+                    input: { query: "退貨多久", top_k: 5 },
+                    ok: true,
+                    kc_refs: [
+                      "11111111-aaaa-bbbb-cccc-111111111111",
+                      "22222222-aaaa-bbbb-cccc-222222222222",
+                    ],
+                  },
+                ],
+                created_at: null,
+              },
+            ],
+            outbounds: [],
+            audit_events: [],
+          }),
+        } as unknown as Response;
+      }
+      if (url.startsWith("/api/v1/audit/conversations")) {
+        return {
+          ok: true,
+          status: 200,
+          json: async () => ({
+            items: [
+              {
+                conversation_id: "c-tool",
+                tenant_id: "t",
+                employee_id: "e",
+                channel: "line",
+                channel_user_id: "U",
+                status: "active",
+                outcome: null,
+                message_count: 1,
+                started_at: null,
+                last_message_at: "2026-05-24T10:00:00Z",
+                ended_at: null,
+              },
+            ],
+            count: 1,
+          }),
+        } as unknown as Response;
+      }
+      return { ok: true, status: 200, json: async () => ({ items: [], count: 0 }) } as unknown as Response;
+    });
+    vi.stubGlobal("fetch", fn);
+
+    render(<AuditBrowser />);
+    await userEvent.click(await screen.findByTestId("conv-row-c-tool"));
+
+    const toolList = await screen.findByTestId("tool-invocations-m-assistant");
+    expect(toolList).toHaveTextContent("search_knowledge");
+    expect(toolList).toHaveTextContent("引用 2 張 KC");
+    expect(toolList).toHaveTextContent("11111111");
+    expect(toolList).toHaveTextContent("22222222");
   });
 });

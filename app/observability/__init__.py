@@ -9,6 +9,7 @@ from app.observability.metrics import (
     llm_tokens_total,
     outbound_failed_total,
     outbound_sent_total,
+    pii_redactions_total,
     register_app_info,
 )
 
@@ -21,5 +22,6 @@ __all__ = [
     "llm_tokens_total",
     "outbound_failed_total",
     "outbound_sent_total",
+    "pii_redactions_total",
     "register_app_info",
 ]

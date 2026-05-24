@@ -31,7 +31,9 @@ from app.db.models.channel_binding import ChannelBinding
 from app.db.models.conversation import Conversation
 from app.db.models.employee import Employee
 from app.db.session import session_scope
+from app.observability import pii_redactions_total
 from app.services import audit
+from app.services.pii_masking import mask_text
 
 router = APIRouter(prefix="/api/v1/webhooks", tags=["webhook"])
 
@@ -250,6 +252,26 @@ async def _record_inbound_message(
         session.add(conv)
         await session.flush()
 
+    # PII masking — webhook ingress 邊界，存進 DB 前過濾敏感資料
+    # 對應 SEC-001 §6.1 #11；不影響原 user 對話體驗（user 仍可看自己訊息），
+    # 只影響 expert / audit / LLM 看到的內容
+    mask_result = mask_text(content)
+    if mask_result.total_redactions > 0:
+        for kind, count in mask_result.redactions.items():
+            pii_redactions_total.labels(tenant_id=str(tenant_id), kind=kind).inc(count)
+        await audit.emit(
+            session,
+            event_type="pii.redacted_in_ingress",
+            tenant_id=tenant_id,
+            actor_id="line_webhook",
+            resource_type="conversation",
+            resource_id=str(conv.id),
+            payload={
+                "redactions": mask_result.redactions,
+                "total": mask_result.total_redactions,
+            },
+        )
+
     # 直接 raw INSERT 進 message partition (Message ORM 對 partition 有時麻煩)
     next_seq = (conv.message_count or 0) + 1
     await session.execute(
@@ -257,7 +279,7 @@ async def _record_inbound_message(
             "INSERT INTO message (id, conversation_id, seq, role, content, created_at) "
             "VALUES (gen_random_uuid(), :cid, :seq, 'user', :content, NOW())"
         ),
-        {"cid": str(conv.id), "seq": next_seq, "content": content},
+        {"cid": str(conv.id), "seq": next_seq, "content": mask_result.masked},
     )
 
     # 更新 conversation counter + last_message_at

@@ -245,7 +245,10 @@ class OutboundProcessor:
         await notify_slack(
             severity="P1",
             title="Outbound push failed permanently",
-            message=f"Channel `{outbound.channel}` push to outbound `{outbound.id}` failed after {rc} retries",
+            message=(
+                f"Channel `{outbound.channel}` push to outbound "
+                f"`{outbound.id}` failed after {rc} retries"
+            ),
             fields={
                 "tenant_id": str(outbound.tenant_id),
                 "channel": outbound.channel,

@@ -74,9 +74,14 @@ async def current_expert(
 
 
 async def require_admin(
-    expert: AuthenticatedExpert,
+    authorization: str | None = Header(default=None),
 ) -> AuthenticatedExpert:
-    """進一步限制為 admin role（給 kill switch / 帳號管理 用）."""
+    """進一步限制為 admin role（給帳號管理 endpoint 用）.
+
+    chain: get token → current_expert → 檢查 role=='admin'。
+    bypass 模式注入的 anonymous expert 是 admin role，dev 仍可玩。
+    """
+    expert = await current_expert(authorization=authorization)
     if expert.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

@@ -15,8 +15,11 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 
-from app.api.auth_dependency import current_expert
+from app.api.auth_dependency import current_expert, require_admin
+from app.db.models.expert_account import ExpertAccount
+from app.db.models.expert_session import ExpertSession
 from app.db.session import session_scope
+from app.services import auth as auth_service
 from app.services import canary, kill_switch
 
 router = APIRouter(
@@ -129,3 +132,117 @@ async def set_canary(tenant_id: uuid.UUID, body: CanarySetRequest) -> dict[str, 
             "tenant_id": str(state.tenant_id),
             "canary_percent": state.canary_percent,
         }
+
+
+# ── Expert account management ───────────────────────
+
+
+class ExpertCreateRequest(BaseModel):
+    email: str = Field(min_length=3, max_length=255)
+    password: str = Field(min_length=6, max_length=200)
+    name: str = Field(min_length=1, max_length=200)
+    role: str = Field(default="expert", pattern=r"^(expert|admin)$")
+    tenant_id: uuid.UUID | None = Field(default=None)
+
+
+def _expert_to_json(account: ExpertAccount) -> dict[str, object]:
+    return {
+        "id": str(account.id),
+        "email": account.email,
+        "name": account.name,
+        "role": account.role,
+        "tenant_id": (str(account.tenant_id) if account.tenant_id else None),
+        "enabled": account.enabled,
+        "last_login_at": (
+            account.last_login_at.isoformat() if account.last_login_at else None
+        ),
+        "created_at": account.created_at.isoformat(),
+    }
+
+
+@router.get(
+    "/experts",
+    summary="List expert accounts",
+    dependencies=[Depends(require_admin)],
+)
+async def list_experts() -> dict[str, object]:
+    from sqlalchemy import select
+
+    async with session_scope() as session:
+        rows = list(
+            (
+                await session.execute(
+                    select(ExpertAccount).order_by(ExpertAccount.created_at.desc())
+                )
+            )
+            .scalars()
+            .all()
+        )
+        return {"items": [_expert_to_json(a) for a in rows], "count": len(rows)}
+
+
+@router.post(
+    "/experts",
+    summary="Create expert account",
+    dependencies=[Depends(require_admin)],
+)
+async def create_expert(body: ExpertCreateRequest) -> dict[str, object]:
+    async with session_scope() as session:
+        try:
+            account = await auth_service.create_account(
+                session,
+                email=body.email,
+                password=body.password,
+                name=body.name,
+                role=body.role,
+                tenant_id=body.tenant_id,
+            )
+        except auth_service.AuthError as exc:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+        return _expert_to_json(account)
+
+
+@router.post(
+    "/experts/{expert_id}/disable",
+    summary="Disable expert account (login blocked + active sessions revoked)",
+    dependencies=[Depends(require_admin)],
+)
+async def disable_expert(expert_id: uuid.UUID) -> dict[str, object]:
+    from sqlalchemy import delete, select
+
+    async with session_scope() as session:
+        account = (
+            await session.execute(select(ExpertAccount).where(ExpertAccount.id == expert_id))
+        ).scalar_one_or_none()
+        if account is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"expert {expert_id} not found",
+            )
+        account.enabled = False
+        # 同步 revoke 所有 active sessions
+        await session.execute(delete(ExpertSession).where(ExpertSession.expert_id == expert_id))
+        await session.flush()
+        return _expert_to_json(account)
+
+
+@router.post(
+    "/experts/{expert_id}/enable",
+    summary="Re-enable expert account",
+    dependencies=[Depends(require_admin)],
+)
+async def enable_expert(expert_id: uuid.UUID) -> dict[str, object]:
+    from sqlalchemy import select
+
+    async with session_scope() as session:
+        account = (
+            await session.execute(select(ExpertAccount).where(ExpertAccount.id == expert_id))
+        ).scalar_one_or_none()
+        if account is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"expert {expert_id} not found",
+            )
+        account.enabled = True
+        await session.flush()
+        return _expert_to_json(account)

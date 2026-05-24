@@ -3,6 +3,7 @@ import { DraftsInbox } from "./pages/DraftsInbox";
 import { KCInbox } from "./pages/KCInbox";
 import { TestSetInbox } from "./pages/TestSetInbox";
 import { AuditBrowser } from "./pages/AuditBrowser";
+import { AdminAccounts } from "./pages/AdminAccounts";
 import { Login } from "./pages/Login";
 import { fetchMe, logout as apiLogout } from "./api/auth";
 import { ApiError } from "./api/expert";
@@ -15,7 +16,7 @@ import {
 import { Button } from "./components/Button";
 import { cn } from "./lib/cn";
 
-type Tab = "drafts" | "kc" | "testset" | "audit";
+type Tab = "drafts" | "kc" | "testset" | "audit" | "admin";
 
 type AuthState =
   | { kind: "loading" }
@@ -133,12 +134,18 @@ function AuthenticatedApp({ expert, tab, setTab, onLogout }: AuthedProps) {
         <TabButton current={tab} value="audit" onClick={setTab}>
           Audit
         </TabButton>
+        {expert.role === "admin" && (
+          <TabButton current={tab} value="admin" onClick={setTab}>
+            Admin
+          </TabButton>
+        )}
       </nav>
 
       {tab === "drafts" && <DraftsInbox expertId={expert.email} />}
       {tab === "kc" && <KCInbox expertId={expert.email} />}
       {tab === "testset" && <TestSetInbox expertId={expert.email} />}
       {tab === "audit" && <AuditBrowser />}
+      {tab === "admin" && expert.role === "admin" && <AdminAccounts />}
     </div>
   );
 }

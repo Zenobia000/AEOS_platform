@@ -257,6 +257,37 @@ function ConversationDetailView({
               <div className="whitespace-pre-wrap text-slate-800">
                 {m.content}
               </div>
+              {m.tool_invocations.length > 0 && (
+                <ul
+                  className="mt-2 space-y-0.5 border-t border-slate-200 pt-1.5 text-xs"
+                  data-testid={`tool-invocations-${m.id}`}
+                >
+                  {m.tool_invocations.map((t, idx) => (
+                    <li key={idx} className="text-slate-600">
+                      <span className={t.ok ? "text-green-700" : "text-red-700"}>
+                        🔧 {t.name}
+                      </span>
+                      {t.kc_refs && t.kc_refs.length > 0 && (
+                        <span className="ml-1.5">
+                          引用 {t.kc_refs.length} 張 KC:{" "}
+                          {t.kc_refs.map((id, i) => (
+                            <span
+                              key={id}
+                              className="ml-0.5 rounded bg-brand-50 px-1 font-mono text-[10px] text-brand-700"
+                            >
+                              {id.slice(0, 8)}
+                              {i < t.kc_refs!.length - 1 ? "," : ""}
+                            </span>
+                          ))}
+                        </span>
+                      )}
+                      {t.error && (
+                        <span className="ml-1.5 text-red-600">— {t.error}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </li>
           ))}
         </ul>

@@ -125,7 +125,8 @@ async def conversation_detail(
         msg_rows = (
             await session.execute(
                 text(
-                    "SELECT id, seq, role, content, token_count, created_at "
+                    "SELECT id, seq, role, content, token_count, "
+                    "       tool_invocations, created_at "
                     "FROM message WHERE conversation_id = :cid "
                     "ORDER BY seq ASC"
                 ),
@@ -139,7 +140,8 @@ async def conversation_detail(
                 "role": r[2],
                 "content": r[3],
                 "token_count": r[4],
-                "created_at": r[5].isoformat() if r[5] else None,
+                "tool_invocations": r[5] or [],
+                "created_at": r[6].isoformat() if r[6] else None,
             }
             for r in msg_rows
         ]

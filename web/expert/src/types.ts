@@ -145,12 +145,21 @@ export interface ConversationListResponse {
   count: number;
 }
 
+export interface ToolInvocationRecord {
+  name: string;
+  input: Record<string, unknown>;
+  ok: boolean;
+  error?: string;
+  kc_refs?: string[];
+}
+
 export interface ConversationMessage {
   id: string;
   seq: number;
   role: string;
   content: string;
   token_count: number | null;
+  tool_invocations: ToolInvocationRecord[];
   created_at: string | null;
 }
 

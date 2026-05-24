@@ -69,6 +69,12 @@ outbound_failed_total = Counter(
     labelnames=("channel",),
 )
 
+pii_redactions_total = Counter(
+    "aeos_pii_redactions_total",
+    "PII redactions at webhook ingress, by kind (email/tw_mobile/etc)",
+    labelnames=("tenant_id", "kind"),
+)
+
 aeos_build_info = Gauge(
     "aeos_build_info",
     "AEOS build info — value 1 with labels",

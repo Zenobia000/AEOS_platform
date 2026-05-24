@@ -53,7 +53,7 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | MRR | $0 | ~$2,300/月 (5 家 Pilot) | [COST-MODEL §3.1](4-exploration/COST-MODEL-2026-05.md) |
 | AI auto-reply 採用率 | n/a | >= 70% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
 | Test set 通過率 | n/a | >= 85% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
-| 程式碼行數 | 22,500+ (app 8180 + tests 8900 + alembic 2020 + skills 236 + web/expert/src 3170) | — | `dev` |
+| 程式碼行數 | 24,000+ (app 8515 + tests 9410 + alembic 2020 + skills 236 + web/expert/src 3770) | — | `dev` |
 | DB 表完成數 | 24 / 25 (96%) | 25 | [db-schema.md](2-contracts/db-schema.md) |
 | Governance Layer (Audit/Policy/Quota) | 3 / 3 ✅ | 3 | engineering-charter §1 |
 | LINE 端到端鏈路 (DB 層) | inbound + draft + outbound 全跑通 ✅ | ✓ | AC-003 |
@@ -69,6 +69,9 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | Audit Browse UI (S5) | 3 endpoint + conversation 完整時間軸 + Expert Console tab ✅ | ✓ | AC-005 / `feat/s5-audit-browse-ui` |
 | LLM Judge (Haiku 語意比對) | Judge Protocol + KeywordJudge / LLMJudge + 容錯 JSON parse + keyword fallback ✅ | ✓ | AC-001 升級 / `feat/s3-llm-judge` |
 | Slack 通知 | best-effort webhook：kill switch P0 + outbound permanent P1 + emoji 對映 ✅ | ✓ | RUNBOOK-001 / `feat/s5-slack-notifications` |
+| Admin 帳號管理 UI | 4 endpoint (list/create/disable/enable) + Expert Console 第 5 個 tab (admin role only) ✅ | ✓ | `feat/s5-admin-accounts-ui` |
+| Message KC refs | DraftProcessor 寫 tool_invocations 含 kc_refs + Audit UI 渲染「引用 N 張 KC」 ✅ | ✓ | AC-005 §2 完整 / `feat/s5-message-kc-refs` |
+| PII Masking | webhook ingress 6 種 pattern (email/手機/市話/身分證/credit_card+Luhn/bank) + Prometheus counter + audit ✅ | ✓ | SEC-001 §6.1 #11 / `feat/sec-pii-masking` |
 
 ## Engineering Health
 
@@ -98,13 +101,13 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 
 | 指標 | 現值 | 目標 | 來源 |
 |---|---|---|---|
-| Test coverage（dev） | 93%+ (381 tests, `dev`) | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
-| Test 數量 | 381 Python + 23 vitest = **404** | — | tests/ + web/expert/src |
+| Test coverage（dev） | 93%+ (408 tests, `dev`) | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
+| Test 數量 | 408 Python + 29 vitest = **437** | — | tests/ + web/expert/src |
 | CI pass rate（過去 7 天） | n/a（首次 push 後可量） | ≥ 95% | TEST-001 |
 | Flaky tests | 0 | ≤ 3 | TEST-001 §7 |
 | Open critical CVE | 0（Dependabot 首掃待跑） | 0 | [SEC-001 §6.1](2-contracts/SEC-001-threat-model.md) |
 | Open S1/S2 support tickets | 0 | 0 active | [PLAYBOOK-001 §3.2](3-process/PLAYBOOK-001-cs-escalation.md) |
-| SEC-001 §6.1 Go/No-Go checklist | 4 / 13 ✅ (+ auth + audit + canary 落地；剩 PII mask / pentest / DPA / oncall drill) | 13 / 13 ✅ | SEC-001 §6.1 |
+| SEC-001 §6.1 Go/No-Go checklist | 5 / 13 ✅ (+ PII masking at webhook ingress)；剩 pentest / DPA / oncall drill / container scan / TLS prod | 13 / 13 ✅ | SEC-001 §6.1 |
 | Skill production Quality Gate | DB CHECK 落地 (pass_rate ≥ 0.80 + approved) | — | MC-005 / migration `89c67361deb1` |
 
 ### 成本
@@ -158,9 +161,12 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 30. ~~**Audit browse API + UI tab**~~ ✅ (`feat/s5-audit-browse-ui`)
 31. ~~**LLM judge 升級 Haiku**~~ ✅ (`feat/s3-llm-judge`) — Judge Protocol + KeywordJudge / LLMJudge 可注入 + 容錯 JSON parse + keyword fallback
 32. ~~**Slack webhook 通知**~~ ✅ (`feat/s5-slack-notifications`) — kill switch P0 + outbound permanent fail P1，best-effort（未設 webhook silently skip）
-33. **下一波 (pilot-independent)**：Admin 帳號管理 UI（目前 CLI 建帳號）/ Message 結構保留 KC ref（Audit UI 顯示引用了哪幾張 KC）/ SEC-001 §6.1 PII masking
+33. ~~**Admin 帳號管理 UI**~~ ✅ (`feat/s5-admin-accounts-ui`) — list/create/disable/enable，admin role 才看得到 tab
+34. ~~**Message tool_invocations + KC refs**~~ ✅ (`feat/s5-message-kc-refs`) — AC-005 §2 完整；Audit UI 顯示「引用 N 張 KC」
+35. ~~**SEC-001 §6.1 #11 PII masking**~~ ✅ (`feat/sec-pii-masking`) — webhook ingress 6 patterns + Luhn 驗證 + audit + Prometheus counter
+36. **Phase 1 code 階段完成 — 純技術上進無可進，剩全部外部 blocker**：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 客戶簽約
 
-詳見 [`docs/report/S5-PROGRESS-2026-05-24-llm-judge-slack.md`](report/S5-PROGRESS-2026-05-24-llm-judge-slack.md)、[`docs/report/S5-PROGRESS-2026-05-23-complete.md`](report/S5-PROGRESS-2026-05-23-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-expert-review.md`](report/S2-PROGRESS-2026-05-22-expert-review.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4-complete.md`](report/S2-PROGRESS-2026-05-22-tier4-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4.md`](report/S2-PROGRESS-2026-05-22-tier4.md)、[`docs/report/S2-PROGRESS-2026-05-22.md`](report/S2-PROGRESS-2026-05-22.md)、[`docs/report/S1-PROGRESS-2026-05-17.md`](report/S1-PROGRESS-2026-05-17.md) 與 [`docs/report/S1-BLOCKERS-2026-05-17.md`](report/S1-BLOCKERS-2026-05-17.md)。
+詳見 [`docs/report/S5-PROGRESS-2026-05-24-p1-complete.md`](report/S5-PROGRESS-2026-05-24-p1-complete.md)（P1 全收尾）、[`docs/report/STATUS-REPORT-2026-05-24-phase1-code-complete.html`](report/STATUS-REPORT-2026-05-24-phase1-code-complete.html)（HTML）、[`docs/report/S5-PROGRESS-2026-05-24-llm-judge-slack.md`](report/S5-PROGRESS-2026-05-24-llm-judge-slack.md)、[`docs/report/S5-PROGRESS-2026-05-23-complete.md`](report/S5-PROGRESS-2026-05-23-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-expert-review.md`](report/S2-PROGRESS-2026-05-22-expert-review.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4-complete.md`](report/S2-PROGRESS-2026-05-22-tier4-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4.md`](report/S2-PROGRESS-2026-05-22-tier4.md)、[`docs/report/S2-PROGRESS-2026-05-22.md`](report/S2-PROGRESS-2026-05-22.md)、[`docs/report/S1-PROGRESS-2026-05-17.md`](report/S1-PROGRESS-2026-05-17.md) 與 [`docs/report/S1-BLOCKERS-2026-05-17.md`](report/S1-BLOCKERS-2026-05-17.md)。
 
 ## 必讀文件（依角色）
 
@@ -202,4 +208,4 @@ UF/SF 流程、NFR、UX wireframe、threat model、test plan、observability spe
 
 ---
 
-*上次更新：2026-05-24 | 更新者：CTO（**S2-S5 全任務塊 + LLM judge 升級 + Slack 通知 ✅**；381 Python + 23 vitest = **404 tests** / 93%+ coverage / 24/25 DB 表 / 22 支 branch 合入 `dev`；AC-001/003/004/005 全綠；剩外部 blocker：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 簽約；P1 待做：Admin 帳號 UI + KC ref in message + PII masking）*
+*上次更新：2026-05-24 | 更新者：CTO（**S2-S5 全任務塊 + 全部 P1 完成 ✅** — Admin UI / KC refs / PII masking 全清；**408 Python + 29 vitest = 437 tests** / 93%+ coverage / 24/25 DB 表 / **28 支 branch 合入 `dev`** / SEC-001 §6.1 5/13；Phase 1 code 階段進無可進，剩全部外部 blocker：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 簽約）*

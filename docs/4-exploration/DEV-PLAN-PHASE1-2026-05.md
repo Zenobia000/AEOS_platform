@@ -98,7 +98,8 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 - 🚫 Skill loader：API 讀 git，產 SkillVersion 快照，atomic symlink swap
 - 🚫 Test set co-author UI：Expert 輸入 50 題 + expected outcome
 - 🚫 Test runner (Worker)：批次跑 50 題、pass rate 計算
-- 🚫 LLM judge：Haiku 自動判分；Expert 可 override
+- ✅ LLM judge：Haiku 4.5 語意比對；Judge Protocol 可換 (KeywordJudge / LLMJudge)；
+  Expert override 透過 test_run_case 編輯（API 已存在；UI 待 P2）(`feat/s3-llm-judge`)
 - 🟡 Quality Gate CI：Skill commit 觸發 test，pass rate ≥ 0.80 才可 promote — **DB CHECK 守門已落地（`ck_skill_version_production_quality_gate`）**；CI test 跑流程仍待
 
 **Exit**：AC-002 三條全綠 + 第一個 Skill v1.0.0 過 quality gate。
@@ -142,7 +143,9 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 - ✅ Audit 瀏覽 UI：3 endpoint (events / conversations / detail timeline) +
   Expert Console "Audit" tab，含 conversation 完整時間軸 (messages +
   outbounds + audit events) (`feat/s5-audit-browse-ui`)
-- 🚫 Slack 通知（kill switch / P0 incident）— 待 SLACK_WEBHOOK_URL
+- ✅ Slack 通知：best-effort webhook — kill switch disable P0 / enable info /
+  outbound permanent fail P1；未設 `SLACK_WEBHOOK_URL` silently skip
+  (`feat/s5-slack-notifications`)
 - 🚫 Daily digest email — 待 Slack/SES 整合
 - 🚫 D3 cost dashboard（OBS-001 W6 交付）— 待 Hetzner 部署實際抓到資料
 
@@ -247,3 +250,4 @@ S4 開始可同時推：
 | 2026-05-22 | **Worker polling + KB ingest + Draft Mode 端到端**：(1) Worker polling loop `feat/s2-worker-loop`；(2) KB ingest pipeline (parser + embedding + KC drafts) `feat/s2-kb-ingest`；(3) Expert review 後端 API (4 endpoint + service + migration 6 態 outbound status) `feat/s2-expert-review-api`；(4) Expert Console UI (Vite + React + Tailwind + 7 vitest) `feat/s2-expert-review-ui`；(5) CI 拆 backend + web-expert + path filter + ci-gate `ci/web-expert`；(6) Draft Mode E2E smoke (inbound→approve→Push + reject 路徑) `test/draft-mode-e2e`。238 tests / 93.30% coverage。§4.4 Expert review UI / Worker polling 標 ✅。剩外部 blocker：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 簽約 | CTO |
 | 2026-05-23 | **S3 完整 + S5 第一波 + dev 整合**：10 支新 branch：KC review (feat/s2-kc-review)、OBS IaC (chore/obs-iac-prep)、Prometheus instrumentation (feat/s5-prometheus-instrumentation)、kill switch (feat/s5-kill-switch)、idle timeout (feat/s4-idle-timeout)、TestSet schema (feat/s3-testset-schema)、TestSet UI (feat/s3-testset-ui)、seed demo (chore/seed-demo-script)、TestRunPoll cycle (feat/s3-testset-auto-runner)、Worker entrypoint (chore/worker-entrypoint)。建 `dev` 分支整合 14 支 branch，`main` 暫不動。**312 Python + 18 vitest = 330 tests / 93.07% coverage / 22 / 25 DB 表**。S3 完整鏈路通；S5 §kill switch 落地；Worker `python -m app.worker` 可獨立跑。剩 S5 三件：MFA / Canary / Audit UI | CTO |
 | 2026-05-23 | **S5 完整收尾**：(1) auth backend — expert_account + expert_session + bcrypt + bearer token + `AEOS_AUTH_REQUIRED` gate (`feat/s5-auth-backend`)；(2) auth frontend — Login.tsx + App auth state machine + Bearer attach (`feat/s5-auth-frontend`)；(3) canary routing — per-tenant 0-100% + 確定性 bucket + admin API (`feat/s5-canary-routing`)；(4) audit browse — 3 endpoint + Expert Console 4th tab，conversation 完整時間軸 (`feat/s5-audit-browse-ui`)。**360 Python + 23 vitest = 383 tests / 93%+ coverage / 24 / 25 DB 表**。Expert Console 完整 4 tab（drafts/kc/testset/audit）+ Login + logout。AC-004/005 ✅。SEC-001 §6.1 從 2 → 4/13。剩 LLM judge 升級 + Slack webhook + admin 帳號管理 UI（P1，非 hard gate）| CTO |
+| 2026-05-24 | **P1 工作收 2 件**：(1) LLM judge 升級 — `Judge` Protocol + `KeywordJudge` / `LLMJudge` (Haiku 4.5) 可注入到 TestSetRunner；LLMJudge 用 structured JSON prompt + 容錯 `{}` 抓取 + score clamp [0,1] + `keyword_fallback_on_error=True` (LLM 抖動不會炸 test run) (`feat/s3-llm-judge`)；(2) Slack 通知 — `app/services/notifications.py` best-effort webhook，kill_switch disable→P0 / enable→info / outbound permanent fail→P1；未設 `SLACK_WEBHOOK_URL` silently skip (`feat/s5-slack-notifications`)。**381 Python + 23 vitest = 404 tests / 93%+ coverage / 24/25 DB 表 / 22 支 branch 合入 dev**。剩 P1：Admin 帳號 UI / Message metadata 加 KC ref / PII masking | CTO |

@@ -53,7 +53,7 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | MRR | $0 | ~$2,300/月 (5 家 Pilot) | [COST-MODEL §3.1](4-exploration/COST-MODEL-2026-05.md) |
 | AI auto-reply 採用率 | n/a | >= 70% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
 | Test set 通過率 | n/a | >= 85% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
-| 程式碼行數 | 21,800+ (app 7900 + tests 8500 + alembic 2020 + skills 236 + web/expert/src 3170) | — | `dev` |
+| 程式碼行數 | 22,500+ (app 8180 + tests 8900 + alembic 2020 + skills 236 + web/expert/src 3170) | — | `dev` |
 | DB 表完成數 | 24 / 25 (96%) | 25 | [db-schema.md](2-contracts/db-schema.md) |
 | Governance Layer (Audit/Policy/Quota) | 3 / 3 ✅ | 3 | engineering-charter §1 |
 | LINE 端到端鏈路 (DB 層) | inbound + draft + outbound 全跑通 ✅ | ✓ | AC-003 |
@@ -67,6 +67,8 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | 認證鏈路 (S5) | expert_account + bearer token + Login UI + AEOS_AUTH_REQUIRED gate ✅ | ✓ | `feat/s5-auth-*` |
 | Canary 路由 (S5) | per-tenant 0-100% auto-reply 比例 + admin API + 確定性 bucket ✅ | ✓ | PRD-001 §5.5 / `feat/s5-canary-routing` |
 | Audit Browse UI (S5) | 3 endpoint + conversation 完整時間軸 + Expert Console tab ✅ | ✓ | AC-005 / `feat/s5-audit-browse-ui` |
+| LLM Judge (Haiku 語意比對) | Judge Protocol + KeywordJudge / LLMJudge + 容錯 JSON parse + keyword fallback ✅ | ✓ | AC-001 升級 / `feat/s3-llm-judge` |
+| Slack 通知 | best-effort webhook：kill switch P0 + outbound permanent P1 + emoji 對映 ✅ | ✓ | RUNBOOK-001 / `feat/s5-slack-notifications` |
 
 ## Engineering Health
 
@@ -96,8 +98,8 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 
 | 指標 | 現值 | 目標 | 來源 |
 |---|---|---|---|
-| Test coverage（dev） | 93%+ (360 tests, `dev`) | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
-| Test 數量 | 360 Python + 23 vitest = **383** | — | tests/ + web/expert/src |
+| Test coverage（dev） | 93%+ (381 tests, `dev`) | ≥ 80% | [TEST-001 §4](2-contracts/TEST-001-test-plan.md) |
+| Test 數量 | 381 Python + 23 vitest = **404** | — | tests/ + web/expert/src |
 | CI pass rate（過去 7 天） | n/a（首次 push 後可量） | ≥ 95% | TEST-001 |
 | Flaky tests | 0 | ≤ 3 | TEST-001 §7 |
 | Open critical CVE | 0（Dependabot 首掃待跑） | 0 | [SEC-001 §6.1](2-contracts/SEC-001-threat-model.md) |
@@ -154,9 +156,11 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 28. ~~**Auth frontend (Login.tsx + Bearer attach)**~~ ✅ (`feat/s5-auth-frontend`)
 29. ~~**Canary 路由 (per-tenant 0-100%)**~~ ✅ (`feat/s5-canary-routing`)
 30. ~~**Audit browse API + UI tab**~~ ✅ (`feat/s5-audit-browse-ui`)
-31. **下一波 (pilot-independent)**：LLM judge 升級 Haiku / Slack webhook (kill switch + P0) / admin 帳號管理 UI
+31. ~~**LLM judge 升級 Haiku**~~ ✅ (`feat/s3-llm-judge`) — Judge Protocol + KeywordJudge / LLMJudge 可注入 + 容錯 JSON parse + keyword fallback
+32. ~~**Slack webhook 通知**~~ ✅ (`feat/s5-slack-notifications`) — kill switch P0 + outbound permanent fail P1，best-effort（未設 webhook silently skip）
+33. **下一波 (pilot-independent)**：Admin 帳號管理 UI（目前 CLI 建帳號）/ Message 結構保留 KC ref（Audit UI 顯示引用了哪幾張 KC）/ SEC-001 §6.1 PII masking
 
-詳見 [`docs/report/S5-PROGRESS-2026-05-23-complete.md`](report/S5-PROGRESS-2026-05-23-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-expert-review.md`](report/S2-PROGRESS-2026-05-22-expert-review.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4-complete.md`](report/S2-PROGRESS-2026-05-22-tier4-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4.md`](report/S2-PROGRESS-2026-05-22-tier4.md)、[`docs/report/S2-PROGRESS-2026-05-22.md`](report/S2-PROGRESS-2026-05-22.md)、[`docs/report/S1-PROGRESS-2026-05-17.md`](report/S1-PROGRESS-2026-05-17.md) 與 [`docs/report/S1-BLOCKERS-2026-05-17.md`](report/S1-BLOCKERS-2026-05-17.md)。
+詳見 [`docs/report/S5-PROGRESS-2026-05-24-llm-judge-slack.md`](report/S5-PROGRESS-2026-05-24-llm-judge-slack.md)、[`docs/report/S5-PROGRESS-2026-05-23-complete.md`](report/S5-PROGRESS-2026-05-23-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-expert-review.md`](report/S2-PROGRESS-2026-05-22-expert-review.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4-complete.md`](report/S2-PROGRESS-2026-05-22-tier4-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4.md`](report/S2-PROGRESS-2026-05-22-tier4.md)、[`docs/report/S2-PROGRESS-2026-05-22.md`](report/S2-PROGRESS-2026-05-22.md)、[`docs/report/S1-PROGRESS-2026-05-17.md`](report/S1-PROGRESS-2026-05-17.md) 與 [`docs/report/S1-BLOCKERS-2026-05-17.md`](report/S1-BLOCKERS-2026-05-17.md)。
 
 ## 必讀文件（依角色）
 
@@ -198,4 +202,4 @@ UF/SF 流程、NFR、UX wireframe、threat model、test plan、observability spe
 
 ---
 
-*上次更新：2026-05-23 | 更新者：CTO（**S2 / S3 / S4 / S5 全部任務塊 ✅** — auth + canary + audit + Expert Console 4 tab 全通；360 Python + 23 vitest = **383 tests** / 93% coverage / **24/25 DB 表** / 19 支 branch 合入 `dev`；AC-001/003/004/005 全綠；剩外部 blocker：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 簽約）*
+*上次更新：2026-05-24 | 更新者：CTO（**S2-S5 全任務塊 + LLM judge 升級 + Slack 通知 ✅**；381 Python + 23 vitest = **404 tests** / 93%+ coverage / 24/25 DB 表 / 22 支 branch 合入 `dev`；AC-001/003/004/005 全綠；剩外部 blocker：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 簽約；P1 待做：Admin 帳號 UI + KC ref in message + PII masking）*

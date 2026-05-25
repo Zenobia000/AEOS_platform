@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEOS Expert Console — 手動 UI 測試 checklist</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --border: #475569;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+      "Microsoft JhengHei", Roboto, sans-serif;
+    line-height: 1.6;
+    padding: 24px;
+  }
+  .container { max-width: 1080px; margin: 0 auto; }
+
+  header.top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 16px; border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+  }
+  header.top h1 { margin: 0; font-size: 26px; }
+  header.top .sub { color: var(--muted); font-size: 14px; }
+
+  .summary {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 14px 18px; margin-bottom: 24px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; flex-wrap: wrap;
+  }
+  .summary .stat { font-size: 14px; }
+  .summary .stat strong { color: var(--green); font-size: 18px; }
+  .progress-bar {
+    flex: 1; min-width: 200px;
+    background: var(--panel-2); border-radius: 4px;
+    height: 10px; overflow: hidden;
+  }
+  .progress-bar .fill {
+    height: 100%; background: linear-gradient(90deg, #10b981, #06b6d4);
+    transition: width 0.3s;
+  }
+  .summary button {
+    background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 6px 12px; font-size: 13px; cursor: pointer;
+  }
+  .summary button:hover { background: var(--border); }
+
+  h2 {
+    font-size: 18px; margin: 28px 0 12px; padding-left: 12px;
+    border-left: 4px solid var(--blue);
+  }
+  h2 .tab-count { color: var(--muted); font-size: 13px; margin-left: 8px; }
+
+  .group {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px 18px; margin-bottom: 12px;
+  }
+  .group .prereq {
+    background: var(--panel-2); border-radius: 4px;
+    padding: 8px 12px; margin-bottom: 12px; font-size: 13px;
+    color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    white-space: pre-wrap;
+  }
+  .item {
+    display: flex; gap: 12px; align-items: flex-start;
+    padding: 8px 0; border-bottom: 1px dashed var(--border);
+  }
+  .item:last-child { border-bottom: none; }
+  .item input[type="checkbox"] {
+    margin-top: 4px; width: 18px; height: 18px;
+    accent-color: var(--green); cursor: pointer; flex-shrink: 0;
+  }
+  .item .body { flex: 1; font-size: 14px; }
+  .item .step { color: var(--text); }
+  .item .expect { color: var(--muted); font-size: 12.5px; margin-top: 3px; }
+  .item .expect b { color: #fbbf24; font-weight: 500; }
+  .item.done .step { color: var(--muted); text-decoration: line-through; }
+  .item .id {
+    color: var(--muted); font-family: ui-monospace, monospace;
+    font-size: 12px; margin-right: 6px;
+  }
+
+  .badge {
+    display: inline-block; padding: 1px 8px; border-radius: 3px;
+    font-size: 11px; font-weight: 600; margin-left: 6px;
+    vertical-align: middle;
+  }
+  .badge.p0 { background: #5b1717; color: #fca5a5; }
+  .badge.p1 { background: #78350f; color: #fbbf24; }
+  .badge.p2 { background: #1e3a8a; color: #93c5fd; }
+  .badge.optional { background: #1e293b; color: var(--muted);
+                    border: 1px dashed var(--border); }
+
+  code {
+    background: var(--panel-2); padding: 1px 4px; border-radius: 3px;
+    font-size: 12px; color: #fbbf24;
+  }
+
+  .footer {
+    color: var(--muted); font-size: 12px; margin-top: 32px;
+    text-align: center; padding-top: 16px; border-top: 1px solid var(--border);
+  }
+
+  details > summary { cursor: pointer; color: var(--muted); font-size: 13px; }
+  details[open] > summary { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="top">
+  <div>
+    <h1>AEOS Expert Console — 手動 UI 測試</h1>
+    <div class="sub">瀏覽器可操作的全部測項 · 進度自動存 localStorage</div>
+  </div>
+  <div class="sub">2026-05-25 · 405 tests passed · `dev` branch</div>
+</header>
+
+<div class="summary">
+  <div class="stat">
+    <strong id="done-count">0</strong> / <span id="total-count">0</span> 完成
+  </div>
+  <div class="progress-bar">
+    <div class="fill" id="progress-fill" style="width: 0%"></div>
+  </div>
+  <button onclick="resetAll()">↻ 重置進度</button>
+</div>
+
+<!-- ===================== 前置 ===================== -->
+<h2>0️⃣ 前置（每次測試 session 開頭）</h2>
+<div class="group">
+  <div class="prereq"># Terminal 1
+docker compose up -d
+uv run alembic upgrade head
+uv run python -m scripts.seed_demo       # 記下 demo tenant_id
+
+# Terminal 2 — backend
+uv run uvicorn app.main:app --reload --port 8000
+
+# Terminal 3 — frontend
+cd web/expert && npm run dev             # http://localhost:5173
+
+# Terminal 4 — worker (可選)
+uv run python -m app.worker</div>
+
+  <div class="item" data-id="0.1">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">0.1</span>三個 service 都健康
+        <span class="badge p0">P0</span></div>
+      <div class="expect">curl localhost:8000/health → <b>{"status":"ok"}</b>；
+        localhost:5173 看到 Login 或 tabs；docker ps 兩個 container healthy</div>
+    </div>
+  </div>
+  <div class="item" data-id="0.2">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">0.2</span>seed 完看到 tenant_id 印出
+        <span class="badge p0">P0</span></div>
+      <div class="expect">複製這個 UUID，後面要貼到 TestSet tab</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 1. 認證 ===================== -->
+<h2>1️⃣ 認證流程 <span class="tab-count">(Login / Logout)</span></h2>
+<div class="group">
+  <div class="prereq"># 啟用強制 auth 模式
+AEOS_AUTH_REQUIRED=true uv run uvicorn app.main:app --reload --port 8000
+
+# 用 CLI bootstrap 一個 admin 帳號（首次）
+uv run python -c "
+import asyncio
+from app.db.session import session_scope
+from app.services import auth
+async def m():
+    async with session_scope() as s:
+        await auth.create_account(s, email='admin@aeos', password='dev1234', name='Admin', role='admin')
+asyncio.run(m())
+"</div>
+
+  <div class="item" data-id="1.1">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">1.1</span>無 token 開 UI
+        <span class="badge p0">P0</span></div>
+      <div class="expect">看到 <b>Login 表單</b>（Email + Password + 登入按鈕）</div>
+    </div>
+  </div>
+  <div class="item" data-id="1.2">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">1.2</span>錯密碼登入
+        <span class="badge p0">P0</span></div>
+      <div class="expect">紅色 alert <b>"invalid credentials"</b>；停在 Login 頁</div>
+    </div>
+  </div>
+  <div class="item" data-id="1.3">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">1.3</span>對的 admin 帳號登入
+        <span class="badge p0">P0</span></div>
+      <div class="expect">切到 tabs；右上顯示「登入為 <b>Admin (admin)</b>」+ 登出按鈕</div>
+    </div>
+  </div>
+  <div class="item" data-id="1.4">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">1.4</span>點右上「登出」
+        <span class="badge p0">P0</span></div>
+      <div class="expect">切回 Login；瀏覽器 console <code>localStorage.getItem('aeos.expert_token')</code> 回 <b>null</b></div>
+    </div>
+  </div>
+  <div class="item" data-id="1.5">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">1.5</span>不設 AEOS_AUTH_REQUIRED 重啟 backend
+        <span class="badge p1">P1</span></div>
+      <div class="expect">不顯示 Login 直接進 tabs（<b>anonymous bypass</b>，dev 模式）</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 2. Drafts ===================== -->
+<h2>2️⃣ 訊息草稿 tab <span class="tab-count">(Draft Mode)</span></h2>
+<div class="group">
+  <div class="prereq"># 每次測完用 seed 補回 draft（冪等）
+uv run python -m scripts.seed_demo</div>
+
+  <div class="item" data-id="2.1">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">2.1</span>切到「訊息草稿」tab
+        <span class="badge p0">P0</span></div>
+      <div class="expect">看到 1 筆卡片：line / U-demo-end-user + 退貨 draft 文字 + 3 個按鈕（同意送出 / 編輯後送出 / 拒絕並轉接）</div>
+    </div>
+  </div>
+  <div class="item" data-id="2.2">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">2.2</span>點「✓ 同意送出」
+        <span class="badge p0">P0</span></div>
+      <div class="expect">卡片消失；DB <code>SELECT status FROM outbound_message</code> 應為 <b>pending</b></div>
+    </div>
+  </div>
+  <div class="item" data-id="2.3">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">2.3</span>重 seed → 點「✎ 編輯後送出」
+        <span class="badge p0">P0</span></div>
+      <div class="expect">出現 textarea；改字後送出 → <b>message.content 真的變</b>（psql 查）</div>
+    </div>
+  </div>
+  <div class="item" data-id="2.4">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">2.4</span>重 seed → 點「✕ 拒絕並轉接」
+        <span class="badge p0">P0</span></div>
+      <div class="expect">填 reason + handoff message → <b>conversation_handoff 表新增一筆</b>（reason='user_request' 或 policy_deny）</div>
+    </div>
+  </div>
+  <div class="item" data-id="2.5">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">2.5</span>沒 draft 時看畫面
+        <span class="badge p1">P1</span></div>
+      <div class="expect">空狀態提示「目前沒有待審的 draft」</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 3. KC ===================== -->
+<h2>3️⃣ KC 知識卡 tab</h2>
+<div class="group">
+  <div class="item" data-id="3.1">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">3.1</span>切到「KC 知識卡」tab
+        <span class="badge p0">P0</span></div>
+      <div class="expect">3 張 draft：<b>退貨政策 (policy)</b> / <b>保固期限 (faq)</b> / <b>退款流程 (procedure)</b>，每張有 3 個按鈕</div>
+    </div>
+  </div>
+  <div class="item" data-id="3.2">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">3.2</span>對保固期限點「✎ 編輯後收錄」
+        <span class="badge p0">P0</span></div>
+      <div class="expect">出現 title / body / tags / card_type 4 個欄位；改 card_type select 從 <b>faq → policy</b>，送出後消失</div>
+    </div>
+  </div>
+  <div class="item" data-id="3.3">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">3.3</span>對另一張點「✓ 同意收錄」
+        <span class="badge p0">P0</span></div>
+      <div class="expect">status <b>draft → approved</b> + <code>approved_by</code> 寫入（psql 驗證）</div>
+    </div>
+  </div>
+  <div class="item" data-id="3.4">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">3.4</span>對最後一張點「✕ 封存」
+        <span class="badge p1">P1</span></div>
+      <div class="expect">填封存原因；status <b>→ archived</b>；audit_log 有 <code>kc.archived</code> + payload.prev_status='draft'</div>
+    </div>
+  </div>
+  <div class="item" data-id="3.5">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">3.5</span>改 tags 從 [退貨, 政策] 加入「修訂」
+        <span class="badge p1">P1</span></div>
+      <div class="expect">DB tags array <b>= ['退貨','政策','修訂']</b></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 4. TestSet ===================== -->
+<h2>4️⃣ Test Set tab</h2>
+<div class="group">
+  <div class="prereq"># Tenant ID 由 seed 印出來；貼到左上欄位</div>
+
+  <div class="item" data-id="4.1">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">4.1</span>左上 Tenant ID 貼 seed 印出的 UUID
+        <span class="badge p0">P0</span></div>
+      <div class="expect">看到 <b>5 個 test case</b>：退貨期限 / 保固 / 退款入帳 / 退貨運費 / 保固證明</div>
+    </div>
+  </div>
+  <div class="item" data-id="4.2">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">4.2</span>新增 1 題
+        <span class="badge p0">P0</span></div>
+      <div class="expect">列表變 6 個；DB <code>test_case</code> 表 +1 row</div>
+    </div>
+  </div>
+  <div class="item" data-id="4.3">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">4.3</span>任意點停用
+        <span class="badge p1">P1</span></div>
+      <div class="expect">列表減 1（enabled=false 自動過濾）；DB row 還在但 enabled=false</div>
+    </div>
+  </div>
+  <div class="item" data-id="4.4">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">4.4</span>點「▶ 跑一次 test run」（無 ANTHROPIC_API_KEY）
+        <span class="badge p1">P1</span></div>
+      <div class="expect">顯示 pass rate <b>0%</b> 紅色；所有 case <code>status='error'</code>（fallback 觸發）+ 顯示 <code>[llm-judge failed → keyword fallback]</code></div>
+    </div>
+  </div>
+  <div class="item" data-id="4.5">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">4.5</span>設 ANTHROPIC_API_KEY 重啟，再跑一次
+        <span class="badge p1">P1</span></div>
+      <div class="expect">真實 pass rate；point 看 case 顯示 <b>judge_score</b> 與 <b>judge_reason</b> 有值</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 5. Audit ===================== -->
+<h2>5️⃣ Audit tab</h2>
+<div class="group">
+  <div class="item" data-id="5.1">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">5.1</span>切「Audit」tab，預設「對話列表」子 tab
+        <span class="badge p0">P0</span></div>
+      <div class="expect">看到 demo 對話列表（channel + 末次訊息時間 + msg count）</div>
+    </div>
+  </div>
+  <div class="item" data-id="5.2">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">5.2</span>點任一對話 row
+        <span class="badge p0">P0</span></div>
+      <div class="expect">進 detail 3 區：<b>訊息</b>（user/assistant 兩色背景）+ <b>Outbound 推送</b> + <b>Audit 事件</b></div>
+    </div>
+  </div>
+  <div class="item" data-id="5.3">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">5.3</span>「← 返回列表」按鈕
+        <span class="badge p1">P1</span></div>
+      <div class="expect">回到對話列表</div>
+    </div>
+  </div>
+  <div class="item" data-id="5.4">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">5.4</span>切「Audit 事件」子 tab
+        <span class="badge p0">P0</span></div>
+      <div class="expect">看到過去 24h 全 events：<code>expert.draft_approved</code> / <code>kc.*</code> / <code>kill_switch.*</code> / <code>pii.redacted_in_ingress</code> 等</div>
+    </div>
+  </div>
+  <div class="item" data-id="5.5">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">5.5</span>event_type filter 輸 <code>kc.archived</code> 按套用
+        <span class="badge p1">P1</span></div>
+      <div class="expect">只剩 archive 紀錄；別的 event 隱藏</div>
+    </div>
+  </div>
+  <div class="item" data-id="5.6">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">5.6</span>跑真實 LLM 對話後（需 ANTHROPIC_API_KEY），看 assistant message
+        <span class="badge p1">P1</span></div>
+      <div class="expect">訊息下方應顯示 <b>🔧 search_knowledge 引用 N 張 KC</b> + UUID chip（前 8 字）</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 6. Admin ===================== -->
+<h2>6️⃣ Admin tab <span class="tab-count">(admin role 才看得到)</span></h2>
+<div class="group">
+  <div class="item" data-id="6.1">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">6.1</span>admin 角色登入後檢視 tabs
+        <span class="badge p0">P0</span></div>
+      <div class="expect">第 5 個 tab「<b>Admin</b>」顯示</div>
+    </div>
+  </div>
+  <div class="item" data-id="6.2">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">6.2</span>點「+ 新增帳號」填密碼 &lt; 6 字
+        <span class="badge p0">P0</span></div>
+      <div class="expect">紅色 alert（Pydantic min_length 422）</div>
+    </div>
+  </div>
+  <div class="item" data-id="6.3">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">6.3</span>建合法的 expert 角色帳號
+        <span class="badge p0">P0</span></div>
+      <div class="expect">列表 +1；DB <code>expert_account</code> 表 +1 row（password_hash 開頭 <code>$2b$</code>）</div>
+    </div>
+  </div>
+  <div class="item" data-id="6.4">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">6.4</span>對重複 email 再建一次
+        <span class="badge p1">P1</span></div>
+      <div class="expect">409 alert「<b>already exists</b>」</div>
+    </div>
+  </div>
+  <div class="item" data-id="6.5">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">6.5</span>對既有帳號點「停用」
+        <span class="badge p0">P0</span></div>
+      <div class="expect">出現 disabled 紅 badge + DB <code>expert_session</code> 該帳號的 row <b>全消</b>（active session 強制 revoke）</div>
+    </div>
+  </div>
+  <div class="item" data-id="6.6">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">6.6</span>用被停用的帳號 / 密碼登入
+        <span class="badge p0">P0</span></div>
+      <div class="expect">401「invalid credentials」（不洩漏帳號存在；防 user enumeration）</div>
+    </div>
+  </div>
+  <div class="item" data-id="6.7">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">6.7</span>登出後改用 expert（非 admin）角色登入
+        <span class="badge p0">P0</span></div>
+      <div class="expect">Admin tab <b>不顯示</b>（前端條件 render）。若手動改 URL hash 也沒用（API 403）</div>
+    </div>
+  </div>
+  <div class="item" data-id="6.8">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">6.8</span>對停用帳號點「啟用」
+        <span class="badge p1">P1</span></div>
+      <div class="expect">disabled badge 消失；可正常登入</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 7. Swagger ===================== -->
+<h2>7️⃣ OpenAPI Swagger UI <span class="tab-count">(http://localhost:8000/docs)</span></h2>
+<div class="group">
+  <div class="item" data-id="7.1">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">7.1</span>開 <code>/docs</code>
+        <span class="badge p1">P1</span></div>
+      <div class="expect">看到 6 個 tag groups：<b>webhook / auth / expert / kc / admin / testset / audit / meta</b>；endpoint 總數 ~35</div>
+    </div>
+  </div>
+  <div class="item" data-id="7.2">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">7.2</span>展開 <code>POST /api/v1/admin/kill-switch/{tenant_id}/disable</code>
+        <span class="badge p1">P1</span></div>
+      <div class="expect">有 schema 說明 + Try it out 可貼 token 與 body；送出後 200 + 回 ai_enabled=false</div>
+    </div>
+  </div>
+  <div class="item" data-id="7.3">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">7.3</span>展開 <code>POST /api/v1/admin/canary/{tenant_id}</code> 設 25%
+        <span class="badge p2">P2</span></div>
+      <div class="expect">200；DB <code>tenant_setting.canary_percent</code> = 25；audit <code>canary.percent_changed</code></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 8. Prometheus ===================== -->
+<h2>8️⃣ Prometheus /metrics <span class="tab-count">(http://localhost:8000/metrics)</span></h2>
+<div class="group">
+  <div class="item" data-id="8.1">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">8.1</span>開 <code>/metrics</code>
+        <span class="badge p2">P2</span></div>
+      <div class="expect">回 plain text；含 <code>aeos_build_info{env="dev"} 1.0</code> +
+        <code>http_request_duration_seconds_*</code> family</div>
+    </div>
+  </div>
+  <div class="item" data-id="8.2">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">8.2</span>跑幾次 UI 動作後重整 /metrics
+        <span class="badge p2">P2</span></div>
+      <div class="expect"><code>http_requests_total{handler="/api/v1/expert/reviews",...}</code> 數值累加</div>
+    </div>
+  </div>
+  <div class="item" data-id="8.3">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">8.3</span>觸發 PII 過濾後（webhook 含 email / 手機）
+        <span class="badge p2">P2</span></div>
+      <div class="expect"><code>aeos_pii_redactions_total{kind="email"}</code> 累加</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== 9. 端到端 demo ===================== -->
+<h2>9️⃣ 完整端到端 demo flow <span class="tab-count">(綜合)</span></h2>
+<div class="group">
+  <details>
+    <summary>展開腳本（需 ANTHROPIC_API_KEY + worker 啟動）</summary>
+    <div class="prereq"># 1. 設 LLM key
+export ANTHROPIC_API_KEY=sk-ant-...
+# 2. 起 worker
+uv run python -m app.worker &
+# 3. 用 curl 觸發 webhook（HMAC）
+SECRET=$(docker exec aeos-postgres psql -U aeos -d aeos -t -c \
+  "SELECT config->>'channel_secret' FROM channel_binding WHERE channel='line' LIMIT 1")
+BODY='{"destination":"U-demo-line-channel","events":[{"type":"message","webhookEventId":"e2e-1","source":{"userId":"U-pii","type":"user"},"message":{"type":"text","id":"m1","text":"退貨幾天內可以辦"},"timestamp":1234567890}]}'
+SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$SECRET" -binary | base64)
+curl -X POST "http://localhost:8000/api/v1/webhooks/line/U-demo-line-channel" \
+  -H "X-Line-Signature: $SIG" -H 'content-type: application/json' --data "$BODY"</div>
+  </details>
+
+  <div class="item" data-id="9.1">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">9.1</span>webhook 返回 200
+        <span class="badge p1">P1</span></div>
+      <div class="expect"><code>{"status":"ok","processed":1,...}</code></div>
+    </div>
+  </div>
+  <div class="item" data-id="9.2">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">9.2</span>等 1 秒後切「訊息草稿」tab 重新整理
+        <span class="badge p1">P1</span></div>
+      <div class="expect">看到新的 awaiting_review draft（worker DraftProcessor 已跑）</div>
+    </div>
+  </div>
+  <div class="item" data-id="9.3">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">9.3</span>切 Audit tab → 看 conv detail
+        <span class="badge p1">P1</span></div>
+      <div class="expect">assistant message 下方有 <b>🔧 search_knowledge 引用 N 張 KC</b>（若 KB 內有 approved KC 才會有）</div>
+    </div>
+  </div>
+  <div class="item" data-id="9.4">
+    <input type="checkbox" />
+    <div class="body">
+      <div class="step"><span class="id">9.4</span>回 Drafts tab approve
+        <span class="badge p1">P1</span></div>
+      <div class="expect">下次 worker iter 內 outbound 從 pending → failed（fake LINE token） → Audit 多 <code>channel.message_push_failed</code> 事件</div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  Generated 2026-05-25 ·
+  <code>docs/report/MANUAL-UI-TEST-2026-05-25.html</code> ·
+  進度自動存 <code>localStorage['aeos.ui_test_checks']</code>
+</div>
+
+</div>
+
+<script>
+const STORAGE_KEY = 'aeos.ui_test_checks';
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch { return {}; }
+}
+
+function saveState(state) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch { /* ignore */ }
+}
+
+function updateSummary() {
+  const items = document.querySelectorAll('.item');
+  const done = document.querySelectorAll('.item.done').length;
+  document.getElementById('done-count').textContent = done;
+  document.getElementById('total-count').textContent = items.length;
+  const pct = items.length ? Math.round(done / items.length * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function resetAll() {
+  if (!confirm('重置所有測試進度？')) return;
+  saveState({});
+  document.querySelectorAll('.item input[type="checkbox"]').forEach(cb => cb.checked = false);
+  document.querySelectorAll('.item').forEach(el => el.classList.remove('done'));
+  updateSummary();
+}
+
+function init() {
+  const state = loadState();
+  document.querySelectorAll('.item').forEach(el => {
+    const id = el.dataset.id;
+    const cb = el.querySelector('input[type="checkbox"]');
+    if (state[id]) { cb.checked = true; el.classList.add('done'); }
+    cb.addEventListener('change', () => {
+      el.classList.toggle('done', cb.checked);
+      const s = loadState();
+      if (cb.checked) s[id] = true;
+      else delete s[id];
+      saveState(s);
+      updateSummary();
+    });
+  });
+  updateSummary();
+}
+
+init();
+</script>
+</body>
+</html>

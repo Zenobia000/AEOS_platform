@@ -19,6 +19,7 @@
 from __future__ import annotations
 
 import asyncio
+import sys
 import uuid
 
 from sqlalchemy import select, text
@@ -35,6 +36,8 @@ from app.db.session import session_scope
 
 DEMO_SLUG = "demo-tenant"
 DEMO_CHANNEL_USER = "U-demo-end-user"
+# 固定 UUID 讓 e2e 測試可以 hardcode 不必動態查
+DEMO_TENANT_UUID = uuid.UUID("9e7ffb09-4f53-475a-a771-29b02f04906a")
 
 KC_SEEDS: list[dict[str, list[str] | str]] = [
     {
@@ -110,7 +113,7 @@ async def _get_or_create_tenant(session: AsyncSession) -> Tenant:
         print(f"[skip] tenant '{DEMO_SLUG}' already exists: id={existing.id}")
         return existing
 
-    tenant = Tenant(name="Demo Co", slug=DEMO_SLUG)
+    tenant = Tenant(id=DEMO_TENANT_UUID, name="Demo Co", slug=DEMO_SLUG)
     session.add(tenant)
     await session.flush()
     print(f"[ok] tenant created: id={tenant.id}")
@@ -304,7 +307,97 @@ async def _seed_awaiting_review_draft(
     print(f"[ok] awaiting_review outbound created: id={out.id}")
 
 
+async def _reset_demo_tenant(session: AsyncSession) -> None:
+    """刪掉 demo tenant + 所有相關資料。
+
+    用於 e2e test 之間重置狀態。不是所有 FK 都 CASCADE（kc / ingestion
+    等沒設），所以手動逐表清。Expert account 是跨 tenant 不刪。
+    """
+    from sqlalchemy import text
+
+    existing = (
+        await session.execute(select(Tenant).where(Tenant.slug == DEMO_SLUG))
+    ).scalar_one_or_none()
+    if existing is None:
+        print(f"[skip] tenant '{DEMO_SLUG}' not present; nothing to reset")
+        return
+
+    tid = str(existing.id)
+
+    # 依 FK 反向依賴順序逐表清
+    # message 是 partitioned；手動 DELETE
+    await session.execute(
+        text(
+            "DELETE FROM message WHERE conversation_id IN "
+            "(SELECT id FROM conversation WHERE tenant_id = :tid)"
+        ),
+        {"tid": tid},
+    )
+    # 與 conversation 相關的（outbound 走 conversation FK）
+    await session.execute(
+        text("DELETE FROM outbound_message WHERE tenant_id = :tid"),
+        {"tid": tid},
+    )
+    await session.execute(
+        text(
+            "DELETE FROM conversation_handoff "
+            "WHERE from_conversation_id IN "
+            "(SELECT id FROM conversation WHERE tenant_id = :tid)"
+        ),
+        {"tid": tid},
+    )
+    await session.execute(
+        text("DELETE FROM conversation WHERE tenant_id = :tid"),
+        {"tid": tid},
+    )
+    # test_run_case 沒 tenant_id；走 FK 到 test_run
+    await session.execute(
+        text(
+            "DELETE FROM test_run_case "
+            "WHERE test_run_id IN (SELECT id FROM test_run WHERE tenant_id = :tid)"
+        ),
+        {"tid": tid},
+    )
+    # KB / TestSet / Tool / Skill / 其他 per-tenant 表
+    # 不刪 audit_log（append-only trigger 保護；歷史紀錄保留）
+    for table in (
+        "knowledge_card",
+        "ingestion_job",
+        "test_run",
+        "test_case",
+        "tool_invocation",
+        "skill_binding",
+        "tenant_setting",
+        "api_key",
+    ):
+        await session.execute(
+            text(f"DELETE FROM {table} WHERE tenant_id = :tid"),
+            {"tid": tid},
+        )
+    # channel_binding 走 employee FK
+    await session.execute(
+        text(
+            "DELETE FROM channel_binding "
+            "WHERE employee_id IN (SELECT id FROM employee WHERE tenant_id = :tid)"
+        ),
+        {"tid": tid},
+    )
+    await session.execute(
+        text("DELETE FROM employee WHERE tenant_id = :tid"),
+        {"tid": tid},
+    )
+    await session.delete(existing)
+    await session.flush()
+    print(f"[reset] deleted tenant '{DEMO_SLUG}' + 所有相關資料 (id={tid})")
+
+
 async def main() -> None:
+    reset = "--reset" in sys.argv
+
+    if reset:
+        async with session_scope() as session:
+            await _reset_demo_tenant(session)
+
     async with session_scope() as session:
         tenant = await _get_or_create_tenant(session)
         employee = await _get_or_create_employee(session, tenant)

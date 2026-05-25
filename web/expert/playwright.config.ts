@@ -13,6 +13,7 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false, // tests share DB state (seed); 跑序列避免互相干擾
+  workers: 1, // 單 worker — 寫 DB 動作不能並行
   reporter: [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]],
   use: {
     baseURL: "http://localhost:5173",

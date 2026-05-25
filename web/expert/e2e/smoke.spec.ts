@@ -8,10 +8,13 @@
  * - seed_demo 已跑：tenant 9e7ffb09-... + 1 draft + 3 KC + 5 test cases
  */
 import { test, expect, Page } from "@playwright/test";
-
-const DEMO_TENANT_ID = "9e7ffb09-4f53-475a-a771-29b02f04906a";
+import { resetDemo, DEMO_TENANT_ID } from "./helpers";
 
 test.describe.configure({ mode: "serial" });
+
+test.beforeAll(() => {
+  resetDemo();
+});
 
 test.describe("Expert Console — bypass mode", () => {
   test("1.5 載入後直接看到 tabs（anonymous bypass，不顯 Login）", async ({ page }) => {
@@ -137,12 +140,11 @@ test.describe("Expert Console — bypass mode", () => {
 });
 
 test.describe("Approve flow", () => {
-  test("2.2 點同意送出 → 卡片消失", async ({ page, request }) => {
-    // 先 API 確認 draft 存在；無則 skip（之前測試可能已 approve 掉）
-    const resp = await request.get("/api/v1/expert/reviews");
-    const data = await resp.json();
-    test.skip(data.count === 0, "No draft to approve; re-run seed_demo first");
+  test.beforeEach(() => {
+    resetDemo();
+  });
 
+  test("2.2 點同意送出 → 卡片消失", async ({ page }) => {
     await page.goto("/");
     const card = page.locator("[data-testid^='review-card-']").first();
     await expect(card).toBeVisible({ timeout: 10000 });

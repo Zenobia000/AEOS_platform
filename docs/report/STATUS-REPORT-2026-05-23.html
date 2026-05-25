@@ -1,0 +1,684 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEOS Platform — Phase 1 完成度報告（2026-05-23）</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --border: #475569;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+      "Microsoft JhengHei", Roboto, sans-serif;
+    line-height: 1.55;
+    padding: 24px;
+  }
+  .container { max-width: 1280px; margin: 0 auto; }
+  header.top { display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+  header.top h1 { margin: 0; font-size: 28px; }
+  header.top .sub { color: var(--muted); font-size: 14px; }
+
+  h2 { font-size: 20px; margin: 32px 0 12px; padding-left: 12px;
+       border-left: 4px solid var(--blue); }
+  h3 { font-size: 15px; margin: 16px 0 8px; color: var(--muted); }
+
+  .grid { display: grid; gap: 16px; }
+  .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 800px) {
+    .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+  }
+  .card .title { font-weight: 600; color: var(--text); margin-bottom: 8px; }
+  .card .value { font-size: 28px; font-weight: 700; }
+  .card .meta { font-size: 12px; color: var(--muted); }
+
+  .progress-bar {
+    background: var(--panel-2);
+    border-radius: 4px;
+    height: 8px;
+    overflow: hidden;
+    margin: 4px 0 8px;
+  }
+  .progress-bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%);
+    border-radius: 4px;
+    transition: width 0.4s;
+  }
+  .progress-bar .fill.warn { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+  .progress-bar .fill.red { background: var(--red); }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border);
+           font-size: 13px; }
+  th { color: var(--muted); font-weight: 500; }
+
+  .badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge.done   { background: #064e3b; color: #6ee7b7; }
+  .badge.wip    { background: #78350f; color: #fbbf24; }
+  .badge.todo   { background: #5b1717; color: #fca5a5; }
+  .badge.blocked{ background: #1e293b; color: var(--muted); border: 1px dashed var(--border); }
+  .badge.info   { background: #1e3a8a; color: #93c5fd; }
+
+  /* Architecture diagram */
+  .arch {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-x: auto;
+  }
+  .arch-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    min-width: 760px;
+  }
+  .arch-row { display: contents; }
+  .arch-box {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px;
+    font-size: 12px;
+    text-align: center;
+  }
+  .arch-box.done { border-color: var(--green); }
+  .arch-box.todo { border-color: var(--red); opacity: 0.6; }
+  .arch-box.partial { border-color: var(--yellow); }
+  .arch-box .name { font-weight: 600; margin-bottom: 4px; }
+  .arch-box .desc { color: var(--muted); font-size: 11px; }
+  .arch-section-label {
+    grid-column: 1 / -1;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 8px 0 4px;
+    border-bottom: 1px dashed var(--border);
+    margin-bottom: 4px;
+  }
+  .arch-arrow {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    padding: 4px 0;
+  }
+
+  ul.bare { padding-left: 20px; margin: 0; }
+  ul.bare li { margin: 3px 0; font-size: 13px; }
+  .legend { font-size: 12px; color: var(--muted); margin-top: 8px; }
+  .legend .badge { margin-right: 6px; }
+
+  code { background: var(--panel-2); padding: 1px 4px; border-radius: 3px;
+         font-size: 12px; color: #fbbf24; }
+  .footer { color: var(--muted); font-size: 12px; margin-top: 32px;
+            text-align: center; padding-top: 16px; border-top: 1px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="top">
+  <div>
+    <h1>AEOS Platform — Phase 1 完成度</h1>
+    <div class="sub">2026-05-23 快照 · 7-Day AI 客服 Onboarding</div>
+  </div>
+  <div class="sub">
+    branch <code>feat/s3-testset-ui</code> · 308 Python + 18 vitest 全綠
+  </div>
+</header>
+
+<!-- ==================== 速覽指標 ==================== -->
+<h2>1. 速覽指標</h2>
+<div class="grid cols-4">
+  <div class="card">
+    <div class="title">Phase 1 完成度</div>
+    <div class="value" style="color: var(--green)">~55%</div>
+    <div class="progress-bar"><div class="fill" style="width: 55%"></div></div>
+    <div class="meta">Critical-path MVP 剩 ~25%（3-4 週）</div>
+  </div>
+  <div class="card">
+    <div class="title">DB 表</div>
+    <div class="value">22 / 25</div>
+    <div class="progress-bar"><div class="fill" style="width: 88%"></div></div>
+    <div class="meta">剩：oncall_schedule / quota_usage / canary_assignment</div>
+  </div>
+  <div class="card">
+    <div class="title">Test coverage</div>
+    <div class="value" style="color: var(--green)">93.48%</div>
+    <div class="progress-bar"><div class="fill" style="width: 93%"></div></div>
+    <div class="meta">308 Python + 18 vitest tests</div>
+  </div>
+  <div class="card">
+    <div class="title">SEC-001 §6.1 Go/No-Go</div>
+    <div class="value" style="color: var(--red)">2 / 13</div>
+    <div class="progress-bar"><div class="fill red" style="width: 15%"></div></div>
+    <div class="meta">PII / auth / 紅隊都未做</div>
+  </div>
+</div>
+
+<div class="grid cols-4" style="margin-top: 16px;">
+  <div class="card">
+    <div class="title">程式碼行數</div>
+    <div class="value">18,387</div>
+    <div class="meta">
+      app 6860 · tests 7558 · alembic 1880 · web 2089
+    </div>
+  </div>
+  <div class="card">
+    <div class="title">Migrations</div>
+    <div class="value">8</div>
+    <div class="meta">最近：9575402d (test_case/run) + 7bd48e (tenant_setting)</div>
+  </div>
+  <div class="card">
+    <div class="title">Governance Hooks</div>
+    <div class="value">3 / 3</div>
+    <div class="meta">Audit · Policy · Quota（engineering-charter §1）</div>
+  </div>
+  <div class="card">
+    <div class="title">LINE 端到端鏈路</div>
+    <div class="value" style="color: var(--green)">✓</div>
+    <div class="meta">inbound → AI → expert → Push 全跑通</div>
+  </div>
+</div>
+
+<!-- ==================== Sprint 進度 ==================== -->
+<h2>2. Sprint 進度（13 週）</h2>
+<table>
+  <thead>
+    <tr>
+      <th style="width:80px;">Sprint</th>
+      <th>主題</th>
+      <th style="width:120px;">狀態</th>
+      <th style="width:60px;">完成度</th>
+      <th style="width:120px;">目標週</th>
+      <th>關鍵剩餘</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>S0</td><td>Specs (ADR / Domain / DB / PRD)</td>
+        <td><span class="badge done">DONE</span></td><td>100%</td><td>Week 1</td><td>—</td></tr>
+    <tr><td>S0.5</td><td>SA + SD Layer (BF/UF/NFR/SAD/API/UX)</td>
+        <td><span class="badge done">DONE</span></td><td>100%</td><td>Week 2</td><td>—</td></tr>
+    <tr><td>S1</td><td>PM Layer + 開工準備</td>
+        <td><span class="badge done">DONE</span></td><td>100%</td><td>Week 2.5</td><td>—</td></tr>
+    <tr><td>S2</td><td>KB &amp; KC (UF-001)</td>
+        <td><span class="badge done">DONE</span></td><td>95%</td><td>Week 3-4</td>
+        <td>真實 pilot KB ingest（待客戶）</td></tr>
+    <tr><td>S3</td><td>TestSet &amp; Skill v1.0</td>
+        <td><span class="badge wip">IN PROGRESS</span></td><td>70%</td><td>Week 5-6</td>
+        <td>背景 worker 自動 trigger run / Haiku LLM judge 升級</td></tr>
+    <tr><td>S4</td><td>LINE + Draft Mode</td>
+        <td><span class="badge done">DONE</span></td><td>95%</td><td>Week 7-8</td>
+        <td>L2.5 session summary（可選）+ LINE Notify 推播</td></tr>
+    <tr><td>S5</td><td>Canary + Kill Switch + Audit UI</td>
+        <td><span class="badge wip">IN PROGRESS</span></td><td>40%</td><td>Week 9-10</td>
+        <td>MFA 認證 / Canary 路由 / Audit 瀏覽 UI / daily digest</td></tr>
+    <tr><td>S6</td><td>Pilot Hardening</td>
+        <td><span class="badge todo">TODO</span></td><td>0%</td><td>Week 11</td>
+        <td>真實客戶 KB ingest + SEC-001 §6.1 11/13 條補完</td></tr>
+    <tr><td>S7</td><td>Pilot Live</td>
+        <td><span class="badge blocked">BLOCKED</span></td><td>0%</td><td>Week 12</td>
+        <td>等 CEO 簽 pilot 客戶 + LINE sandbox + Hetzner</td></tr>
+    <tr><td>S8</td><td>Template Extraction + Retro</td>
+        <td><span class="badge todo">TODO</span></td><td>0%</td><td>Week 13</td>
+        <td>Pilot live 後</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== 系統架構 ==================== -->
+<h2>3. 系統架構（Phase 1）</h2>
+<div class="arch">
+<div class="arch-grid">
+
+  <div class="arch-section-label">外部 / 入口</div>
+  <div class="arch-box done">
+    <div class="name">LINE Messaging API</div>
+    <div class="desc">客戶訊息入口（待 sandbox 申請）</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">Expert Console (Web UI)</div>
+    <div class="desc">Vite + React + Tailwind<br/>3 tab: Draft / KC / TestSet</div>
+  </div>
+  <div class="arch-box todo">
+    <div class="name">Admin / MFA UI</div>
+    <div class="desc">Kill switch + auth（未做）</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">Anthropic Claude API</div>
+    <div class="desc">Sonnet 4.6 + Haiku 4.5（薄層 LLMClient）</div>
+  </div>
+  <div class="arch-box partial">
+    <div class="name">S3 / Object Storage</div>
+    <div class="desc">KB raw 上傳（接線待 S6）</div>
+  </div>
+
+  <div class="arch-arrow">↓ HTTPS（nginx TLS / Let's Encrypt — IaC 已寫好）↓</div>
+
+  <div class="arch-section-label">FastAPI App（app/）</div>
+  <div class="arch-box done">
+    <div class="name">/api/v1/webhooks/line</div>
+    <div class="desc">HMAC + dedup + 1s ACK</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">/api/v1/expert/*</div>
+    <div class="desc">Draft Mode 4 endpoint</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">/api/v1/kc/*</div>
+    <div class="desc">KC 審查 4 endpoint</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">/api/v1/testset/*</div>
+    <div class="desc">TestSet 6 endpoint</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">/api/v1/admin/kill-switch</div>
+    <div class="desc">緊急 disable AI（per-tenant）</div>
+  </div>
+
+  <div class="arch-section-label">Worker（app/worker/）</div>
+  <div class="arch-box done">
+    <div class="name">DraftProcessor</div>
+    <div class="desc">LLM turn + 寫 message</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">OutboundProcessor</div>
+    <div class="desc">LINE Push + retry + DLQ</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">KbIngestProcessor</div>
+    <div class="desc">parser + chunk + embed → KC drafts</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">TestSetRunner</div>
+    <div class="desc">batch run + keyword judge</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">Idle Timeout</div>
+    <div class="desc">30min 自動 close conversation</div>
+  </div>
+
+  <div class="arch-section-label">Agent Runtime（app/agent/）— MC-009</div>
+  <div class="arch-box done">
+    <div class="name">EmployeeRuntime</div>
+    <div class="desc">借鑑 nanobot agent loop</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">AuditHook</div>
+    <div class="desc">LLM/tool call audit</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">PolicyHook</div>
+    <div class="desc">tool allow/deny + reason</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">QuotaHook</div>
+    <div class="desc">token / cost 預算</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">ToolExecutor</div>
+    <div class="desc">2 builtin: search_knowledge / handoff</div>
+  </div>
+
+  <div class="arch-section-label">Storage Layer</div>
+  <div class="arch-box done">
+    <div class="name">PostgreSQL 15 + pgvector</div>
+    <div class="desc">22 / 25 表 · 全 RLS · message partitioned</div>
+  </div>
+  <div class="arch-box partial">
+    <div class="name">Redis 7</div>
+    <div class="desc">schema 預留；queue/cache 待 Phase 2</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">audit_log（append-only）</div>
+    <div class="desc">trigger 阻擋 UPDATE/DELETE</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">Skill Git Repo (read-only)</div>
+    <div class="desc">skills/ YAML + system.md</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">tenant_setting (kill switch)</div>
+    <div class="desc">per-tenant ai_enabled</div>
+  </div>
+
+  <div class="arch-section-label">Observability（infra/observability/）— OBS-001</div>
+  <div class="arch-box done">
+    <div class="name">Prometheus</div>
+    <div class="desc">7 業務 metric + Golden Signals</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">Loki + Promtail</div>
+    <div class="desc">JSON structured logs</div>
+  </div>
+  <div class="arch-box done">
+    <div class="name">Grafana</div>
+    <div class="desc">2 dashboard (golden / business)</div>
+  </div>
+  <div class="arch-box partial">
+    <div class="name">Tempo (tracing)</div>
+    <div class="desc">Phase 2 加</div>
+  </div>
+  <div class="arch-box blocked">
+    <div class="name">Hetzner CX22</div>
+    <div class="desc">IaC ready · 待 CTO 開帳號</div>
+  </div>
+
+</div>
+<div class="legend">
+  <span class="badge done">綠框</span>已落地
+  <span class="badge wip">黃框</span>部分完成
+  <span class="badge todo">紅框淡化</span>未做
+  <span class="badge blocked">虛框</span>外部 blocker
+</div>
+</div>
+
+<!-- ==================== 功能模組 ==================== -->
+<h2>4. 功能模組完成度</h2>
+<div class="grid cols-2">
+
+  <div class="card">
+    <div class="title">📨 LINE Channel Gateway（MC-011）</div>
+    <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
+    <ul class="bare">
+      <li>✅ Webhook HMAC-SHA256 驗簽 + dedup（webhook_event PK）</li>
+      <li>✅ ≤1s ACK + 異步處理</li>
+      <li>✅ LINE userId pseudonymize（SHA256+salt）</li>
+      <li>✅ Push API + retry 4xx/429/5xx 分流</li>
+      <li>✅ Failed → DLQ + audit channel.message_push_failed</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="title">🤖 Agent Runtime + Governance（MC-009）</div>
+    <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
+    <ul class="bare">
+      <li>✅ EmployeeRuntime (frozen snapshot per turn)</li>
+      <li>✅ 3 Hooks 都掛在 LLM/tool 前後</li>
+      <li>✅ ToolExecutor + InternalToolRegistry</li>
+      <li>✅ 2 builtin tools: search_knowledge / request_human_handoff</li>
+      <li>🟡 L2.5 session summary（pilot 上線後再補）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="title">📚 Knowledge Base + KC（MC-008 / UF-001）</div>
+    <div class="progress-bar"><div class="fill" style="width: 90%"></div></div>
+    <ul class="bare">
+      <li>✅ pdf / docx / md / txt parser</li>
+      <li>✅ chunk_text (800 char + 80 overlap)</li>
+      <li>✅ pgvector 1024-dim embedding (Stub for Phase 1)</li>
+      <li>✅ KC draft 寫入 + Expert review UI（approve / edit / archive）</li>
+      <li>🚫 LLM 自動分類 card_type（待 S3 LLM judge）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="title">✉️ Draft Mode + Expert Review（PRD §5.4）</div>
+    <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
+    <ul class="bare">
+      <li>✅ outbound_message 6 態（+ awaiting_review / rejected）</li>
+      <li>✅ Expert UI: 1-click approve / edit-send / reject</li>
+      <li>✅ Reject → 自動建 conversation_handoff（policy_deny）</li>
+      <li>✅ E2E smoke: inbound → AI → approve → LINE Push 全鏈路</li>
+      <li>✅ 所有動作進 audit_log</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="title">🛑 Kill Switch（UF-004）</div>
+    <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
+    <ul class="bare">
+      <li>✅ per-tenant ai_enabled boolean (tenant_setting)</li>
+      <li>✅ 二次確認（confirm_tenant_id 比對）</li>
+      <li>✅ DraftProcessor 每 turn 查 DB（&lt; 1ms）</li>
+      <li>✅ Disabled → 跳過 LLM + 建 handoff + audit</li>
+      <li>🟡 Slack 通知（待 webhook 設定）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="title">🧪 TestSet + Pass Rate（AC-001）</div>
+    <div class="progress-bar"><div class="fill" style="width: 80%"></div></div>
+    <ul class="bare">
+      <li>✅ 3 表 schema（test_case / test_run / test_run_case）</li>
+      <li>✅ TestSetRunner + keyword judge（pass rate ≥ 0.8）</li>
+      <li>✅ REST API (6 endpoint) + Expert Console TestSet tab</li>
+      <li>🚫 背景 worker 自動 trigger pending runs（手動目前）</li>
+      <li>🚫 LLM judge 升級（Haiku 語意比對）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="title">📊 Observability（OBS-001）</div>
+    <div class="progress-bar"><div class="fill" style="width: 75%"></div></div>
+    <ul class="bare">
+      <li>✅ Prometheus FastAPI middleware</li>
+      <li>✅ 7 業務 metric（LLM tokens/cost / E2E latency / KB / outbound...）</li>
+      <li>✅ docker-compose + Grafana dashboard (golden + business)</li>
+      <li>✅ Loki + Promtail JSON log scrape config</li>
+      <li>🚫 部署（待 Hetzner 帳號）+ Tempo tracing（Phase 2）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="title">⏱️ Conversation Idle Timeout</div>
+    <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
+    <ul class="bare">
+      <li>✅ 30min 無互動 → status=closed, outcome=abandoned</li>
+      <li>✅ worker loop 每 iter 順帶清</li>
+      <li>✅ waiting_human 排除（expert 接手中不關）</li>
+      <li>✅ FOR UPDATE SKIP LOCKED + audit conversation.idle_closed</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="title">🔐 Auth / MFA</div>
+    <div class="progress-bar"><div class="fill" style="width: 0%"></div></div>
+    <ul class="bare">
+      <li>🚫 Expert Console 無 auth（內網裸奔）</li>
+      <li>🚫 Admin API 無 RBAC</li>
+      <li>🚫 MFA / TOTP 機制未做</li>
+      <li>🚫 Session / JWT 管理未做</li>
+      <li>📍 上線前必補（S5 hard gate）</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="title">🎚️ Canary Routing + Auto-Reply</div>
+    <div class="progress-bar"><div class="fill" style="width: 10%"></div></div>
+    <ul class="bare">
+      <li>✅ outbound_message status='pending' 可走 canary 直送</li>
+      <li>🚫 Canary toggle 10% / 50% / 100% per tenant</li>
+      <li>🚫 Confidence ≥ 0.75 fast path / 否則 fallback draft</li>
+      <li>🚫 Canary assignment 表</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="title">📜 Audit Browse UI</div>
+    <div class="progress-bar"><div class="fill" style="width: 5%"></div></div>
+    <ul class="bare">
+      <li>✅ audit_log 表 + append-only trigger</li>
+      <li>🚫 Conversation list UI</li>
+      <li>🚫 Per-message detail（Skill 版本 / KC refs / tool calls）</li>
+      <li>🚫 Daily digest email</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <div class="title">⚙️ CI / DevOps</div>
+    <div class="progress-bar"><div class="fill" style="width: 100%"></div></div>
+    <ul class="bare">
+      <li>✅ GitHub Actions: backend (ruff+mypy+pytest) + web-expert</li>
+      <li>✅ path filter（dorny/paths-filter）+ ci-gate aggregator</li>
+      <li>✅ Pre-commit: gitleaks / ruff / yaml / large files</li>
+      <li>✅ Dependabot + Trivy fs scan</li>
+      <li>🟡 Container image scan（待 Dockerfile）</li>
+    </ul>
+  </div>
+
+</div>
+
+<!-- ==================== 最近 branches ==================== -->
+<h2>5. 最近完成的 branches（時序）</h2>
+<table>
+  <thead><tr>
+    <th style="width:280px;">Branch</th>
+    <th>主題</th>
+    <th style="width:80px;">影響</th>
+  </tr></thead>
+  <tbody>
+    <tr><td><code>feat/s3-testset-ui</code></td>
+        <td>S3 REST API + Expert Console TestSet tab</td>
+        <td>+11 tests</td></tr>
+    <tr><td><code>feat/s3-testset-schema</code></td>
+        <td>TestCase/Run/RunCase + runner + keyword judge</td>
+        <td>+17 tests / +3 表</td></tr>
+    <tr><td><code>feat/s4-idle-timeout</code></td>
+        <td>conversation 30min idle close worker</td>
+        <td>+6 tests</td></tr>
+    <tr><td><code>feat/s5-kill-switch</code></td>
+        <td>per-tenant emergency disable AI</td>
+        <td>+14 tests / +1 表</td></tr>
+    <tr><td><code>feat/s5-prometheus-instrumentation</code></td>
+        <td>FastAPI middleware + 7 業務 metric</td>
+        <td>+8 tests</td></tr>
+    <tr><td><code>chore/obs-iac-prep</code></td>
+        <td>Prometheus + Loki + Grafana IaC</td>
+        <td>14 config files</td></tr>
+    <tr><td><code>feat/s2-kc-review</code></td>
+        <td>KC draft 審查 service + API + UI tab</td>
+        <td>+18 + 7 tests</td></tr>
+    <tr><td><code>test/draft-mode-e2e</code></td>
+        <td>inbound→AI→approve→LINE Push smoke</td>
+        <td>+2 tests</td></tr>
+    <tr><td><code>ci/web-expert</code></td>
+        <td>CI 拆 backend + web-expert path filter</td>
+        <td>CI infra</td></tr>
+    <tr><td><code>feat/s2-expert-review-ui</code></td>
+        <td>Vite + React Expert Console（前端骨架）</td>
+        <td>+7 vitest</td></tr>
+    <tr><td><code>feat/s2-expert-review-api</code></td>
+        <td>Draft Mode service + 4 endpoint</td>
+        <td>+14 tests</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== 外部 blocker ==================== -->
+<h2>6. 外部 Blocker（不能自己解）</h2>
+<table>
+  <thead><tr>
+    <th>項目</th>
+    <th>性質</th>
+    <th>解鎖人</th>
+    <th>影響</th>
+  </tr></thead>
+  <tbody>
+    <tr>
+      <td>Hetzner Cloud 帳號</td>
+      <td>信用卡 + KYC</td>
+      <td>CTO</td>
+      <td>OBS infra / API / Expert UI 上線</td>
+    </tr>
+    <tr>
+      <td>Slack workspace + PagerDuty Free</td>
+      <td>註冊</td>
+      <td>CEO + CTO</td>
+      <td>RUNBOOK-001 oncall / 告警通知</td>
+    </tr>
+    <tr>
+      <td>LINE Developers Console sandbox</td>
+      <td>登入申請</td>
+      <td>CTO</td>
+      <td>HMAC 驗簽 + 真實 webhook 測試</td>
+    </tr>
+    <tr>
+      <td>Pilot 客戶簽約</td>
+      <td>商業 critical path</td>
+      <td>CEO</td>
+      <td>S6/S7 完全卡住；無真實 KB / test set / live data</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ==================== 下一步 ==================== -->
+<h2>7. 建議下一步（不依賴外部資源）</h2>
+<div class="grid cols-2">
+  <div class="card">
+    <div class="title">優先級 P0 — 上線 hard gate</div>
+    <ul class="bare">
+      <li>🔐 <strong>MFA / Token auth for Expert Console</strong>（1 天）— UI/API 對外暴露最後一關</li>
+      <li>🎚️ <strong>Canary 路由 + auto-reply path</strong>（1-2 天）— pilot 漸進放鬆控制</li>
+      <li>📋 <strong>Audit browse UI</strong>（2 天）— 合規必要 + 對外 demo</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">優先級 P1 — 品質提升</div>
+    <ul class="bare">
+      <li>🔁 TestSet 背景 worker 自動 trigger pending runs（半天）</li>
+      <li>🤖 LLM Judge 升級（Haiku 語意比對，替代 keyword judge）（1 天）</li>
+      <li>📨 Slack webhook 通知（kill switch / P0 incident）（半天）</li>
+      <li>📊 Daily digest email（半天）— 對話數/handoff 率/cost</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">優先級 P2 — Pilot 上線後</div>
+    <ul class="bare">
+      <li>L2.5 session summary（Haiku 對話結束摘要）</li>
+      <li>LINE Notify / web push（Draft Mode 提醒 expert）</li>
+      <li>OTel tracing → Tempo</li>
+      <li>Redis queue（取代 Phase 1 polling）</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">SEC-001 §6.1 補強（11 / 13 待補）</div>
+    <ul class="bare">
+      <li>🚫 PII Masking（mask 敏感 token / pseudonymize）</li>
+      <li>🚫 Container image scan（待 Dockerfile）</li>
+      <li>🚫 紅隊測試 / pentest</li>
+      <li>🚫 DPA / Privacy notice / cookie consent</li>
+      <li>🚫 incident drill（每月一次）</li>
+    </ul>
+  </div>
+</div>
+
+<div class="footer">
+  Generated 2026-05-23 · 本檔位於 <code>docs/report/STATUS-REPORT-2026-05-23.html</code> ·
+  資料來源：<code>git log</code> + <code>pytest</code> + DEV-PLAN-PHASE1 + LAUNCH-DASHBOARD
+</div>
+
+</div>
+</body>
+</html>

@@ -150,6 +150,7 @@ _MESSAGE_PARTITION_SQL = [
         content TEXT NOT NULL,
         content_raw_ref UUID,
         skill_invocation_id UUID,
+        skill_version_id UUID,
         tool_invocations JSONB NOT NULL DEFAULT '[]',
         token_count INT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

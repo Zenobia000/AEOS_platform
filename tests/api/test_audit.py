@@ -156,3 +156,46 @@ async def test_conversation_detail_returns_full_timeline(
 async def test_conversation_detail_404(client: AsyncClient, webhook_session: AsyncSession) -> None:
     resp = await client.get(f"/api/v1/audit/conversations/{uuid.uuid4()}")
     assert resp.status_code == 404
+
+
+# ── Phase 1 後續 #4: audit filter + #5: conversation export ──
+
+
+async def test_audit_filter_by_resource_type(
+    client: AsyncClient, webhook_session: AsyncSession
+) -> None:
+    tenant, _, _, _ = await _seed_conv_with_audit(webhook_session, suffix="rt")
+    resp = await client.get(
+        f"/api/v1/audit/events?tenant_id={tenant.id}&resource_type=outbound_message"
+    )
+    assert resp.status_code == 200
+    items = resp.json()["items"]
+    assert all(it["resource_type"] == "outbound_message" for it in items)
+    assert len(items) >= 1
+
+
+async def test_audit_filter_by_actor_id(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    tenant, _, _, _ = await _seed_conv_with_audit(webhook_session, suffix="ai")
+    resp = await client.get(f"/api/v1/audit/events?tenant_id={tenant.id}&actor_id=outbound_worker")
+    assert resp.status_code == 200
+    items = resp.json()["items"]
+    assert all(it["actor_id"] == "outbound_worker" for it in items)
+
+
+async def test_conversation_export(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    tenant, conv, _, _ = await _seed_conv_with_audit(webhook_session, suffix="export")
+    resp = await client.get(f"/api/v1/audit/conversations/{conv.id}/export")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["schema_version"] == "1.0"
+    assert body["conversation"]["id"] == str(conv.id)
+    assert body["conversation"]["tenant_id"] == str(tenant.id)
+    assert "messages" in body
+    assert "outbound_messages" in body
+    assert "audit_events" in body
+    assert len(body["audit_events"]) >= 2  # draft_approved + message_pushed
+
+
+async def test_conversation_export_404(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    resp = await client.get(f"/api/v1/audit/conversations/{uuid.uuid4()}/export")
+    assert resp.status_code == 404

@@ -29,13 +29,16 @@ router = APIRouter(
 )
 
 
-@router.get("/events", summary="List audit events")
+@router.get("/events", summary="List audit events (含 resource_type / actor_id filter)")
 async def list_events(
     tenant_id: Annotated[uuid.UUID | None, Query()] = None,
     event_type: Annotated[str | None, Query()] = None,
+    resource_type: Annotated[str | None, Query()] = None,
+    actor_id: Annotated[str | None, Query()] = None,
     since_hours: Annotated[int, Query(ge=1, le=720)] = 24,
     limit: Annotated[int, Query(ge=1, le=500)] = 100,
 ) -> dict[str, object]:
+    """Phase 1 後續 #4: 加 resource_type + actor_id filter（既有 tenant + event_type 維持）。"""
     since = datetime.now(UTC) - timedelta(hours=since_hours)
     async with session_scope() as session:
         stmt = (
@@ -48,6 +51,10 @@ async def list_events(
             stmt = stmt.where(AuditLog.tenant_id == tenant_id)
         if event_type is not None:
             stmt = stmt.where(AuditLog.event_type == event_type)
+        if resource_type is not None:
+            stmt = stmt.where(AuditLog.resource_type == resource_type)
+        if actor_id is not None:
+            stmt = stmt.where(AuditLog.actor_id == actor_id)
         rows = (await session.execute(stmt)).scalars().all()
         items = [
             {
@@ -221,4 +228,119 @@ async def conversation_detail(
             "messages": messages,
             "outbounds": outbounds,
             "audit_events": audits,
+        }
+
+
+# Phase 1 後續 #5: Conversation GDPR export ─────────
+
+
+@router.get(
+    "/conversations/{conversation_id}/export",
+    summary="Export 完整 conversation 為 JSON（GDPR-ready）",
+)
+async def export_conversation(conversation_id: uuid.UUID) -> dict[str, object]:
+    """完整 dump 一個 conversation 的所有資料：
+    conversation row + 所有 message + 所有 outbound + 所有 audit event。
+    """
+    async with session_scope() as session:
+        conv_row = (
+            await session.execute(
+                text(
+                    "SELECT id, tenant_id, employee_id, channel, status, outcome, "
+                    "started_at, ended_at, message_count, summary "
+                    "FROM conversation WHERE id = :cid"
+                ),
+                {"cid": str(conversation_id)},
+            )
+        ).first()
+        if conv_row is None:
+            from fastapi import HTTPException
+
+            raise HTTPException(status_code=404, detail="conversation not found")
+
+        msg_rows = (
+            await session.execute(
+                text(
+                    "SELECT id, seq, role, content, token_count, "
+                    "tool_invocations, skill_version_id, created_at "
+                    "FROM message WHERE conversation_id = :cid ORDER BY seq"
+                ),
+                {"cid": str(conversation_id)},
+            )
+        ).all()
+        out_rows = (
+            await session.execute(
+                text(
+                    "SELECT id, status, retry_count, error_message, "
+                    "sent_at, created_at FROM outbound_message "
+                    "WHERE conversation_id = :cid ORDER BY created_at"
+                ),
+                {"cid": str(conversation_id)},
+            )
+        ).all()
+        # 收 audit events: resource_id 為此 conversation OR 此 conv 的任一 outbound/message
+        related_ids = [str(conversation_id)]
+        related_ids.extend(str(r[0]) for r in msg_rows)
+        related_ids.extend(str(r[0]) for r in out_rows)
+        audit_rows = (
+            (
+                await session.execute(
+                    select(AuditLog)
+                    .where(AuditLog.resource_id.in_(related_ids))
+                    .order_by(AuditLog.occurred_at)
+                )
+            )
+            .scalars()
+            .all()
+        )
+
+        return {
+            "schema_version": "1.0",
+            "exported_at": datetime.now(UTC).isoformat(),
+            "conversation": {
+                "id": str(conv_row[0]),
+                "tenant_id": str(conv_row[1]),
+                "employee_id": str(conv_row[2]),
+                "channel": conv_row[3],
+                "status": conv_row[4],
+                "outcome": conv_row[5],
+                "started_at": conv_row[6].isoformat() if conv_row[6] else None,
+                "ended_at": conv_row[7].isoformat() if conv_row[7] else None,
+                "message_count": conv_row[8],
+                "summary": conv_row[9],
+            },
+            "messages": [
+                {
+                    "id": str(r[0]),
+                    "seq": r[1],
+                    "role": r[2],
+                    "content": r[3],
+                    "token_count": r[4],
+                    "tool_invocations": r[5],
+                    "skill_version_id": str(r[6]) if r[6] else None,
+                    "created_at": r[7].isoformat(),
+                }
+                for r in msg_rows
+            ],
+            "outbound_messages": [
+                {
+                    "id": str(r[0]),
+                    "status": r[1],
+                    "retry_count": r[2],
+                    "error_message": r[3],
+                    "sent_at": r[4].isoformat() if r[4] else None,
+                    "created_at": r[5].isoformat(),
+                }
+                for r in out_rows
+            ],
+            "audit_events": [
+                {
+                    "id": str(a.id),
+                    "event_type": a.event_type,
+                    "actor_id": a.actor_id,
+                    "payload": a.payload,
+                    "occurred_at": a.occurred_at.isoformat(),
+                }
+                for a in audit_rows
+            ],
         }

@@ -1,7 +1,7 @@
 ---
 id: CR-0001
 title: "Multi-Vertical Skill Framework Hardening"
-status: approved-implementation-in-progress
+status: implemented
 tier: 4-exploration
 owner: CTO + CEO
 created: 2026-05-26
@@ -186,3 +186,57 @@ related: [MC-005, MC-009, MC-010, ADR-0003, ADR-0007, PRD-001, SAD-v0.1, db-sche
 ---
 
 ✅ **CIA approved 2026-05-26 — 全部建議採納，依 §9 順序開工**
+
+---
+
+## §10 Implementation Completion（2026-05-26）
+
+9 個 branch 依 §9 順序全部落地，每個 branch commit + push 到 origin：
+
+| # | Branch | Commit | 完成驗證 |
+|---|---|---|---|
+| 1 | `feat/cr-0001-skill-binding-schema` | `699d5a3` | 14 schema pytest 全綠（既 11 + 新 3） |
+| 8 | `feat/cr-0001-adr-0013-skill-routing-rule` | `e3d2b40` | tier-1 ADR accepted |
+| 2 | `feat/cr-0001-skill-router-service` | `090e81f` | 18 router pytest（8 pure-fn + 10 整合）|
+| 3 | `feat/cr-0001-draft-processor-routing` | `6d8b012` | 2 router-integration pytest + 既有 39 全綠 |
+| 4 | `feat/cr-0001-new-skill-cli` | `1047d29` | 9 CLI pytest + smoke 真實生成驗證 |
+| 5 | `feat/cr-0001-stub-verticals` | `b940ac7` | 4 loader pytest（3 vertical 載入 + YAML 結構）|
+| 6 | `feat/cr-0001-admin-skill-api` | `1d115e5` | 6 admin API pytest 整合驗證 |
+| 7 | `feat/cr-0001-expert-console-skill-ui` | `69b6c2f` | **vitest 8 + Playwright 5** 雙重驗證 |
+| 9 | `chore/cr-0001-doc-sync` | `ec2eac3` + 本 commit | doc sync + 本檔 §10 收尾 |
+
+### 累計指標變動
+
+| 維度 | 期初（CR-0001 開工前）| 期末（9 branch 完成）| Δ |
+|---|---|---|---|
+| Python tests | 408 | **450** | +42 |
+| 前端 vitest | 29 | **37** | +8 |
+| Playwright E2E | 20 | **25** | +5 |
+| **總自動化測試** | 457 | **512** | **+55** |
+| Vertical skill 數 | 1 (customer-service) | **4** (+ hr / it-helpdesk / sales) | +3 |
+| Migrations | 10 | **11** | +1 |
+| 新模組 | — | `app/skill/router.py`、`scripts/new_skill.py`、`skills/_template/` | — |
+| 新 API endpoint | — | 4 (`/admin/skills/*`) | +4 |
+| ADR | 12 | **13** (ADR-0013) | +1 |
+
+### Quality bar 達成
+
+依 §決策守則 #1：每 vertical 跑 KeywordJudge baseline pass rate ≥ 0.5。
+本 sprint 為 framework-only，**baseline pass rate 量測延後到 #5 stub-verticals 的 test_set 跑 TestSetRunner** —— pilot 真實對話蒐集後覆寫 test_set 再量。
+
+### 文件同步落點（doc-sync #9 + 本 commit）
+
+- ✅ `docs/2-contracts/MC-005-skill-registry.md` — Multi-Vertical Routing Amendment 段 + See Also 加 ADR-0013 / new_skill.py
+- ✅ `docs/2-contracts/db-schema.md` — §3.3 skill_binding 加 routing_rule/is_default/uq idx，§4.5 message 加 skill_version_id
+- ✅ `docs/LAUNCH-DASHBOARD.md` — §模型迭代能力 加 Multi-Vertical Framework 落地表
+- ✅ `docs/3-process/KICKOFF-CHECKLIST.md` — §D.3 必讀補 ADR-0013 + CR-0001
+- ✅ 本檔 §10 implementation completion
+
+### 後續（不在本 CR）
+
+1. **真實 KB / test set 覆寫**：pilot 客戶上線後把 4 vertical 的 stub 換成真實內容（per §決策守則 #1）
+2. **stub tools 接真實後端**：hr/it/sales 的 in-mem dict 模擬要換成真實 HR DB / IDP / CRM
+3. **新 vertical 增加**：CR-0002+（如 finance/expense-claim / legal/contract-review），用 CR-0001 framework 直接 scaffold
+4. **Multi-skill TestSet UI**：目前 TestSet tab 還沒按 skill_slug filter（CR-0001 已建立 routing 但未在 UI 切割題庫顯示）— 視 pilot 需求決定要不要做
+
+---

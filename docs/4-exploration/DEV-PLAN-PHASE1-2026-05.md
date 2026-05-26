@@ -86,6 +86,9 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 > **進度更新（2026-05-22 早）**：Tier 0 + Tier 1 資料層全部完成；3 個 feat branch 已 push (`feat/s2-db-foundation` + `feat/s2-knowledge-cards` + `feat/s2-conversation-engine`)。40 tests / 99.68% coverage。詳 `docs/report/S2-PROGRESS-2026-05-22.md`。
 >
 > **進度更新（2026-05-22 中午）**：**Tier 2 完成**——LLMClient (ADR-0001 薄層 + AnthropicClient) + MC-005 Skill Registry (3 表 + git monorepo) + MC-006 Tool Registry (3 表) + faq-respond v1.0.0 skill scaffold。`feat/s2-llm-and-registries` 已 push。71 tests / 99.63% coverage。DB 表 15/25 (60%)。Skill production Quality Gate (`pass_rate ≥ 0.80 + approved`) 已落地為 DB CHECK constraint。
+>
+> **進度更新（2026-05-26 — CR-0001 Multi-Vertical Framework Sprint 完工）**：
+> 9 branch（schema / ADR-0013 / router / draft-routing / new_skill CLI / 3 stub verticals / admin API / Expert UI / doc-sync）全部落地。framework 從「1 個 customer-service」擴展為「**4 個 vertical**（+hr / it-helpdesk / sales）」。+42 Python tests / +8 vitest / +5 Playwright。詳 [`CR-0001-multi-vertical-framework.md §10`](CR-0001-multi-vertical-framework.md)。
 
 **Exit**：AC-001 三條全綠（PDF ingest <3min/100頁、KC approve 進 audit、archive 不被檢索）— 仍受阻於 pilot 客戶 KB 來源 + Worker 實作。
 

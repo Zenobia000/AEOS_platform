@@ -147,7 +147,9 @@ function AuthenticatedApp({ expert, tab, setTab, onLogout }: AuthedProps) {
 
       {tab === "drafts" && <DraftsInbox expertId={expert.email} />}
       {tab === "kc" && <KCInbox expertId={expert.email} />}
-      {tab === "testset" && <TestSetInbox expertId={expert.email} />}
+      {tab === "testset" && (
+        <TestSetInbox expertId={expert.email} skillSlug={skillSlug} />
+      )}
       {tab === "audit" && <AuditBrowser />}
       {tab === "admin" && expert.role === "admin" && <AdminAccounts />}
     </div>

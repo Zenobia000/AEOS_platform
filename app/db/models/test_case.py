@@ -5,7 +5,7 @@ from __future__ import annotations
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, ForeignKey, Index, Text, func
+from sqlalchemy import Boolean, ForeignKey, Index, Text, func, text
 from sqlalchemy.dialects.postgresql import ARRAY, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import DateTime
@@ -36,6 +36,11 @@ class TestCase(Base):
         server_default="{}",
     )
     enabled: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
+    skill_slug: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+        comment="vertical/skill scope; NULL = 通用題 (CR-0001 多 vertical)",
+    )
     created_by: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -43,4 +48,12 @@ class TestCase(Base):
         server_default=func.now(),
     )
 
-    __table_args__ = (Index("idx_test_case_tenant", "tenant_id", "enabled"),)
+    __table_args__ = (
+        Index("idx_test_case_tenant", "tenant_id", "enabled"),
+        Index(
+            "idx_test_case_skill_slug",
+            "tenant_id",
+            "skill_slug",
+            postgresql_where=text("skill_slug IS NOT NULL"),
+        ),
+    )

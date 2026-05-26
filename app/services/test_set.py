@@ -51,6 +51,7 @@ async def create_test_case(
     expected_outcome: str,
     expected_keywords: list[str] | None = None,
     created_by: str | None = None,
+    skill_slug: str | None = None,
 ) -> TestCase:
     if not name.strip():
         raise TestSetError("name cannot be empty")
@@ -66,6 +67,7 @@ async def create_test_case(
         expected_outcome=expected_outcome,
         expected_keywords=expected_keywords or [],
         created_by=created_by,
+        skill_slug=skill_slug,
     )
     session.add(tc)
     await session.flush()
@@ -77,11 +79,17 @@ async def list_test_cases(
     *,
     tenant_id: uuid.UUID,
     enabled_only: bool = True,
+    skill_slug: str | None = None,
     limit: int = 200,
 ) -> list[TestCase]:
+    """List test cases. 若 skill_slug 提供 → 列該 skill + NULL 通用題；None → 全列。"""
+    from sqlalchemy import or_
+
     stmt = select(TestCase).where(TestCase.tenant_id == tenant_id)
     if enabled_only:
         stmt = stmt.where(TestCase.enabled.is_(True))
+    if skill_slug is not None:
+        stmt = stmt.where(or_(TestCase.skill_slug == skill_slug, TestCase.skill_slug.is_(None)))
     stmt = stmt.order_by(TestCase.created_at.asc()).limit(limit)
     return list((await session.execute(stmt)).scalars().all())
 

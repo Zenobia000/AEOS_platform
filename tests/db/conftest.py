@@ -32,6 +32,7 @@ from app.db.models import (  # noqa: F401  (populate metadata)
     ingestion_job,
     knowledge_card,
     message,
+    oncall_schedule,
     outbound_message,
     skill,
     skill_binding,
@@ -172,6 +173,8 @@ _MESSAGE_PARTITION_SQL = [
     "CREATE POLICY message_allow_all ON message USING (true)",
     "ALTER TABLE conversation_handoff ENABLE ROW LEVEL SECURITY",
     "CREATE POLICY conversation_handoff_allow_all ON conversation_handoff USING (true)",
+    "ALTER TABLE oncall_schedule ENABLE ROW LEVEL SECURITY",
+    "CREATE POLICY oncall_schedule_allow_all ON oncall_schedule USING (true)",
 ]
 
 

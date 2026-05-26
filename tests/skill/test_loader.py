@@ -79,10 +79,12 @@ def test_load_handles_missing_optional_fields(tmp_path: Path) -> None:
         ("hr/leave-request", "query_employee_leave_balance"),
         ("it-helpdesk/password-reset", "verify_user_identity"),
         ("sales/quote-request", "lookup_product_catalog"),
+        ("finance/expense-claim", "query_expense_policy"),  # CR-0002
+        ("legal/contract-review", "analyze_contract_clauses"),  # CR-0002
     ],
 )
 def test_load_stub_vertical_skill(slug: str, expected_tool: str) -> None:
-    """3 個 stub vertical skill 都能被 SkillLoader 載入 + 含 vertical-specific tool 註釋。"""
+    """5 個 stub vertical skill 都能被 SkillLoader 載入 + 含 vertical-specific tool 註釋。"""
     loader = SkillLoader(root=_repo_root() / "skills")
     skill = loader.load(slug, "v1.0.0")
 
@@ -96,7 +98,7 @@ def test_load_stub_vertical_skill(slug: str, expected_tool: str) -> None:
 
 
 def test_stub_test_sets_are_valid_yaml() -> None:
-    """3 個 stub skill 的 test_set.yaml 都應該是 valid YAML + 含 cases."""
+    """5 個 stub skill 的 test_set.yaml 都應該是 valid YAML + 含 cases."""
     import yaml
 
     skills_root = _repo_root() / "skills"
@@ -104,6 +106,8 @@ def test_stub_test_sets_are_valid_yaml() -> None:
         "hr/leave-request",
         "it-helpdesk/password-reset",
         "sales/quote-request",
+        "finance/expense-claim",  # CR-0002
+        "legal/contract-review",  # CR-0002
     ):
         test_set_path = skills_root / slug / "v1.0.0" / "test_set.yaml"
         assert test_set_path.exists(), f"missing: {test_set_path}"

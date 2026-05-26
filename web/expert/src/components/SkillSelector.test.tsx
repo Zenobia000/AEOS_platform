@@ -34,12 +34,15 @@ describe("SkillSelector", () => {
     expect(select.value).toBe("sales/quote-request");
   });
 
-  it("KNOWN_SKILLS contains 4 vertical + 1 ALL fallback", () => {
+  it("KNOWN_SKILLS contains 6 vertical + 1 ALL fallback (CR-0002 adds finance + legal)", () => {
     const slugs = KNOWN_SKILLS.map((s) => s.slug);
     expect(slugs).toContain("customer-service/faq-respond");
     expect(slugs).toContain("hr/leave-request");
     expect(slugs).toContain("it-helpdesk/password-reset");
     expect(slugs).toContain("sales/quote-request");
+    expect(slugs).toContain("finance/expense-claim");
+    expect(slugs).toContain("legal/contract-review");
     expect(slugs).toContain("_all_");
+    expect(slugs).toHaveLength(7);
   });
 });

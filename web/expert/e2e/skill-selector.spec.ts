@@ -19,12 +19,12 @@ test.beforeAll(() => {
 });
 
 test.describe("SkillSelector URL sync (CR-0001 #7)", () => {
-  test("dropdown 出現在已登入的 header + 有 5 個選項", async ({ page }) => {
+  test("dropdown 出現在已登入的 header + 有 7 個選項 (CR-0002 加 finance + legal)", async ({ page }) => {
     await page.goto("/");
     const selector = page.getByTestId("skill-selector");
     await expect(selector).toBeVisible();
     const options = await selector.locator("option").count();
-    expect(options).toBe(5);
+    expect(options).toBe(7);
   });
 
   test("選 hr/leave-request → URL ?skill_slug= 同步", async ({ page }) => {

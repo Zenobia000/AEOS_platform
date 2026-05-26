@@ -14,7 +14,9 @@ import {
   type ExpertProfile,
 } from "./lib/authStore";
 import { Button } from "./components/Button";
+import { SkillSelector } from "./components/SkillSelector";
 import { cn } from "./lib/cn";
+import { useSkillSlug } from "./lib/useSkillSlug";
 
 type Tab = "drafts" | "kc" | "testset" | "audit" | "admin";
 
@@ -88,6 +90,7 @@ interface AuthedProps {
 }
 
 function AuthenticatedApp({ expert, tab, setTab, onLogout }: AuthedProps) {
+  const [skillSlug, setSkillSlug] = useSkillSlug();
   const handleLogout = async () => {
     try {
       await apiLogout();
@@ -109,6 +112,7 @@ function AuthenticatedApp({ expert, tab, setTab, onLogout }: AuthedProps) {
             </p>
           </div>
           <div className="flex items-center gap-3 text-sm">
+            <SkillSelector value={skillSlug} onChange={setSkillSlug} />
             <span className="text-slate-600">
               <span className="text-xs text-slate-400">登入為</span>{" "}
               <span className="font-medium">{expert.name}</span>{" "}

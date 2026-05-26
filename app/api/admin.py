@@ -560,3 +560,108 @@ async def sync_skills_from_git(req: SkillSyncRequest) -> dict[str, object]:
             "versions_skipped": result.versions_skipped,
             "errors": result.errors,
         }
+
+
+# ═══════════════════════════════════════════════════════════
+# Skill Version 5-state lifecycle promotion API (Phase 1 後續 #8)
+# ═══════════════════════════════════════════════════════════
+
+
+VALID_PROMOTIONS: dict[str, list[str]] = {
+    "draft": ["testing", "deprecated"],
+    "testing": ["approved", "draft", "deprecated"],
+    "approved": ["production", "draft", "deprecated"],
+    "production": ["deprecated"],
+    "deprecated": [],
+}
+
+
+class SkillPromoteRequest(BaseModel):
+    target_status: str = Field(pattern=r"^(draft|testing|approved|production|deprecated)$")
+    approved_by: str | None = Field(default=None, max_length=255)
+    reason: str = Field(min_length=1, max_length=500)
+
+
+@router.post(
+    "/skills/versions/{version_id}/promote",
+    summary="State transition skill_version status (MC-005 5-state lifecycle)",
+    dependencies=[Depends(require_admin)],
+)
+async def promote_skill_version(
+    version_id: uuid.UUID, body: SkillPromoteRequest
+) -> dict[str, object]:
+    """Promote skill_version via 5-state lifecycle:
+    draft → testing → approved → production → deprecated
+
+    Quality Gate（MC-005）：
+    - target=production 需 approved_by + approved_at + test_pass_rate >= 0.80
+    - 違反 DB CHECK constraint 直接 raise
+
+    Audit：寫 `skill.promoted` 含 from/to/reason。
+    """
+    from sqlalchemy import select as _sel
+
+    from app.db.models.skill_version import SkillVersion
+    from app.services import audit as _audit
+
+    async with session_scope() as session:
+        sv = (
+            await session.execute(_sel(SkillVersion).where(SkillVersion.id == version_id))
+        ).scalar_one_or_none()
+        if sv is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"skill_version {version_id} not found",
+            )
+
+        current = sv.status
+        target = body.target_status
+        if current == target:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"already in status: {current}",
+            )
+        allowed = VALID_PROMOTIONS.get(current, [])
+        if target not in allowed:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"illegal transition {current} → {target}; allowed: {allowed}",
+            )
+
+        sv.status = target
+        if target in ("approved", "production") and body.approved_by:
+            sv.approved_by = body.approved_by
+            from datetime import datetime as _dt
+
+            sv.approved_at = _dt.now(UTC)
+
+        try:
+            await session.flush()
+        except Exception as exc:  # DB CHECK quality gate may fire
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"DB constraint: {type(exc).__name__}",
+            ) from exc
+
+        await _audit.emit(
+            session,
+            event_type="skill.promoted",
+            tenant_id=sv.tenant_id,
+            actor_id=body.approved_by or "system",
+            resource_type="skill_version",
+            resource_id=str(sv.id),
+            payload={
+                "from_status": current,
+                "to_status": target,
+                "reason": body.reason,
+            },
+        )
+
+        return {
+            "id": str(sv.id),
+            "skill_id": str(sv.skill_id),
+            "version": sv.version,
+            "status": sv.status,
+            "approved_by": sv.approved_by,
+            "approved_at": sv.approved_at.isoformat() if sv.approved_at else None,
+        }

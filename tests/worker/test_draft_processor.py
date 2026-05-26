@@ -342,3 +342,96 @@ async def test_process_with_audit_hook(db_session: AsyncSession) -> None:
     assert len(audits) == 1
     assert audits[0].payload["model"] == "claude-sonnet-4-6"
     assert audits[0].payload["input_tokens"] == 50
+
+
+# ── CR-0001 #3: router integration ─────────────────
+
+
+async def test_process_message_with_router_resolves_skill(
+    db_session: AsyncSession,
+) -> None:
+    """DraftProcessor 接 router → 從 SkillRouter 拿 skill_slug + version + ctx.skill_version_id."""
+    import pytest
+
+    from app.db.models.skill import Skill as SkillModel
+    from app.db.models.skill_binding import SkillBinding
+    from app.db.models.skill_version import SkillVersion
+    from app.skill import SkillRouter
+
+    tenant, employee, conv = await _seed_conv(db_session)
+
+    # 建 DB skill / skill_version / skill_binding（指向 faq-respond v1.0.0）
+    skill = SkillModel(
+        tenant_id=tenant.id,
+        slug="customer-service/faq-respond",
+        vertical="customer-service",
+        name="FAQ Responder",
+    )
+    db_session.add(skill)
+    await db_session.flush()
+    sv = SkillVersion(
+        skill_id=skill.id,
+        tenant_id=tenant.id,
+        version="1.0.0",  # DB 存 semver 不帶 'v'
+        prompt_template_ref="x",
+    )
+    db_session.add(sv)
+    await db_session.flush()
+    db_session.add(
+        SkillBinding(
+            tenant_id=tenant.id,
+            employee_id=employee.id,
+            skill_version_id=sv.id,
+            is_default=True,
+        )
+    )
+    await db_session.flush()
+
+    fake_resp = LLMResponse(
+        text="您好，本店退貨期限為 7 天內。",
+        usage=LLMUsage(input_tokens=100, output_tokens=20),
+        model="claude-sonnet-4-6",
+    )
+    proc = _make_processor(_FakeLLM(fake_resp))
+    router = SkillRouter(db_session)
+
+    result = await proc.process_message(
+        session=db_session,
+        conversation_id=conv.id,
+        router=router,
+    )
+
+    # 走完整 routing pipeline → fallback to default → faq-respond → assistant 回覆
+    assert "退貨期限" in result.assistant_text
+    assert result.outbound_message_id is not None
+    # 確認 routing.fallback audit 已寫
+    audits = (
+        (
+            await db_session.execute(
+                select(AuditLog).where(AuditLog.event_type == "routing.fallback")
+            )
+        )
+        .scalars()
+        .all()
+    )
+    assert len(audits) == 1
+    # 不要 unused-import warning
+    _ = pytest
+
+
+async def test_process_message_no_router_no_slug_raises(
+    db_session: AsyncSession,
+) -> None:
+    """router 與 skill_slug/version 都沒提供 → ValueError."""
+    import pytest
+
+    _, _, conv = await _seed_conv(db_session)
+    proc = _make_processor(
+        _FakeLLM(LLMResponse(text="x", usage=LLMUsage(input_tokens=1, output_tokens=1)))
+    )
+
+    with pytest.raises(ValueError, match="必須提供 router"):
+        await proc.process_message(
+            session=db_session,
+            conversation_id=conv.id,
+        )

@@ -22,6 +22,7 @@ from typing import Any
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.models.skill import Skill
 from app.db.models.skill_binding import SkillBinding
 from app.db.models.skill_version import SkillVersion
 from app.llm.client import LLMClient, LLMMessage
@@ -42,6 +43,8 @@ class RoutingDecision:
     """SkillRouter.route() 回傳結果。"""
 
     skill_version: SkillVersion
+    skill_slug: str  # e.g. 'customer-service/faq-respond' (for SkillLoader.load)
+    skill_version_str: str  # e.g. '1.0.0' (semver)
     binding_id: uuid.UUID
     matched_rule_type: str  # 'keyword' / 'llm_intent' / ... / 'default_fallback'
     matched_rule: dict[str, Any] | None  # 命中的 routing_rule（fallback 時為 None）
@@ -118,7 +121,7 @@ class SkillRouter:
                 continue
 
             if matched:
-                sv = await self._fetch_skill_version(binding.skill_version_id)
+                sv, slug = await self._fetch_skill_version_with_slug(binding.skill_version_id)
                 await audit.emit(
                     self._session,
                     event_type="routing.matched",
@@ -133,6 +136,8 @@ class SkillRouter:
                 )
                 return RoutingDecision(
                     skill_version=sv,
+                    skill_slug=slug,
+                    skill_version_str=normalize_version_for_loader(sv.version),
                     binding_id=binding.id,
                     matched_rule_type=rule_type,
                     matched_rule=rule,
@@ -145,7 +150,7 @@ class SkillRouter:
                 f"employee {employee_id} has no is_default binding and all rules missed"
             )
 
-        sv = await self._fetch_skill_version(default_binding.skill_version_id)
+        sv, slug = await self._fetch_skill_version_with_slug(default_binding.skill_version_id)
         await audit.emit(
             self._session,
             event_type="routing.fallback",
@@ -156,6 +161,8 @@ class SkillRouter:
         )
         return RoutingDecision(
             skill_version=sv,
+            skill_slug=slug,
+            skill_version_str=normalize_version_for_loader(sv.version),
             binding_id=default_binding.id,
             matched_rule_type="default_fallback",
             matched_rule=None,
@@ -222,11 +229,28 @@ class SkillRouter:
         )
         return list(result.scalars())
 
-    async def _fetch_skill_version(self, skill_version_id: uuid.UUID) -> SkillVersion:
+    async def _fetch_skill_version_with_slug(
+        self, skill_version_id: uuid.UUID
+    ) -> tuple[SkillVersion, str]:
+        """JOIN Skill 拿 slug，給 caller 餵 SkillLoader.load(slug, version_str)。"""
         result = await self._session.execute(
-            select(SkillVersion).where(SkillVersion.id == skill_version_id)
+            select(SkillVersion, Skill.slug)
+            .join(Skill, SkillVersion.skill_id == Skill.id)
+            .where(SkillVersion.id == skill_version_id)
         )
-        return result.scalar_one()
+        row = result.one()
+        return row[0], row[1]
+
+
+def normalize_version_for_loader(db_version: str) -> str:
+    """DB SkillVersion.version (e.g. '1.0.0') → SkillLoader 要的 'v1.0.0' 目錄名。
+
+    skills/<slug>/<v1.0.0>/ 目錄帶 'v' 前綴；DB 存 semver 不帶。
+    若 db_version 已經帶 'v' 則原樣返回（容錯）。
+    """
+    if not db_version:
+        return db_version
+    return db_version if db_version.startswith("v") else f"v{db_version}"
 
 
 # ── Pure-function evaluators (testable independently) ──

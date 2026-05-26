@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.db.models.outbound_message import OutboundMessage
 from app.db.models.test_run import TestRun
 from app.services.conversation_idle import close_idle_conversations
+from app.skill import SkillRouter
 from app.worker.draft_processor import DraftProcessor, DraftResult
 from app.worker.outbound_processor import OutboundProcessor, PushResult
 from app.worker.test_runner import TestSetRunner
@@ -132,6 +133,7 @@ async def run_iteration(
     draft_processor: DraftProcessor,
     outbound_processor: OutboundProcessor,
     test_set_runner: TestSetRunner | None = None,
+    router: SkillRouter | None = None,
     skill_slug: str = DEFAULT_SKILL_SLUG,
     skill_version: str = DEFAULT_SKILL_VERSION,
     max_drafts_per_iter: int = 5,
@@ -169,6 +171,7 @@ async def run_iteration(
                 conversation_id=conv_id,
                 skill_slug=skill_slug,
                 skill_version=skill_version,
+                router=router,
             )
             drafts_processed += 1
         except Exception:
@@ -216,6 +219,7 @@ async def run_loop(
     draft_processor: DraftProcessor,
     outbound_processor: OutboundProcessor,
     test_set_runner: TestSetRunner | None = None,
+    router: SkillRouter | None = None,
     interval_s: float = 1.0,
     stop_event: asyncio.Event | None = None,
     skill_slug: str = DEFAULT_SKILL_SLUG,
@@ -235,6 +239,7 @@ async def run_loop(
                     draft_processor=draft_processor,
                     outbound_processor=outbound_processor,
                     test_set_runner=test_set_runner,
+                    router=router,
                     skill_slug=skill_slug,
                     skill_version=skill_version,
                 )

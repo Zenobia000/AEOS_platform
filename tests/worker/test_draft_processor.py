@@ -435,3 +435,90 @@ async def test_process_message_no_router_no_slug_raises(
             session=db_session,
             conversation_id=conv.id,
         )
+
+
+# ── Phase 1 後續 #16: draft awaiting_review → notify expert ────
+
+
+async def test_awaiting_review_triggers_slack_notify(
+    db_session: AsyncSession, monkeypatch: Any
+) -> None:
+    """outbound status=awaiting_review → notify_slack 被呼叫 ('新 draft 待審')."""
+    _, _, conv = await _seed_conv(db_session)
+    fake_resp = LLMResponse(
+        text="您好，請稍候我們專員會回覆",
+        usage=LLMUsage(input_tokens=20, output_tokens=10),
+        model="claude-sonnet-4-6",
+    )
+
+    calls: list[dict[str, Any]] = []
+
+    async def _fake_notify(**kwargs: Any) -> bool:
+        calls.append(kwargs)
+        return True
+
+    from app.services import notifications as _notif
+
+    monkeypatch.setattr(_notif, "notify_slack", _fake_notify)
+
+    # canary=0 → outbound_initial='awaiting_review'（demo default）
+    # 或強制
+    registry = InternalToolRegistry()
+    register_builtins(registry)
+    proc = DraftProcessor(
+        llm=_FakeLLM(fake_resp),
+        skill_loader=SkillLoader(root=_repo_root() / "skills"),
+        registry=registry,
+        outbound_initial_status="awaiting_review",  # 強制
+    )
+
+    result = await proc.process_message(
+        session=db_session,
+        conversation_id=conv.id,
+        skill_slug="customer-service/faq-respond",
+        skill_version="v1.0.0",
+    )
+    assert result.outbound_message_id is not None
+
+    # notify_slack 應被呼叫 1 次
+    assert len(calls) == 1
+    call = calls[0]
+    assert call["title"] == "新 draft 待審"
+    assert "conversation_id" in call["fields"]
+    assert "preview" in call["fields"]
+
+
+async def test_pending_status_does_not_notify(db_session: AsyncSession, monkeypatch: Any) -> None:
+    """outbound status=pending (auto-reply) → 不該觸發 notify_slack。"""
+    _, _, conv = await _seed_conv(db_session)
+    fake_resp = LLMResponse(
+        text="auto reply",
+        usage=LLMUsage(input_tokens=20, output_tokens=5),
+    )
+    calls: list[dict[str, Any]] = []
+
+    async def _fake_notify(**kwargs: Any) -> bool:
+        calls.append(kwargs)
+        return True
+
+    from app.services import notifications as _notif
+
+    monkeypatch.setattr(_notif, "notify_slack", _fake_notify)
+
+    registry = InternalToolRegistry()
+    register_builtins(registry)
+    proc = DraftProcessor(
+        llm=_FakeLLM(fake_resp),
+        skill_loader=SkillLoader(root=_repo_root() / "skills"),
+        registry=registry,
+        outbound_initial_status="pending",  # 強制 auto-reply
+    )
+
+    await proc.process_message(
+        session=db_session,
+        conversation_id=conv.id,
+        skill_slug="customer-service/faq-respond",
+        skill_version="v1.0.0",
+    )
+
+    assert calls == []  # 不該被呼叫

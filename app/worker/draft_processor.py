@@ -289,6 +289,22 @@ class DraftProcessor:
             await session.flush()
             outbound_id = outbound.id
 
+            # Phase 1 後續 #16: 通知 expert review queue（draft awaiting review）
+            if initial_status == "awaiting_review":
+                from app.services import notifications
+
+                await notifications.notify_slack(
+                    severity="info",
+                    title="新 draft 待審",
+                    message=(f"Conversation {conv.id} 有新 draft 等 expert review。"),
+                    fields={
+                        "tenant_id": str(ctx.tenant_id),
+                        "conversation_id": str(conv.id),
+                        "outbound_id": str(outbound_id),
+                        "preview": assistant_text[:120],
+                    },
+                )
+
         return DraftResult(
             conversation_id=conv.id,
             assistant_text=assistant_text,

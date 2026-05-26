@@ -108,10 +108,31 @@ export function AuditBrowser() {
       {view === "events" && (
         <div>
           <div className="mb-3 flex gap-2">
+            <select
+              data-testid="audit-event-type-select"
+              value={eventTypeFilter}
+              onChange={(e) => setEventTypeFilter(e.target.value)}
+              className="rounded-md border border-slate-300 px-2 py-1 text-sm"
+            >
+              <option value="">全部 event_type</option>
+              <option value="expert.draft_approved">expert.draft_approved</option>
+              <option value="expert.draft_rejected">expert.draft_rejected</option>
+              <option value="channel.message_pushed">channel.message_pushed</option>
+              <option value="channel.message_push_failed">channel.message_push_failed</option>
+              <option value="kill_switch.disable_ai">kill_switch.disable_ai</option>
+              <option value="kill_switch.enable_ai">kill_switch.enable_ai</option>
+              <option value="canary.percent_changed">canary.percent_changed</option>
+              <option value="routing.matched">routing.matched</option>
+              <option value="routing.fallback">routing.fallback</option>
+              <option value="dlq.outbound_requeued">dlq.outbound_requeued</option>
+              <option value="skill.promoted">skill.promoted</option>
+              <option value="conversation.idle_closed">conversation.idle_closed</option>
+              <option value="pii.redacted_in_ingress">pii.redacted_in_ingress</option>
+            </select>
             <input
               value={eventTypeFilter}
               onChange={(e) => setEventTypeFilter(e.target.value)}
-              placeholder="event_type filter (e.g. expert.draft_approved)"
+              placeholder="或自填 event_type"
               className="flex-1 rounded-md border border-slate-300 px-2 py-1 text-sm"
             />
             <Button onClick={() => void refreshEvents()} disabled={loading}>

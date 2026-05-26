@@ -50,5 +50,23 @@ jobs:
           exit-code: "1"
           format: table
 
-      # Container image scan：Dockerfile 加入後再 enable。
-      # 對應 SEC-001 §6.1 Go/No-Go #7 (Container image scan)
+  trivy-image:
+    name: Trivy (Docker image scan, SEC §6.1 #7)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: trivy-fs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t aeos-platform:ci-scan .
+
+      - name: Run Trivy image scan
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: aeos-platform:ci-scan
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+          format: table

@@ -46,7 +46,7 @@ from app.llm.client import LLMClient, LLMMessage, LLMToolDefinition
 from app.observability import e2e_latency_seconds, llm_tokens_total
 from app.services import audit as audit_service
 from app.services import canary, kill_switch
-from app.skill import LoadedSkill, SkillLoader
+from app.skill import LoadedSkill, SkillLoader, SkillRouter
 
 
 @dataclass(frozen=True)
@@ -99,19 +99,24 @@ class DraftProcessor:
         *,
         session: AsyncSession,
         conversation_id: uuid.UUID,
-        skill_slug: str,
-        skill_version: str,
+        skill_slug: str | None = None,
+        skill_version: str | None = None,
+        router: SkillRouter | None = None,
     ) -> DraftResult:
         """對指定 conversation 的最新 user message 跑一次 LLM turn.
 
         Args:
             session: async DB session
             conversation_id: 對話 UUID
-            skill_slug: 'customer-service/faq-respond'
-            skill_version: 'v1.0.0'
+            skill_slug: 'customer-service/faq-respond'（router 未提供時的 fallback）
+            skill_version: '1.0.0'（router 未提供時的 fallback）
+            router: SkillRouter；提供時依 message 動態路由 + 寫 audit
 
         Returns:
             DraftResult — 含 assistant_text + outbound_message_id + turn detail
+
+        Raises:
+            ValueError: router 與 skill_slug/version 同時為 None
         """
         conv = (
             await session.execute(select(Conversation).where(Conversation.id == conversation_id))
@@ -124,6 +129,22 @@ class DraftProcessor:
         if not await kill_switch.is_ai_enabled(session, conv.tenant_id):
             return await self._handle_kill_switch(session, conv)
 
+        # CR-0001 #3 routing — 有 router 走動態，否則 fallback 到 skill_slug/version
+        resolved_skill_version_id: uuid.UUID | None = None
+        if router is not None:
+            last_user_msg = await self._latest_user_message(session, conv.id)
+            decision = await router.route(
+                message=last_user_msg,
+                employee_id=conv.employee_id,
+                tenant_id=conv.tenant_id,
+                channel_id=conv.channel,
+            )
+            skill_slug = decision.skill_slug
+            skill_version = decision.skill_version_str
+            resolved_skill_version_id = decision.skill_version.id
+        elif not (skill_slug and skill_version):
+            raise ValueError("process_message: 必須提供 router 或 (skill_slug + skill_version)")
+
         skill = self._skill_loader.load(skill_slug, skill_version)
 
         ctx = AgentContext(
@@ -131,7 +152,7 @@ class DraftProcessor:
             conversation_id=conv.id,
             employee_id=conv.employee_id,
             employee_version=conv.employee_version,
-            skill_version_id=None,  # Phase 1：DB skill_version_id 之後接 skill_binding lookup
+            skill_version_id=resolved_skill_version_id,
             runtime_snapshot=employee.runtime_snapshot or {},
             session=session,
             metadata={"channel": conv.channel},
@@ -316,6 +337,24 @@ class DraftProcessor:
             outbound_message_id=None,
             turn_result=TurnResult(response=empty_response, tool_calls=[]),
         )
+
+    async def _latest_user_message(
+        self,
+        session: AsyncSession,
+        conversation_id: uuid.UUID,
+    ) -> str:
+        """撈最新一則 user message content；無則回空字串（router 走 default fallback）."""
+        row = (
+            await session.execute(
+                text(
+                    "SELECT content FROM message "
+                    "WHERE conversation_id = :cid AND role = 'user' "
+                    "ORDER BY seq DESC LIMIT 1"
+                ),
+                {"cid": str(conversation_id)},
+            )
+        ).first()
+        return row[0] if row else ""
 
     async def _load_history(
         self,

@@ -360,6 +360,7 @@ async def _reset_demo_tenant(session: AsyncSession) -> None:
     )
     # KB / TestSet / Tool / Skill / 其他 per-tenant 表
     # 不刪 audit_log（append-only trigger 保護；歷史紀錄保留）
+    # 順序：skill_binding → skill_version → skill (FK chain)
     for table in (
         "knowledge_card",
         "ingestion_job",
@@ -367,6 +368,8 @@ async def _reset_demo_tenant(session: AsyncSession) -> None:
         "test_case",
         "tool_invocation",
         "skill_binding",
+        "skill_version",  # CR-0002: sync_from_git 產生
+        "skill",  # CR-0002: sync_from_git 產生
         "tenant_setting",
         "api_key",
     ):
@@ -391,6 +394,134 @@ async def _reset_demo_tenant(session: AsyncSession) -> None:
     print(f"[reset] deleted tenant '{DEMO_SLUG}' + 所有相關資料 (id={tid})")
 
 
+async def _seed_6_vertical_skills(
+    session: AsyncSession,
+    tenant: Tenant,
+    employee: Employee,
+) -> None:
+    """Phase 1 後續 #1：seed_demo 擴成 6 vertical（customer-service / hr / it-helpdesk /
+    sales / finance / legal）。
+
+    流程：
+    1. 呼叫 SkillRegistryService.sync_from_git 掃 skills/ → upsert skill / skill_version
+    2. 為 employee 建 6 個 skill_binding（customer-service 設 is_default=true）
+    3. routing_rule：每 vertical 用 keyword fast path（精選 vertical 關鍵字）
+    """
+    from pathlib import Path
+
+    from sqlalchemy import select as _select
+
+    from app.db.models.skill import Skill
+    from app.db.models.skill_binding import SkillBinding
+    from app.db.models.skill_version import SkillVersion
+    from app.services import skill_registry as _sr
+
+    repo_root = Path(__file__).resolve().parents[1]
+    result = await _sr.sync_from_git(session, tenant_id=tenant.id, skills_root=repo_root / "skills")
+    print(
+        f"[ok] skill sync: +{result.skills_inserted} skill / "
+        f"+{result.versions_inserted} version / "
+        f"errors={len(result.errors)}"
+    )
+
+    # routing_rule keyword 精選表
+    routing_table: dict[str, dict[str, object]] = {
+        "customer-service/faq-respond": {
+            "is_default": True,
+            "rule": {},
+        },
+        "hr/leave-request": {
+            "is_default": False,
+            "rule": {
+                "type": "keyword",
+                "params": {"keywords": ["請假", "leave", "事假", "年假", "病假", "婚假"]},
+                "priority": 10,
+            },
+        },
+        "it-helpdesk/password-reset": {
+            "is_default": False,
+            "rule": {
+                "type": "keyword",
+                "params": {
+                    "keywords": [
+                        "密碼",
+                        "password",
+                        "登入",
+                        "帳號鎖",
+                        "MFA",
+                        "SSO",
+                    ]
+                },
+                "priority": 10,
+            },
+        },
+        "sales/quote-request": {
+            "is_default": False,
+            "rule": {
+                "type": "keyword",
+                "params": {"keywords": ["報價", "quote", "方案", "試用", "pricing"]},
+                "priority": 10,
+            },
+        },
+        "finance/expense-claim": {
+            "is_default": False,
+            "rule": {
+                "type": "keyword",
+                "params": {"keywords": ["報帳", "差旅", "發票", "費用", "額度"]},
+                "priority": 10,
+            },
+        },
+        "legal/contract-review": {
+            "is_default": False,
+            "rule": {
+                "type": "keyword",
+                "params": {"keywords": ["合約", "NDA", "MSA", "條款", "違約金"]},
+                "priority": 10,
+            },
+        },
+    }
+
+    bindings_added = 0
+    for slug, cfg in routing_table.items():
+        # 找對應 skill_version
+        sv_row = (
+            await session.execute(
+                _select(SkillVersion)
+                .join(Skill, SkillVersion.skill_id == Skill.id)
+                .where(Skill.tenant_id == tenant.id, Skill.slug == slug)
+            )
+        ).scalar_one_or_none()
+        if sv_row is None:
+            print(f"[warn] no skill_version for {slug}; skipped binding")
+            continue
+
+        # 已存在則 skip
+        existing = (
+            await session.execute(
+                _select(SkillBinding).where(
+                    SkillBinding.employee_id == employee.id,
+                    SkillBinding.skill_version_id == sv_row.id,
+                )
+            )
+        ).scalar_one_or_none()
+        if existing is not None:
+            continue
+
+        session.add(
+            SkillBinding(
+                tenant_id=tenant.id,
+                employee_id=employee.id,
+                skill_version_id=sv_row.id,
+                routing_rule=cfg["rule"],  # type: ignore[arg-type]
+                is_default=bool(cfg["is_default"]),
+                priority=0 if cfg["is_default"] else 10,
+            )
+        )
+        bindings_added += 1
+    await session.flush()
+    print(f"[ok] skill_binding +{bindings_added} (6 vertical for demo employee)")
+
+
 async def main() -> None:
     reset = "--reset" in sys.argv
 
@@ -405,6 +536,7 @@ async def main() -> None:
         await _seed_kc_drafts(session, tenant)
         await _seed_test_cases(session, tenant)
         await _seed_awaiting_review_draft(session, tenant, employee)
+        await _seed_6_vertical_skills(session, tenant, employee)
 
     print()
     print("=" * 60)

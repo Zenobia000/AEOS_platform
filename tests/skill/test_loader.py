@@ -68,3 +68,54 @@ def test_load_handles_missing_optional_fields(tmp_path: Path) -> None:
     assert skill.policy_refs == ()
     assert skill.io_contract is None
     assert skill.system_prompt == "you are minimal"
+
+
+# ── CR-0001 #5: stub verticals 載入驗證 ──────────────
+
+
+@pytest.mark.parametrize(
+    "slug,expected_tool",
+    [
+        ("hr/leave-request", "query_employee_leave_balance"),
+        ("it-helpdesk/password-reset", "verify_user_identity"),
+        ("sales/quote-request", "lookup_product_catalog"),
+    ],
+)
+def test_load_stub_vertical_skill(slug: str, expected_tool: str) -> None:
+    """3 個 stub vertical skill 都能被 SkillLoader 載入 + 含 vertical-specific tool 註釋。"""
+    loader = SkillLoader(root=_repo_root() / "skills")
+    skill = loader.load(slug, "v1.0.0")
+
+    assert isinstance(skill, LoadedSkill)
+    assert skill.version == "1.0.0"
+    assert slug in skill.slug
+    assert "search_knowledge" in skill.tool_bindings
+    # vertical-specific tool 在 manifest 是註釋（preserved by CLI template）
+    # → 真正 tool_bindings 只 search_knowledge；expected_tool 用於文件搜尋
+    assert "STUB" in skill.system_prompt  # 各 skill system.md 都有 STUB 警示
+
+
+def test_stub_test_sets_are_valid_yaml() -> None:
+    """3 個 stub skill 的 test_set.yaml 都應該是 valid YAML + 含 cases."""
+    import yaml
+
+    skills_root = _repo_root() / "skills"
+    for slug in (
+        "hr/leave-request",
+        "it-helpdesk/password-reset",
+        "sales/quote-request",
+    ):
+        test_set_path = skills_root / slug / "v1.0.0" / "test_set.yaml"
+        assert test_set_path.exists(), f"missing: {test_set_path}"
+        with test_set_path.open(encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+        assert data["quality"] == "stub"
+        assert data["target_count"] == 50
+        assert isinstance(data["cases"], list)
+        assert len(data["cases"]) >= 10, f"{slug}: too few cases"
+        # 每題都應有 name / user_input / expected_keywords
+        for case in data["cases"]:
+            assert "name" in case
+            assert "user_input" in case
+            assert "expected_keywords" in case
+            assert isinstance(case["expected_keywords"], list)

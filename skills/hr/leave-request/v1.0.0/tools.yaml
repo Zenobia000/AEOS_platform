@@ -1,0 +1,22 @@
+# tools.yaml — hr/leave-request v1.0.0
+#
+# CR-0001 §8 #4 stub tool 設計：in-mem dict 模擬 + # STUB: 標記。
+
+tools:
+  - slug: search_knowledge
+    description: |
+      在 tenant 的 approved KnowledgeCard 中搜尋請假政策文件。
+    risk_tier: low
+    enabled: true
+
+  - slug: query_employee_leave_balance
+    description: |
+      # STUB: replace before production.
+      查詢員工各類假別餘額（年假 / 病假 / 事假 / 育嬰假）。
+    risk_tier: medium
+    enabled: true
+
+  - slug: request_human_handoff
+    description: 轉真人 HR 客服處理。
+    risk_tier: low
+    enabled: true

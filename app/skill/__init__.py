@@ -6,5 +6,16 @@
 """
 
 from app.skill.loader import LoadedSkill, SkillLoader
+from app.skill.router import (
+    NoSkillBoundError,
+    RoutingDecision,
+    SkillRouter,
+)
 
-__all__ = ["LoadedSkill", "SkillLoader"]
+__all__ = [
+    "LoadedSkill",
+    "NoSkillBoundError",
+    "RoutingDecision",
+    "SkillLoader",
+    "SkillRouter",
+]

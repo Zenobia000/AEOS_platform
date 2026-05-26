@@ -494,3 +494,51 @@ async def test_sync_missing_root_returns_error(
     body = resp.json()
     assert body["skills_inserted"] == 0
     assert any("not a dir" in e for e in body["errors"])
+
+
+# ── Phase 1 後續 #8: Skill version promotion 5-state lifecycle ─
+
+
+async def test_promote_draft_to_testing(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    tenant = await _seed_tenant(webhook_session, "promo-1")
+    _skill, sv, _emp = await _seed_skill_chain(webhook_session, tenant)
+    assert sv.status == "draft"
+    resp = await client.post(
+        f"/api/v1/admin/skills/versions/{sv.id}/promote",
+        json={"target_status": "testing", "reason": "ready to test"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "testing"
+
+
+async def test_promote_illegal_transition_409(
+    client: AsyncClient, webhook_session: AsyncSession
+) -> None:
+    """draft → production 跳級 → 409。"""
+    tenant = await _seed_tenant(webhook_session, "promo-illegal")
+    _, sv, _ = await _seed_skill_chain(webhook_session, tenant)
+    resp = await client.post(
+        f"/api/v1/admin/skills/versions/{sv.id}/promote",
+        json={"target_status": "production", "reason": "skip"},
+    )
+    assert resp.status_code == 409
+    assert "illegal transition" in resp.json()["detail"]
+
+
+async def test_promote_404(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    resp = await client.post(
+        f"/api/v1/admin/skills/versions/{uuid.uuid4()}/promote",
+        json={"target_status": "testing", "reason": "x"},
+    )
+    assert resp.status_code == 404
+
+
+async def test_promote_same_status_409(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    tenant = await _seed_tenant(webhook_session, "promo-same")
+    _, sv, _ = await _seed_skill_chain(webhook_session, tenant)
+    resp = await client.post(
+        f"/api/v1/admin/skills/versions/{sv.id}/promote",
+        json={"target_status": "draft", "reason": "noop"},
+    )
+    assert resp.status_code == 409
+    assert "already in status" in resp.json()["detail"]

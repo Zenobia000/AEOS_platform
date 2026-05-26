@@ -1,0 +1,20 @@
+# Test Set — {{VERTICAL}}/{{SLUG}} v1.0.0
+#
+# AI-generated stub test cases per CR-0001 §8 #6 決定。
+# 標 quality: stub — pilot 真實對話蒐集後覆寫。
+#
+# 對應 DB test_case 表；S3 TestSetRunner 跑 KeywordJudge 用。
+
+quality: stub  # CR-0001 §8 #6: AI 生成；pilot 資料覆寫前不算品質驗證
+
+cases:
+  - name: example_case_1
+    user_input: "範例使用者問題 1"
+    expected_outcome: "理想回答的概述"
+    expected_keywords:
+      - "關鍵字1"
+      - "關鍵字2"
+    tags: [happy_path]
+
+  # 50 題 stub case 由 scripts/new_skill.py 產生時填入；
+  # 若 user 跑 CLI 時 --skip-test-set 則只放此範例。

@@ -638,3 +638,44 @@ async def test_oncall_invalid_time_range_422(
 async def test_oncall_delete_404(client: AsyncClient, webhook_session: AsyncSession) -> None:
     resp = await client.delete(f"/api/v1/admin/oncall/{uuid.uuid4()}")
     assert resp.status_code == 404
+
+
+# ── Phase 1 後續 #15: tool_policy admin CRUD ─────────
+
+
+async def test_tool_policy_crud(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    tenant = await _seed_tenant(webhook_session, "tp-crud")
+    resp = await client.post(
+        "/api/v1/admin/tool-policies",
+        json={
+            "tenant_id": str(tenant.id),
+            "name": "block-risky-tools-in-canary",
+            "description": "blocks tool risk_tier=high",
+            "rule_yaml": "block_risk_tier: high",
+            "priority": 10,
+        },
+    )
+    assert resp.status_code == 200
+    pid = resp.json()["id"]
+    assert resp.json()["priority"] == 10
+
+    resp_list = await client.get(f"/api/v1/admin/tool-policies?tenant_id={tenant.id}")
+    assert resp_list.json()["count"] == 1
+
+    resp_del = await client.delete(f"/api/v1/admin/tool-policies/{pid}")
+    assert resp_del.status_code == 200
+
+
+async def test_tool_policy_global(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    """tenant_id=NULL → 全局 policy。"""
+    resp = await client.post(
+        "/api/v1/admin/tool-policies",
+        json={"name": "global-block-pii", "rule_yaml": "block_tool: leak_pii"},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["tenant_id"] is None
+
+
+async def test_tool_policy_delete_404(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    resp = await client.delete(f"/api/v1/admin/tool-policies/{uuid.uuid4()}")
+    assert resp.status_code == 404

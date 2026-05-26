@@ -874,3 +874,93 @@ async def delete_oncall(shift_id: uuid.UUID) -> dict[str, object]:
         await session.delete(o)
         await session.flush()
         return {"deleted": str(shift_id)}
+
+
+# ═══════════════════════════════════════════════════════════
+# ToolPolicy admin CRUD (Phase 1 後續 #15)
+# ═══════════════════════════════════════════════════════════
+
+
+from app.db.models.tool_policy import ToolPolicy as _ToolPolicy  # noqa: E402
+
+
+class ToolPolicyCreateRequest(BaseModel):
+    tenant_id: uuid.UUID | None = Field(default=None, description="NULL = global policy")
+    name: str = Field(min_length=1, max_length=200)
+    description: str | None = Field(default=None, max_length=1000)
+    rule_yaml: str = Field(min_length=1)
+    priority: int = Field(default=0, ge=0, le=999)
+
+
+def _policy_to_json(p: _ToolPolicy) -> dict[str, object]:
+    return {
+        "id": str(p.id),
+        "tenant_id": str(p.tenant_id) if p.tenant_id else None,
+        "name": p.name,
+        "description": p.description,
+        "rule_yaml": p.rule_yaml,
+        "priority": p.priority,
+    }
+
+
+@router.get(
+    "/tool-policies",
+    summary="List tool policies (optionally filtered by tenant)",
+    dependencies=[Depends(require_admin)],
+)
+async def list_tool_policies(
+    tenant_id: uuid.UUID | None = None,
+) -> dict[str, object]:
+    from sqlalchemy import select as _sel
+
+    async with session_scope() as session:
+        stmt = _sel(_ToolPolicy).order_by(_ToolPolicy.priority.desc())
+        if tenant_id is not None:
+            stmt = stmt.where(_ToolPolicy.tenant_id == tenant_id)
+        rows = list((await session.execute(stmt)).scalars())
+        return {"items": [_policy_to_json(p) for p in rows], "count": len(rows)}
+
+
+@router.post(
+    "/tool-policies",
+    summary="Create tool policy",
+    dependencies=[Depends(require_admin)],
+)
+async def create_tool_policy(body: ToolPolicyCreateRequest) -> dict[str, object]:
+    async with session_scope() as session:
+        p = _ToolPolicy(
+            tenant_id=body.tenant_id,
+            name=body.name,
+            description=body.description,
+            rule_yaml=body.rule_yaml,
+            priority=body.priority,
+        )
+        session.add(p)
+        try:
+            await session.flush()
+        except Exception as exc:
+            await session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"create failed: {type(exc).__name__}",
+            ) from exc
+        return _policy_to_json(p)
+
+
+@router.delete(
+    "/tool-policies/{policy_id}",
+    summary="Delete tool policy",
+    dependencies=[Depends(require_admin)],
+)
+async def delete_tool_policy(policy_id: uuid.UUID) -> dict[str, object]:
+    from sqlalchemy import select as _sel
+
+    async with session_scope() as session:
+        p = (
+            await session.execute(_sel(_ToolPolicy).where(_ToolPolicy.id == policy_id))
+        ).scalar_one_or_none()
+        if p is None:
+            raise HTTPException(status_code=404, detail="policy not found")
+        await session.delete(p)
+        await session.flush()
+        return {"deleted": str(policy_id)}

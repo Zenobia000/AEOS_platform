@@ -768,3 +768,109 @@ async def archive_tenant(tenant_id: uuid.UUID) -> dict[str, object]:
         t.status = "archived"
         await session.flush()
         return _tenant_to_json(t)
+
+
+# ═══════════════════════════════════════════════════════════
+# OncallSchedule admin CRUD (Phase 1 後續 #10)
+# ═══════════════════════════════════════════════════════════
+
+
+from datetime import datetime as _dt  # noqa: E402
+
+from app.db.models.oncall_schedule import OncallSchedule as _Oncall  # noqa: E402
+
+
+class OncallCreateRequest(BaseModel):
+    tenant_id: uuid.UUID
+    shift_start: _dt
+    shift_end: _dt
+    primary_expert_id: uuid.UUID | None = None
+    secondary_expert_id: uuid.UUID | None = None
+    notes: str | None = Field(default=None, max_length=1000)
+
+
+def _oncall_to_json(o: _Oncall) -> dict[str, object]:
+    return {
+        "id": str(o.id),
+        "tenant_id": str(o.tenant_id),
+        "shift_start": o.shift_start.isoformat(),
+        "shift_end": o.shift_end.isoformat(),
+        "primary_expert_id": str(o.primary_expert_id) if o.primary_expert_id else None,
+        "secondary_expert_id": str(o.secondary_expert_id) if o.secondary_expert_id else None,
+        "notes": o.notes,
+        "created_at": o.created_at.isoformat() if o.created_at else None,
+    }
+
+
+@router.get(
+    "/oncall/{tenant_id}",
+    summary="List oncall schedules for tenant",
+    dependencies=[Depends(require_admin)],
+)
+async def list_oncall(
+    tenant_id: uuid.UUID,
+) -> dict[str, object]:
+    from sqlalchemy import select as _sel
+
+    async with session_scope() as session:
+        rows = list(
+            (
+                await session.execute(
+                    _sel(_Oncall)
+                    .where(_Oncall.tenant_id == tenant_id)
+                    .order_by(_Oncall.shift_start.asc())
+                )
+            ).scalars()
+        )
+        return {"items": [_oncall_to_json(o) for o in rows], "count": len(rows)}
+
+
+@router.post(
+    "/oncall",
+    summary="Create oncall shift",
+    dependencies=[Depends(require_admin)],
+)
+async def create_oncall(body: OncallCreateRequest) -> dict[str, object]:
+    if body.shift_end <= body.shift_start:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="shift_end must be after shift_start",
+        )
+    async with session_scope() as session:
+        sched = _Oncall(
+            tenant_id=body.tenant_id,
+            shift_start=body.shift_start,
+            shift_end=body.shift_end,
+            primary_expert_id=body.primary_expert_id,
+            secondary_expert_id=body.secondary_expert_id,
+            notes=body.notes,
+        )
+        session.add(sched)
+        try:
+            await session.flush()
+        except Exception as exc:
+            await session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"create failed: {type(exc).__name__}",
+            ) from exc
+        return _oncall_to_json(sched)
+
+
+@router.delete(
+    "/oncall/{shift_id}",
+    summary="Delete oncall shift",
+    dependencies=[Depends(require_admin)],
+)
+async def delete_oncall(shift_id: uuid.UUID) -> dict[str, object]:
+    from sqlalchemy import select as _sel
+
+    async with session_scope() as session:
+        o = (
+            await session.execute(_sel(_Oncall).where(_Oncall.id == shift_id))
+        ).scalar_one_or_none()
+        if o is None:
+            raise HTTPException(status_code=404, detail="shift not found")
+        await session.delete(o)
+        await session.flush()
+        return {"deleted": str(shift_id)}

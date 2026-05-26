@@ -437,3 +437,60 @@ async def test_requeue_non_failed_outbound_409(
 async def test_requeue_404_not_found(client: AsyncClient, webhook_session: AsyncSession) -> None:
     resp = await client.post(f"/api/v1/admin/dlq/outbound/{uuid.uuid4()}/requeue")
     assert resp.status_code == 404
+
+
+# ── Skill Registry sync (Phase 1 後續 #24) ────────────
+
+
+async def test_sync_skills_from_real_git_tree(
+    client: AsyncClient, webhook_session: AsyncSession
+) -> None:
+    """掃真實 skills/ 目錄 → 上 6 個 vertical skill 應全部 insert。"""
+    tenant = await _seed_tenant(webhook_session, "sync-real")
+
+    resp = await client.post(
+        "/api/v1/admin/skills/sync",
+        json={"tenant_id": str(tenant.id)},
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    # 真實 skills/ 目錄 6 個 vertical（customer-service, hr, it-helpdesk, sales, finance, legal）
+    assert body["skills_inserted"] >= 6
+    assert body["versions_inserted"] >= 6
+
+
+async def test_sync_idempotent(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    """第二次 sync 同 tenant → versions_skipped 全等於既存數量；不重複 insert。"""
+    tenant = await _seed_tenant(webhook_session, "sync-idem")
+
+    r1 = await client.post(
+        "/api/v1/admin/skills/sync",
+        json={"tenant_id": str(tenant.id)},
+    )
+    n1 = r1.json()["versions_inserted"]
+    assert n1 >= 6
+
+    r2 = await client.post(
+        "/api/v1/admin/skills/sync",
+        json={"tenant_id": str(tenant.id)},
+    )
+    body2 = r2.json()
+    assert body2["versions_inserted"] == 0
+    assert body2["versions_skipped"] == n1
+
+
+async def test_sync_missing_root_returns_error(
+    client: AsyncClient, webhook_session: AsyncSession
+) -> None:
+    tenant = await _seed_tenant(webhook_session, "sync-missing")
+    resp = await client.post(
+        "/api/v1/admin/skills/sync",
+        json={
+            "tenant_id": str(tenant.id),
+            "skills_root": "/no/such/path/__missing__",
+        },
+    )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["skills_inserted"] == 0
+    assert any("not a dir" in e for e in body["errors"])

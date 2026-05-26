@@ -514,3 +514,49 @@ async def requeue_dlq_outbound(outbound_id: uuid.UUID) -> dict[str, object]:
             payload={"manual": True},
         )
         return _outbound_to_json(m)
+
+
+# ═══════════════════════════════════════════════════════════
+# Skill Registry sync (Phase 1 後續 #24 — MC-005 §Interface)
+# ═══════════════════════════════════════════════════════════
+
+
+from pathlib import Path as _Path  # noqa: E402
+
+from app.services import skill_registry as _skill_registry  # noqa: E402
+
+
+class SkillSyncRequest(BaseModel):
+    """POST /admin/skills/sync body."""
+
+    tenant_id: uuid.UUID
+    skills_root: str | None = Field(
+        default=None,
+        description="絕對或相對於 cwd 的 git monorepo path；None = 預設 ./skills",
+    )
+
+
+@router.post(
+    "/skills/sync",
+    summary="掃 skills/ git tree → upsert DB skill / skill_version (MC-005 sync_from_git)",
+    dependencies=[Depends(require_admin)],
+)
+async def sync_skills_from_git(req: SkillSyncRequest) -> dict[str, object]:
+    """git 內 skill 進到 DB 鏡像。已存在的 skill_version 不會被覆寫
+    （DB 是事實鏡像；要改 skill 內容請 bump version + 再 sync）。"""
+    root = _Path(req.skills_root) if req.skills_root else _Path("skills")
+    async with session_scope() as session:
+        result = await _skill_registry.sync_from_git(
+            session,
+            tenant_id=req.tenant_id,
+            skills_root=root,
+        )
+        return {
+            "tenant_id": str(req.tenant_id),
+            "skills_root": str(root),
+            "skills_inserted": result.skills_inserted,
+            "skills_updated": result.skills_updated,
+            "versions_inserted": result.versions_inserted,
+            "versions_skipped": result.versions_skipped,
+            "errors": result.errors,
+        }

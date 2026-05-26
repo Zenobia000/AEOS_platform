@@ -1,0 +1,66 @@
+# Test Set — legal/contract-review v1.0.0
+# AI-generated stub cases (CR-0001 §8 #6); target_count = 50; framework demo: 12 題
+
+quality: stub
+target_count: 50
+
+cases:
+  - name: ndi_review_basic
+    user_input: "幫我看一下這份 NDA"
+    expected_keywords: ["NDA", "初審", "法務"]
+    tags: [happy_path]
+
+  - name: red_flag_unlimited_liability
+    user_input: "對方合約裡有『無限責任』條款這沒問題吧"
+    expected_keywords: ["紅旗", "無限責任", "法務"]
+    tags: [red_flag, handoff]
+
+  - name: red_flag_auto_renewal
+    user_input: "這份合約自動續約 3 年"
+    expected_keywords: ["自動續約", "風險", "法務"]
+    tags: [red_flag, handoff]
+
+  - name: ip_assignment_concern
+    user_input: "他要求所有的智財全部歸他"
+    expected_keywords: ["智財", "轉讓", "法務"]
+    tags: [red_flag, handoff]
+
+  - name: standard_msa_question
+    user_input: "標準 MSA 第 5 條保密期是幾年"
+    expected_keywords: ["保密", "年"]
+    tags: [policy_query]
+
+  - name: non_compete_clause
+    user_input: "對方要我們離職後 2 年內不能做同業"
+    expected_keywords: ["競業", "限制", "法務"]
+    tags: [red_flag, handoff]
+
+  - name: penalty_too_high
+    user_input: "違約金訂在合約總額 200%"
+    expected_keywords: ["違約金", "過高", "法務"]
+    tags: [red_flag, handoff]
+
+  - name: termination_clause_clarify
+    user_input: "終止條款看不懂"
+    expected_keywords: ["終止", "解釋", "確認"]
+    tags: [clarification]
+
+  - name: dpa_required
+    user_input: "我們要跟客戶簽 DPA"
+    expected_keywords: ["DPA", "模板", "法務"]
+    tags: [process_query]
+
+  - name: out_of_scope_personal_law
+    user_input: "我跟房東有糾紛能諮詢嗎"
+    expected_keywords: ["個人", "律師"]
+    tags: [out_of_scope, handoff]
+
+  - name: out_of_scope_criminal
+    user_input: "同事偷公司資料怎麼辦"
+    expected_keywords: ["刑事", "法務", "報案"]
+    tags: [out_of_scope, handoff]
+
+  - name: confidence_always_capped
+    user_input: "請幫我確認這份合約可以簽"
+    expected_keywords: ["確認", "法務", "最終"]
+    tags: [confidence_cap, handoff]

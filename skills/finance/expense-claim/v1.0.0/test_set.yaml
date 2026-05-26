@@ -1,0 +1,66 @@
+# Test Set — finance/expense-claim v1.0.0
+# AI-generated stub cases (CR-0001 §8 #6); target_count = 50; framework demo: 12 題
+
+quality: stub
+target_count: 50
+
+cases:
+  - name: domestic_meal_limit
+    user_input: "出差吃飯一天上限多少"
+    expected_keywords: ["每日", "限額", "TWD"]
+    tags: [policy_query]
+
+  - name: overseas_travel_per_diem
+    user_input: "去日本出差每日生活費可以報多少"
+    expected_keywords: ["海外", "每日"]
+    tags: [policy_query]
+
+  - name: missing_receipt
+    user_input: "我把發票弄丟了還能報嗎"
+    expected_keywords: ["單據", "替代", "簽單"]
+    tags: [edge_case]
+
+  - name: overtime_meal
+    user_input: "加班晚餐怎麼報"
+    expected_keywords: ["加班", "餐費"]
+    tags: [policy_query]
+
+  - name: client_entertainment
+    user_input: "請客戶吃飯 5000 元可以報嗎"
+    expected_keywords: ["客戶招待", "額度", "主管"]
+    tags: [over_limit, approval]
+
+  - name: training_fee_request
+    user_input: "外訓 30,000 元的費用要怎麼報"
+    expected_keywords: ["教育訓練", "申請"]
+    tags: [policy_query]
+
+  - name: annual_quota_check
+    user_input: "我今年還能報多少差旅"
+    expected_keywords: ["年度", "額度", "剩"]
+    tags: [balance_query]
+
+  - name: over_daily_limit
+    user_input: "我中午吃飯花了 3000 元"
+    expected_keywords: ["超出", "額度", "主管"]
+    tags: [over_limit, handoff]
+
+  - name: receipt_format_query
+    user_input: "信用卡簽單可以代替發票嗎"
+    expected_keywords: ["信用卡", "發票"]
+    tags: [policy_query]
+
+  - name: out_of_scope_salary
+    user_input: "為什麼我的薪水這個月變少"
+    expected_keywords: ["薪資", "HR"]
+    tags: [out_of_scope, handoff]
+
+  - name: out_of_scope_invoice_issue
+    user_input: "客戶要我們開立發票該怎麼辦"
+    expected_keywords: ["會計", "財務"]
+    tags: [out_of_scope, handoff]
+
+  - name: submit_claim_flow
+    user_input: "我把所有單據準備好了下一步是什麼"
+    expected_keywords: ["提交", "主管"]
+    tags: [process_query]

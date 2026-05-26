@@ -1,0 +1,26 @@
+# tools.yaml — finance/expense-claim v1.0.0
+
+tools:
+  - slug: search_knowledge
+    description: 搜尋公司報帳政策、額度表、單據範例。
+    risk_tier: low
+    enabled: true
+
+  - slug: query_expense_policy
+    description: |
+      # STUB: replace before production.
+      查詢特定類別報帳政策（daily_limit_twd / annual_limit_twd / required_receipts / approval_chain）。
+    risk_tier: low
+    enabled: true
+
+  - slug: submit_expense_claim
+    description: |
+      # STUB: replace before production.
+      建立報帳單草稿；回 claim_id 供員工後續編輯/提交。
+    risk_tier: medium
+    enabled: true
+
+  - slug: request_human_handoff
+    description: 金額超額 / 缺單據 / 政策不清晰時轉真人財務。
+    risk_tier: low
+    enabled: true

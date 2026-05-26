@@ -21,6 +21,8 @@ export const KNOWN_SKILLS: SkillOption[] = [
   { slug: "hr/leave-request", label: "HR 請假" },
   { slug: "it-helpdesk/password-reset", label: "IT 密碼重設" },
   { slug: "sales/quote-request", label: "Sales 報價" },
+  { slug: "finance/expense-claim", label: "Finance 報帳" },
+  { slug: "legal/contract-review", label: "Legal 合約初審" },
   { slug: "_all_", label: "全部 skill" },
 ];
 

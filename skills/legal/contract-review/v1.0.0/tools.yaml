@@ -1,0 +1,19 @@
+# tools.yaml — legal/contract-review v1.0.0
+
+tools:
+  - slug: search_knowledge
+    description: 搜尋公司標準合約模板、紅旗清單、法務政策。
+    risk_tier: low
+    enabled: true
+
+  - slug: analyze_contract_clauses
+    description: |
+      # STUB: replace before production.
+      分析合約文字找紅旗條款，回 clause_summary + red_flags + risk_level。
+    risk_tier: medium
+    enabled: true
+
+  - slug: request_human_handoff
+    description: 有紅旗 / 超出標準範本 / 客戶要修改條款時轉真人法務。
+    risk_tier: low
+    enabled: true

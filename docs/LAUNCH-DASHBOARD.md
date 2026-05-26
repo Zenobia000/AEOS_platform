@@ -197,7 +197,13 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 35. ~~**SEC-001 §6.1 #11 PII masking**~~ ✅ (`feat/sec-pii-masking`) — webhook ingress 6 patterns + Luhn 驗證 + audit + Prometheus counter
 36. **Phase 1 code 階段完成 — 純技術上進無可進，剩全部外部 blocker**：Hetzner / Slack-PagerDuty / LINE sandbox / pilot 客戶簽約
 
-詳見 [`docs/report/S5-PROGRESS-2026-05-24-p1-complete.md`](report/S5-PROGRESS-2026-05-24-p1-complete.md)（P1 全收尾）、[`docs/report/STATUS-REPORT-2026-05-24-phase1-code-complete.html`](report/STATUS-REPORT-2026-05-24-phase1-code-complete.html)（HTML）、[`docs/report/S5-PROGRESS-2026-05-24-llm-judge-slack.md`](report/S5-PROGRESS-2026-05-24-llm-judge-slack.md)、[`docs/report/S5-PROGRESS-2026-05-23-complete.md`](report/S5-PROGRESS-2026-05-23-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-expert-review.md`](report/S2-PROGRESS-2026-05-22-expert-review.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4-complete.md`](report/S2-PROGRESS-2026-05-22-tier4-complete.md)、[`docs/report/S2-PROGRESS-2026-05-22-tier4.md`](report/S2-PROGRESS-2026-05-22-tier4.md)、[`docs/report/S2-PROGRESS-2026-05-22.md`](report/S2-PROGRESS-2026-05-22.md)、[`docs/report/S1-PROGRESS-2026-05-17.md`](report/S1-PROGRESS-2026-05-17.md) 與 [`docs/report/S1-BLOCKERS-2026-05-17.md`](report/S1-BLOCKERS-2026-05-17.md)。
+詳見：
+
+- [`docs/report/PHASE1-FEATURES-2026-05-25.html`](report/PHASE1-FEATURES-2026-05-25.html) — Phase 1 功能盤點（HTML，對外）
+- [`docs/report/STATUS-REPORT-2026-05-24-phase1-code-complete.html`](report/STATUS-REPORT-2026-05-24-phase1-code-complete.html) — code 完成快照（HTML）
+- [`docs/report/S5-PROGRESS-2026-05-23-to-24.md`](report/S5-PROGRESS-2026-05-23-to-24.md) — S5 收尾 + P1 收官時間軸
+- [`docs/report/S2-PROGRESS-2026-05-22.md`](report/S2-PROGRESS-2026-05-22.md) — S2 Tier 0~4 + Expert Review 時間軸
+- [`docs/report/S1-2026-05-17.md`](report/S1-2026-05-17.md) — S1 進度 + Blocker 合併
 
 ## 必讀文件（依角色）
 

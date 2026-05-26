@@ -45,7 +45,7 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | 齒輪 | 狀態 | Phase 1 落點 |
 |---|---|---|
 | **量品質**（pass rate） | ✅ 可跑 | TestSet tab + TestSetRunner + KeywordJudge |
-| **改 prompt / skill** | ✅ 可版控 | `skills/<slug>/<version>/system.md` semver |
+| **改 prompt / skill** | ✅ 可版控 | `skills/<slug>/<version>/system.md` semver；撰寫心法依 [`skills/AUTHORING-GUIDE.md`](../skills/AUTHORING-GUIDE.md)（6 章設計與維護指南）|
 | **跑回歸測試** | ✅ 可一鍵 | Expert UI「跑一次 test run」按鈕 |
 | **灰度放出** | ✅ 可調 | Admin API canary 0→100% |
 | **出包剎車** | ✅ 可關 | Kill switch < 30s |
@@ -66,8 +66,10 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 **現在能做的「乾迭代」**（不等 pilot）：
 
 1. 自己擴 test set 到 50 題（依 [PRD-001](4-exploration/PRD-001-7day-ai-cs-onboarding.md) §AC-001）→ 跑 baseline pass rate
-2. 改 `faq-respond` system.md tone / few-shot → 看 pass rate 變動
+2. 改 `faq-respond` system.md tone / few-shot → 看 pass rate 變動 — **依 [`skills/AUTHORING-GUIDE.md`](../skills/AUTHORING-GUIDE.md) 撰寫心法**（寬窄原則 / 200-500 行 / 模型升級清債務）
 3. 練 canary + kill switch SOP（演練用，不是真實流量）
+
+**新增方法論落地（2026-05-26）**：`skills/AUTHORING-GUIDE.md` — 6 章設計與維護指南，將通用 Claude agentic skill 心法（漸進披露 / 需求識別 / 雙路徑開發 + EDD / Description 三鐵律 / 心法 vs SOP / 維護清債）對映到 AEOS skill registry（ADR-0003 / MC-005）實作。未來新增 vertical / slug / version bump 都應先閱此指南。
 
 ## CEO 本週行動
 

@@ -22,6 +22,8 @@ skills/
 skills/customer-service/faq-respond/v1.0.0/
 ```
 
+> **撰寫心法**：見 [`AUTHORING-GUIDE.md`](./AUTHORING-GUIDE.md) — 6 章設計與維護指南（需求識別 / 雙路徑開發 + EDD / Description 撰寫 / 心法 vs SOP / 維護策略），已對映到 AEOS skill registry 實作。
+
 ## Skill 上線流程
 
 依 MC-005 5 態 lifecycle（draft → testing → approved → production → deprecated）：

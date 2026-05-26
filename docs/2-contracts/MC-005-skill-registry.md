@@ -5,7 +5,7 @@ status: draft
 tier: 2-contracts
 owner: HYBRID (AI-drafts, human-approves)
 last-reviewed: 2026-05-15
-last-synced-with: 90eaacb470567a3bf631af423e5dbf1ad8053a47
+last-synced-with: 2a5ff7daab4de9ec6268fc5bb23d3e1b4f386acf
 sync-source: doc
 source-paths:
   - src/control/skill_registry/
@@ -284,3 +284,9 @@ file system 讀取        → Redis prompt cache          → CDN-backed prompt 
 單一 Quality Gate       → multi-gate (latency, cost)  → SLO-based auto-gate
 flat skill list         → skill dependency graph      → skill marketplace
 ```
+
+## See Also
+
+- [`skills/AUTHORING-GUIDE.md`](../../skills/AUTHORING-GUIDE.md) — Skill 撰寫與維護心法（6 章：需求識別 / 雙路徑開發 + EDD / Description 三鐵律 / 心法 vs SOP / 200-500 行 / 維護清債）。新增 vertical / slug / version bump 前必讀。
+- [`skills/README.md`](../../skills/README.md) — 目錄結構與上線流程 SOP。
+- [`docs/1-decisions/ADR-0003-skill-registry.md`](../1-decisions/ADR-0003-skill-registry.md) — git monorepo 為 source of truth 的根本決策。

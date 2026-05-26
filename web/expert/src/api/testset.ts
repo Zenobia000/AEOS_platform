@@ -28,11 +28,15 @@ async function parseJson<T>(resp: Response): Promise<T> {
 export async function listCases(opts: {
   tenantId: string;
   enabledOnly?: boolean;
+  skillSlug?: string;
   signal?: AbortSignal;
 }): Promise<TestCaseListResponse> {
   const params = new URLSearchParams({ tenant_id: opts.tenantId });
   if (opts.enabledOnly !== undefined) {
     params.set("enabled_only", String(opts.enabledOnly));
+  }
+  if (opts.skillSlug && opts.skillSlug !== "_all_") {
+    params.set("skill_slug", opts.skillSlug);
   }
   const resp = await fetch(`${BASE}/cases?${params.toString()}`, {
     signal: opts.signal,

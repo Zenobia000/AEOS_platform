@@ -151,3 +151,63 @@ async def test_create_run_and_get_summary(
 async def test_get_unknown_run_404(client: AsyncClient, webhook_session: AsyncSession) -> None:
     resp = await client.get(f"/api/v1/testset/runs/{uuid.uuid4()}")
     assert resp.status_code == 404
+
+
+# ── skill_slug filter (Phase 1 後續 #23) ───────────────
+
+
+async def test_create_case_with_skill_slug(
+    client: AsyncClient, webhook_session: AsyncSession
+) -> None:
+    tenant = await _seed_tenant(webhook_session, "ssf-create")
+    resp = await client.post(
+        "/api/v1/testset/cases",
+        json={
+            "tenant_id": str(tenant.id),
+            "name": "hr-leave-test",
+            "user_input": "請假",
+            "expected_outcome": "提示流程",
+            "expected_keywords": ["請假"],
+            "skill_slug": "hr/leave-request",
+        },
+    )
+    assert resp.status_code == 200
+    assert resp.json()["skill_slug"] == "hr/leave-request"
+
+
+async def test_list_cases_filter_by_skill_slug(
+    client: AsyncClient, webhook_session: AsyncSession
+) -> None:
+    """?skill_slug=hr/leave-request → 列 hr 題 + NULL 通用題；不列其他 skill 的題。"""
+    tenant = await _seed_tenant(webhook_session, "ssf-filter")
+    for slug, name in (
+        ("hr/leave-request", "hr-1"),
+        ("sales/quote-request", "sales-1"),
+        (None, "shared-1"),
+    ):
+        body: dict[str, object] = {
+            "tenant_id": str(tenant.id),
+            "name": name,
+            "user_input": "x",
+            "expected_outcome": "y",
+            "expected_keywords": [],
+        }
+        if slug is not None:
+            body["skill_slug"] = slug
+        await client.post("/api/v1/testset/cases", json=body)
+
+    resp_hr = await client.get(
+        f"/api/v1/testset/cases?tenant_id={tenant.id}&skill_slug=hr/leave-request"
+    )
+    names_hr = {it["name"] for it in resp_hr.json()["items"]}
+    assert "hr-1" in names_hr
+    assert "shared-1" in names_hr  # NULL 通用題也列
+    assert "sales-1" not in names_hr
+
+    # 不傳 skill_slug → 全列
+    resp_all = await client.get(f"/api/v1/testset/cases?tenant_id={tenant.id}")
+    assert resp_all.json()["count"] == 3
+
+    # _all_ 視同無 filter
+    resp_all2 = await client.get(f"/api/v1/testset/cases?tenant_id={tenant.id}&skill_slug=_all_")
+    assert resp_all2.json()["count"] == 3

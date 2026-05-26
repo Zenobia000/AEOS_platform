@@ -40,6 +40,7 @@ class CaseCreateRequest(BaseModel):
     expected_outcome: str = Field(min_length=1)
     expected_keywords: list[str] = Field(default_factory=list)
     created_by: str | None = Field(default=None, max_length=255)
+    skill_slug: str | None = Field(default=None, max_length=200)
 
 
 class RunCreateRequest(BaseModel):
@@ -58,6 +59,7 @@ def _case_to_json(tc: TestCase) -> dict[str, object]:
         "expected_outcome": tc.expected_outcome,
         "expected_keywords": list(tc.expected_keywords),
         "enabled": tc.enabled,
+        "skill_slug": tc.skill_slug,
         "created_by": tc.created_by,
         "created_at": tc.created_at.isoformat() if tc.created_at else None,
     }
@@ -77,17 +79,21 @@ def _run_summary_to_json(summary: test_set.RunSummary) -> dict[str, object]:
 # ── Cases ──────────────────────────────────────────
 
 
-@router.get("/cases", summary="List test cases for tenant")
+@router.get("/cases", summary="List test cases for tenant (optionally filtered by skill_slug)")
 async def list_cases(
     tenant_id: Annotated[uuid.UUID, Query()],
     enabled_only: Annotated[bool, Query()] = True,
+    skill_slug: Annotated[str | None, Query()] = None,
     limit: Annotated[int, Query(ge=1, le=500)] = 200,
 ) -> dict[str, object]:
+    """skill_slug: 提供時列該 skill + NULL 通用題；None / _all_ = 全列。"""
+    effective_skill = None if skill_slug in (None, "_all_") else skill_slug
     async with session_scope() as session:
         rows = await test_set.list_test_cases(
             session,
             tenant_id=tenant_id,
             enabled_only=enabled_only,
+            skill_slug=effective_skill,
             limit=limit,
         )
         items = [_case_to_json(tc) for tc in rows]
@@ -106,6 +112,7 @@ async def create_case(body: CaseCreateRequest) -> dict[str, object]:
                 expected_outcome=body.expected_outcome,
                 expected_keywords=body.expected_keywords,
                 created_by=body.created_by,
+                skill_slug=body.skill_slug,
             )
         except test_set.TestSetError as exc:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc

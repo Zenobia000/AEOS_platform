@@ -17,13 +17,14 @@ import type {
 
 interface Props {
   expertId: string;
+  skillSlug?: string;  // CR-0001 後續 #23：top-level SkillSelector 傳入；_all_ 視同無 filter
 }
 
 const DEFAULT_TENANT_KEY = "aeos.testset.tenant_id";
 const DEFAULT_SKILL_SLUG = "customer-service/faq-respond";
 const DEFAULT_SKILL_VERSION = "v1.0.0";
 
-export function TestSetInbox({ expertId }: Props) {
+export function TestSetInbox({ expertId, skillSlug }: Props) {
   const [tenantId, setTenantId] = useState<string>(() => {
     try {
       return window.localStorage.getItem(DEFAULT_TENANT_KEY) ?? "";
@@ -61,7 +62,7 @@ export function TestSetInbox({ expertId }: Props) {
       setLoading(true);
       setError(null);
       try {
-        const resp = await listCases({ tenantId, signal });
+        const resp = await listCases({ tenantId, skillSlug, signal });
         setCases(resp.items);
       } catch (err) {
         if (signal?.aborted) return;
@@ -70,7 +71,7 @@ export function TestSetInbox({ expertId }: Props) {
         if (!signal?.aborted) setLoading(false);
       }
     },
-    [tenantId],
+    [tenantId, skillSlug],
   );
 
   useEffect(() => {

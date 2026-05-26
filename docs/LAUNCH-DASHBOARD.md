@@ -38,6 +38,37 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | 運營 | RED | Dashboard/Drift 偵測/On-call 未建 | [Appendix C §C.4](appendices/C-pre-launch-checklist.md) |
 | 商業 | RED | 計價/Quota/SLA 未落實 | [Appendix C §C.5](appendices/C-pre-launch-checklist.md) |
 
+## 模型迭代能力（2026-05-26 snapshot）
+
+**技術閉環 ✅，真實資料 🚫**。迭代模型需要的 5 個齒輪，Phase 1 都建好了：
+
+| 齒輪 | 狀態 | Phase 1 落點 |
+|---|---|---|
+| **量品質**（pass rate） | ✅ 可跑 | TestSet tab + TestSetRunner + KeywordJudge |
+| **改 prompt / skill** | ✅ 可版控 | `skills/<slug>/<version>/system.md` semver |
+| **跑回歸測試** | ✅ 可一鍵 | Expert UI「跑一次 test run」按鈕 |
+| **灰度放出** | ✅ 可調 | Admin API canary 0→100% |
+| **出包剎車** | ✅ 可關 | Kill switch < 30s |
+
+→ 現在**可以**改 `faq-respond/v1.0.0/system.md` → bump v1.0.1 → 跑 testset → 看 pass rate 升或降 → 決定要不要 canary 10% → 不對勁就 kill。**閉環完整**。
+
+但**缺彈藥**：
+
+| 缺什麼 | 為什麼缺 | 解鎖 |
+|---|---|---|
+| 真實對話資料 | LINE channel 沒接 / 沒 pilot 客戶 | 簽 pilot |
+| 真實 KB | demo 只有 3 張 FAQ KC | pilot 提供文件 |
+| 真實 test set | 只有 5 筆 demo case | 從 pilot 對話蒐集 |
+| LLMJudge | Phase 1 用 KeywordJudge 為主，LLM 版本還在 fallback 模式 | S5 升級（不卡 pilot） |
+
+**白話**：機器組好了會動，但**輸入端是空的**。自己跟自己玩可以練流程，看不出模型真好不好；要拿到第一個 pilot 客戶的真實對話 + 真實 KB，迭代才有意義。
+
+**現在能做的「乾迭代」**（不等 pilot）：
+
+1. 自己擴 test set 到 50 題（依 [PRD-001](4-exploration/PRD-001-7day-ai-cs-onboarding.md) §AC-001）→ 跑 baseline pass rate
+2. 改 `faq-respond` system.md tone / few-shot → 看 pass rate 變動
+3. 練 canary + kill switch SOP（演練用，不是真實流量）
+
 ## CEO 本週行動
 
 1. **簽第一個 Pilot 客戶** — 目標清單待填入 [PILOT-ICP §3](4-exploration/PILOT-ICP-2026-05.md)；簽約條件見 [PILOT-ICP §5](4-exploration/PILOT-ICP-2026-05.md)

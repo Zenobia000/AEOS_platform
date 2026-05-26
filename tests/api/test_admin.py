@@ -588,3 +588,53 @@ async def test_tenant_create_dup_slug_409(
     assert r1.status_code == 200
     r2 = await client.post("/api/v1/admin/tenants", json={"name": "T2", "slug": slug})
     assert r2.status_code == 409
+
+
+# ── Phase 1 後續 #10: oncall_schedule admin CRUD ─────────
+
+
+async def test_oncall_crud_flow(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    tenant = await _seed_tenant(webhook_session, "oncall-crud")
+
+    # create
+    resp = await client.post(
+        "/api/v1/admin/oncall",
+        json={
+            "tenant_id": str(tenant.id),
+            "shift_start": "2026-06-01T00:00:00+00:00",
+            "shift_end": "2026-06-01T08:00:00+00:00",
+            "primary_expert_id": str(uuid.uuid4()),
+            "notes": "Monday morning shift",
+        },
+    )
+    assert resp.status_code == 200
+    sid = resp.json()["id"]
+
+    # list
+    resp_list = await client.get(f"/api/v1/admin/oncall/{tenant.id}")
+    assert resp_list.json()["count"] == 1
+    assert resp_list.json()["items"][0]["id"] == sid
+
+    # delete
+    resp_del = await client.delete(f"/api/v1/admin/oncall/{sid}")
+    assert resp_del.status_code == 200
+
+
+async def test_oncall_invalid_time_range_422(
+    client: AsyncClient, webhook_session: AsyncSession
+) -> None:
+    tenant = await _seed_tenant(webhook_session, "oncall-bad")
+    resp = await client.post(
+        "/api/v1/admin/oncall",
+        json={
+            "tenant_id": str(tenant.id),
+            "shift_start": "2026-06-01T08:00:00+00:00",
+            "shift_end": "2026-06-01T00:00:00+00:00",  # before start
+        },
+    )
+    assert resp.status_code == 422
+
+
+async def test_oncall_delete_404(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    resp = await client.delete(f"/api/v1/admin/oncall/{uuid.uuid4()}")
+    assert resp.status_code == 404

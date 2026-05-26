@@ -542,3 +542,49 @@ async def test_promote_same_status_409(client: AsyncClient, webhook_session: Asy
     )
     assert resp.status_code == 409
     assert "already in status" in resp.json()["detail"]
+
+
+# ── Phase 1 後續 #9: Tenant admin CRUD ────────────────
+
+
+async def test_tenant_list_create_suspend_archive(
+    client: AsyncClient, webhook_session: AsyncSession
+) -> None:
+    slug = f"acme-crud-{uuid.uuid4().hex[:6]}"
+    resp_create = await client.post(
+        "/api/v1/admin/tenants",
+        json={"name": "Acme CRUD", "slug": slug},
+    )
+    assert resp_create.status_code == 200
+    tid = resp_create.json()["id"]
+
+    resp_list = await client.get("/api/v1/admin/tenants")
+    assert resp_list.status_code == 200
+    ids = {t["id"] for t in resp_list.json()["items"]}
+    assert tid in ids
+
+    resp_sus = await client.post(f"/api/v1/admin/tenants/{tid}/suspend")
+    assert resp_sus.status_code == 200
+    assert resp_sus.json()["status"] == "suspended"
+
+    resp_term = await client.post(f"/api/v1/admin/tenants/{tid}/archive")
+    assert resp_term.status_code == 200
+    assert resp_term.json()["status"] == "archived"
+
+    resp_dup = await client.post(f"/api/v1/admin/tenants/{tid}/archive")
+    assert resp_dup.status_code == 409
+
+
+async def test_tenant_suspend_404(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    resp = await client.post(f"/api/v1/admin/tenants/{uuid.uuid4()}/suspend")
+    assert resp.status_code == 404
+
+
+async def test_tenant_create_dup_slug_409(
+    client: AsyncClient, webhook_session: AsyncSession
+) -> None:
+    slug = f"dup-{uuid.uuid4().hex[:6]}"
+    r1 = await client.post("/api/v1/admin/tenants", json={"name": "T1", "slug": slug})
+    assert r1.status_code == 200
+    r2 = await client.post("/api/v1/admin/tenants", json={"name": "T2", "slug": slug})
+    assert r2.status_code == 409

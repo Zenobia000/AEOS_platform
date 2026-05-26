@@ -665,3 +665,106 @@ async def promote_skill_version(
             "approved_by": sv.approved_by,
             "approved_at": sv.approved_at.isoformat() if sv.approved_at else None,
         }
+
+
+# ═══════════════════════════════════════════════════════════
+# Tenant admin CRUD (Phase 1 後續 #9)
+# ═══════════════════════════════════════════════════════════
+
+
+from app.db.models.tenant import Tenant as _Tenant  # noqa: E402
+
+
+class TenantCreateRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    slug: str = Field(min_length=2, max_length=64, pattern=r"^[a-z0-9-]+$")
+
+
+def _tenant_to_json(t: _Tenant) -> dict[str, object]:
+    return {
+        "id": str(t.id),
+        "name": t.name,
+        "slug": t.slug,
+        "status": t.status,
+        "created_at": t.created_at.isoformat() if t.created_at else None,
+    }
+
+
+@router.get(
+    "/tenants",
+    summary="List all tenants",
+    dependencies=[Depends(require_admin)],
+)
+async def list_tenants() -> dict[str, object]:
+    from sqlalchemy import select as _sel
+
+    async with session_scope() as session:
+        rows = list(
+            (await session.execute(_sel(_Tenant).order_by(_Tenant.created_at.desc()))).scalars()
+        )
+        return {"items": [_tenant_to_json(t) for t in rows], "count": len(rows)}
+
+
+@router.post(
+    "/tenants",
+    summary="Create tenant",
+    dependencies=[Depends(require_admin)],
+)
+async def create_tenant(body: TenantCreateRequest) -> dict[str, object]:
+    async with session_scope() as session:
+        t = _Tenant(name=body.name, slug=body.slug)
+        session.add(t)
+        try:
+            await session.flush()
+        except Exception as exc:
+            await session.rollback()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"create failed: {type(exc).__name__}",
+            ) from exc
+        return _tenant_to_json(t)
+
+
+@router.post(
+    "/tenants/{tenant_id}/suspend",
+    summary="Suspend tenant (active → suspended)",
+    dependencies=[Depends(require_admin)],
+)
+async def suspend_tenant(tenant_id: uuid.UUID) -> dict[str, object]:
+    from sqlalchemy import select as _sel
+
+    async with session_scope() as session:
+        t = (
+            await session.execute(_sel(_Tenant).where(_Tenant.id == tenant_id))
+        ).scalar_one_or_none()
+        if t is None:
+            raise HTTPException(status_code=404, detail="tenant not found")
+        if t.status not in ("active", "pending"):
+            raise HTTPException(
+                status_code=409,
+                detail=f"only active/pending can be suspended (current: {t.status})",
+            )
+        t.status = "suspended"
+        await session.flush()
+        return _tenant_to_json(t)
+
+
+@router.post(
+    "/tenants/{tenant_id}/archive",
+    summary="Archive tenant (active/suspended → archived; MC-004 4-state)",
+    dependencies=[Depends(require_admin)],
+)
+async def archive_tenant(tenant_id: uuid.UUID) -> dict[str, object]:
+    from sqlalchemy import select as _sel
+
+    async with session_scope() as session:
+        t = (
+            await session.execute(_sel(_Tenant).where(_Tenant.id == tenant_id))
+        ).scalar_one_or_none()
+        if t is None:
+            raise HTTPException(status_code=404, detail="tenant not found")
+        if t.status == "archived":
+            raise HTTPException(status_code=409, detail="already archived")
+        t.status = "archived"
+        await session.flush()
+        return _tenant_to_json(t)

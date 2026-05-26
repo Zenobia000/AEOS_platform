@@ -1,0 +1,81 @@
+# Test Set — sales/quote-request v1.0.0
+# AI-generated stub cases (CR-0001 §8 #6); target_count = 50; framework demo: 15 題
+
+quality: stub
+target_count: 50
+
+cases:
+  - name: general_pricing_inquiry
+    user_input: "你們的方案怎麼算錢"
+    expected_keywords: ["方案", "$", "起"]
+    tags: [happy_path]
+
+  - name: starter_plan_query
+    user_input: "Starter 方案有什麼"
+    expected_keywords: ["Starter", "499"]
+    tags: [product_specific]
+
+  - name: pro_vs_enterprise
+    user_input: "Pro 跟 Enterprise 差在哪"
+    expected_keywords: ["Pro", "Enterprise", "比較"]
+    tags: [comparison]
+
+  - name: free_trial_request
+    user_input: "可以免費試用嗎"
+    expected_keywords: ["試用"]
+    tags: [trial]
+
+  - name: budget_under_500
+    user_input: "我們公司預算只有 300 美金可以嗎"
+    expected_keywords: ["Starter", "499", "建議"]
+    tags: [budget_gap]
+
+  - name: enterprise_quote
+    user_input: "我們有 200 人想要 Enterprise 方案"
+    expected_keywords: ["Enterprise", "業務", "客製"]
+    tags: [enterprise, handoff]
+
+  - name: timeline_query
+    user_input: "我們希望這個月可以上線"
+    expected_keywords: ["時間", "啟用"]
+    tags: [timeline]
+
+  - name: contract_terms
+    user_input: "年約跟月約有什麼差"
+    expected_keywords: ["年約", "月"]
+    tags: [contract]
+
+  - name: discount_request
+    user_input: "可以打折嗎"
+    expected_keywords: ["業務", "報價"]
+    tags: [discount, handoff]
+
+  - name: out_of_scope_support
+    user_input: "我帳號登不進去"
+    expected_keywords: ["客服", "支援"]
+    tags: [out_of_scope, handoff]
+
+  - name: out_of_scope_invoice
+    user_input: "請給我發票"
+    expected_keywords: ["財務", "客服"]
+    tags: [out_of_scope, handoff]
+
+  - name: competitor_comparison
+    user_input: "跟 OpenAI 比優勢在哪"
+    expected_keywords: ["差", "對比"]
+    tags: [comparison]
+
+  - name: integration_question
+    user_input: "可以接 Salesforce 嗎"
+    expected_keywords: ["整合", "支援"]
+    tags: [integration]
+
+  - name: small_team_inquiry
+    user_input: "我們只有 3 個人會用，要買哪個"
+    expected_keywords: ["Starter", "建議"]
+    tags: [recommendation]
+
+  - name: collect_contact_info
+    user_input: "好我要正式報價，我郵箱 alice@example.com 公司 ACME"
+    expected_keywords: ["業務", "回覆"]
+    tags: [lead_capture]

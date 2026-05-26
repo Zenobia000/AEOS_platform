@@ -1,0 +1,81 @@
+# Test Set — it-helpdesk/password-reset v1.0.0
+# AI-generated stub cases (CR-0001 §8 #6); target_count = 50; framework demo: 15 題
+
+quality: stub
+target_count: 50
+
+cases:
+  - name: forgot_ad_password
+    user_input: "我忘記公司電腦的密碼了"
+    expected_keywords: ["重設", "身分", "驗證"]
+    tags: [happy_path]
+
+  - name: gmail_password_reset
+    user_input: "Gmail Workspace 密碼怎麼重設"
+    expected_keywords: ["Gmail", "重設"]
+    tags: [system_specific]
+
+  - name: account_locked
+    user_input: "我的帳號被鎖了"
+    expected_keywords: ["解鎖", "驗證"]
+    tags: [unlock]
+
+  - name: identity_verification_required
+    user_input: "我要重設 Slack 密碼"
+    expected_keywords: ["身分", "驗證", "員工編號"]
+    tags: [happy_path]
+
+  - name: salesforce_login_fail
+    user_input: "Salesforce 一直登入失敗"
+    expected_keywords: ["重設", "Salesforce"]
+    tags: [system_specific]
+
+  - name: mfa_lost
+    user_input: "MFA 手機掉了無法登入"
+    expected_keywords: ["MFA", "重新綁定"]
+    tags: [mfa]
+
+  - name: gitlab_token_expired
+    user_input: "GitLab 的 access token 過期了怎辦"
+    expected_keywords: ["GitLab"]
+    tags: [system_specific]
+
+  - name: out_of_scope_hardware
+    user_input: "我的筆電開不了機"
+    expected_keywords: ["設備", "工單"]
+    tags: [out_of_scope, handoff]
+
+  - name: out_of_scope_network
+    user_input: "辦公室 wifi 斷了"
+    expected_keywords: ["網路", "工單"]
+    tags: [out_of_scope, handoff]
+
+  - name: cant_change_password_policy
+    user_input: "為什麼密碼要這麼複雜"
+    expected_keywords: ["密碼", "政策"]
+    tags: [policy_query]
+
+  - name: sso_setup
+    user_input: "怎麼設定 SSO"
+    expected_keywords: ["SSO"]
+    tags: [policy_query]
+
+  - name: verify_failed
+    user_input: "我的員工編號 e12345，身分證後四碼 9999"
+    expected_keywords: ["驗證", "失敗"]
+    tags: [security, handoff]
+
+  - name: shared_account_inquiry
+    user_input: "可以給我同事的帳號嗎"
+    expected_keywords: ["不能", "代為", "本人"]
+    tags: [security, refuse]
+
+  - name: password_change_history
+    user_input: "我多久之前改過一次密碼"
+    expected_keywords: ["歷史", "查詢"]
+    tags: [meta_query]
+
+  - name: ambiguous_help
+    user_input: "我登不進去"
+    expected_keywords: ["系統", "哪個"]
+    tags: [clarification]

@@ -1,0 +1,26 @@
+# tools.yaml — sales/quote-request v1.0.0
+
+tools:
+  - slug: search_knowledge
+    description: 搜尋 pricing book / 競品比較 / 案例文件。
+    risk_tier: low
+    enabled: true
+
+  - slug: lookup_product_catalog
+    description: |
+      # STUB: replace before production.
+      查詢產品目錄（可按 category 過濾），回 list[{name, sku, starting_price_usd, tier}]
+    risk_tier: low
+    enabled: true
+
+  - slug: create_lead_record
+    description: |
+      # STUB: replace before production.
+      建立潛在客戶紀錄（含 BANT 欄位）；回 lead_id 供業務跟進。
+    risk_tier: medium
+    enabled: true
+
+  - slug: request_human_handoff
+    description: 客戶要求面議 / 客製方案時轉真人業務。
+    risk_tier: low
+    enabled: true

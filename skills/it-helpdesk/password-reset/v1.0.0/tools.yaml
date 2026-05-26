@@ -1,0 +1,26 @@
+# tools.yaml — it-helpdesk/password-reset v1.0.0
+
+tools:
+  - slug: search_knowledge
+    description: 搜尋 IT 政策、各系統密碼規則文件。
+    risk_tier: low
+    enabled: true
+
+  - slug: verify_user_identity
+    description: |
+      # STUB: replace before production.
+      驗證使用者身分（員工編號 + 身分證後 4 碼）。
+    risk_tier: high
+    enabled: true
+
+  - slug: trigger_password_reset
+    description: |
+      # STUB: replace before production.
+      觸發目標系統的密碼重設流程，回 reset_link_token（一次性）。
+    risk_tier: high
+    enabled: true
+
+  - slug: request_human_handoff
+    description: 身分驗證失敗或操作超出範圍時轉真人 IT helpdesk。
+    risk_tier: low
+    enabled: true

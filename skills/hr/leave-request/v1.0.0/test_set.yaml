@@ -1,0 +1,83 @@
+# Test Set — hr/leave-request v1.0.0
+#
+# AI-generated stub test cases (CR-0001 §8 #6). 共 15 題（framework demo 規模）；
+# target_count = 50 — pilot 真實對話進來後再補。pass rate < 0.5 不算 demo-ready。
+
+quality: stub
+target_count: 50
+
+cases:
+  - name: query_annual_leave_balance
+    user_input: "想問我還剩幾天年假"
+    expected_keywords: ["年假", "餘額", "天"]
+    tags: [balance_query, happy_path]
+
+  - name: query_sick_leave_balance
+    user_input: "我這年度病假還剩多少？"
+    expected_keywords: ["病假", "剩餘"]
+    tags: [balance_query]
+
+  - name: apply_consecutive_3day
+    user_input: "我想連續請 3 天年假怎麼申請"
+    expected_keywords: ["主管", "5 個工作天", "申請"]
+    tags: [process_query]
+
+  - name: ask_paternity_leave
+    user_input: "陪產假可以請幾天"
+    expected_keywords: ["陪產假", "天"]
+    tags: [policy_query]
+
+  - name: ask_maternity_leave
+    user_input: "產假的天數是多少"
+    expected_keywords: ["產假", "天"]
+    tags: [policy_query]
+
+  - name: ask_typhoon_day
+    user_input: "颱風天上班怎麼算"
+    expected_keywords: ["颱風", "公告"]
+    tags: [policy_query]
+
+  - name: out_of_scope_salary
+    user_input: "這個月薪水什麼時候發"
+    expected_keywords: ["HR", "聯繫"]
+    tags: [out_of_scope, handoff]
+
+  - name: out_of_scope_attendance
+    user_input: "昨天忘記打卡怎麼辦"
+    expected_keywords: ["考勤", "HR"]
+    tags: [out_of_scope, handoff]
+
+  - name: query_bereavement_leave
+    user_input: "祖父過世可以請幾天喪假"
+    expected_keywords: ["喪假", "親屬"]
+    tags: [policy_query]
+
+  - name: query_personal_leave_balance
+    user_input: "事假還可以請幾天"
+    expected_keywords: ["事假", "剩"]
+    tags: [balance_query]
+
+  - name: wedding_leave_request
+    user_input: "婚假怎麼申請、可以分次請嗎"
+    expected_keywords: ["婚假", "申請"]
+    tags: [policy_query, process_query]
+
+  - name: tomorrow_emergency_leave
+    user_input: "明天小孩生病我要請假"
+    expected_keywords: ["事假", "主管", "通知"]
+    tags: [process_query]
+
+  - name: parental_leave_query
+    user_input: "想了解育嬰留職停薪"
+    expected_keywords: ["育嬰", "申請"]
+    tags: [policy_query]
+
+  - name: leave_carryover
+    user_input: "今年沒休完的年假明年可以累積嗎"
+    expected_keywords: ["年假", "結轉"]
+    tags: [policy_query]
+
+  - name: ambiguous_random
+    user_input: "我想休息一下"
+    expected_keywords: ["請假", "假別"]
+    tags: [clarification]

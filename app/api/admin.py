@@ -420,3 +420,97 @@ async def preview_routing(req: RoutePreviewRequest) -> dict[str, object]:
             "matched_rule_type": decision.matched_rule_type,
             "matched_rule": decision.matched_rule,
         }
+
+
+# ═══════════════════════════════════════════════════════════
+# DLQ — outbound permanent-failure inspector + requeue
+# ═══════════════════════════════════════════════════════════
+
+from datetime import UTC, datetime, timedelta  # noqa: E402
+
+from app.db.models.outbound_message import OutboundMessage  # noqa: E402
+
+
+def _outbound_to_json(m: OutboundMessage) -> dict[str, object]:
+    return {
+        "id": str(m.id),
+        "tenant_id": str(m.tenant_id),
+        "conversation_id": str(m.conversation_id),
+        "channel": m.channel,
+        "status": m.status,
+        "retry_count": m.retry_count,
+        "error_message": m.error_message,
+        "created_at": m.created_at.isoformat() if m.created_at else None,
+        "sent_at": m.sent_at.isoformat() if m.sent_at else None,
+    }
+
+
+@router.get(
+    "/dlq/outbound",
+    summary="List permanently-failed outbound messages (DLQ inspector)",
+    dependencies=[Depends(require_admin)],
+)
+async def list_dlq_outbound(
+    tenant_id: uuid.UUID | None = None,
+    since_hours: int = 24,
+    limit: int = 50,
+) -> dict[str, object]:
+    """列 status='failed' outbound（permanent fail = DLQ row）。"""
+    if limit < 1 or limit > 500:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="limit must be 1..500",
+        )
+    cutoff = datetime.now(UTC) - timedelta(hours=max(1, since_hours))
+
+    async with session_scope() as session:
+        stmt = select(OutboundMessage).where(
+            OutboundMessage.status == "failed",
+            OutboundMessage.created_at >= cutoff,
+        )
+        if tenant_id is not None:
+            stmt = stmt.where(OutboundMessage.tenant_id == tenant_id)
+        stmt = stmt.order_by(OutboundMessage.created_at.desc()).limit(limit)
+        rows = list((await session.execute(stmt)).scalars().all())
+        return {
+            "items": [_outbound_to_json(m) for m in rows],
+            "count": len(rows),
+            "since_hours": since_hours,
+        }
+
+
+@router.post(
+    "/dlq/outbound/{outbound_id}/requeue",
+    summary="手動 requeue DLQ row → status='retrying' + retry_count=0",
+    dependencies=[Depends(require_admin)],
+)
+async def requeue_dlq_outbound(outbound_id: uuid.UUID) -> dict[str, object]:
+    async with session_scope() as session:
+        m = (
+            await session.execute(select(OutboundMessage).where(OutboundMessage.id == outbound_id))
+        ).scalar_one_or_none()
+        if m is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"outbound {outbound_id} not found",
+            )
+        if m.status != "failed":
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"only failed outbound can be requeued, current status: {m.status}",
+            )
+        from app.services import audit as _audit
+
+        m.status = "retrying"
+        m.retry_count = 0
+        m.error_message = None
+        await session.flush()
+        await _audit.emit(
+            session,
+            event_type="dlq.outbound_requeued",
+            tenant_id=m.tenant_id,
+            resource_type="outbound_message",
+            resource_id=str(m.id),
+            payload={"manual": True},
+        )
+        return _outbound_to_json(m)

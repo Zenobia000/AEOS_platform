@@ -284,3 +284,156 @@ async def test_route_preview_no_binding_422(
     )
     assert resp.status_code == 422
     assert "no skill bound" in resp.json()["detail"]
+
+
+# ── DLQ Inspector + Requeue ─────────────────────────
+
+
+async def _make_failed_outbound(session: AsyncSession, tenant: Tenant) -> str:
+    """建一個 conversation + message + status='failed' outbound for DLQ test。"""
+    from sqlalchemy import text as _text
+
+    from app.db.models.conversation import Conversation
+    from app.db.models.employee import Employee
+    from app.db.models.outbound_message import OutboundMessage
+
+    emp = Employee(
+        tenant_id=tenant.id,
+        name="AI",
+        role="customer_service",
+        status="draft",
+        version="1.0.0",
+    )
+    session.add(emp)
+    await session.flush()
+    conv = Conversation(
+        tenant_id=tenant.id,
+        employee_id=emp.id,
+        employee_version="1.0.0",
+        end_user_pseudo_id="pseudo",
+        channel="line",
+        channel_user_id="U",
+    )
+    session.add(conv)
+    await session.flush()
+    # message 是 partitioned table，raw SQL
+    row = (
+        await session.execute(
+            _text(
+                "INSERT INTO message (id, conversation_id, seq, role, content, created_at) "
+                "VALUES (gen_random_uuid(), :cid, 1, 'assistant', 'x', NOW()) RETURNING id"
+            ),
+            {"cid": str(conv.id)},
+        )
+    ).first()
+    msg_id = row[0]
+    out = OutboundMessage(
+        tenant_id=tenant.id,
+        conversation_id=conv.id,
+        message_id=msg_id,
+        channel="line",
+        channel_user_id="U-dlq-test",
+        status="failed",
+        retry_count=3,
+        error_message="HTTP 400 invalid",
+    )
+    session.add(out)
+    await session.flush()
+    return str(out.id)
+
+
+async def test_list_dlq_empty(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    tenant = await _seed_tenant(webhook_session, "dlq-empty")
+    resp = await client.get(f"/api/v1/admin/dlq/outbound?tenant_id={tenant.id}")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["count"] == 0
+
+
+async def test_list_dlq_with_failed(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    tenant = await _seed_tenant(webhook_session, "dlq-row")
+    out_id = await _make_failed_outbound(webhook_session, tenant)
+
+    resp = await client.get(f"/api/v1/admin/dlq/outbound?tenant_id={tenant.id}")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["count"] == 1
+    assert body["items"][0]["id"] == out_id
+    assert body["items"][0]["status"] == "failed"
+    assert body["items"][0]["error_message"] == "HTTP 400 invalid"
+
+
+async def test_dlq_limit_validation(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    resp = await client.get("/api/v1/admin/dlq/outbound?limit=0")
+    assert resp.status_code == 422
+
+
+async def test_requeue_failed_outbound(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    tenant = await _seed_tenant(webhook_session, "dlq-requeue")
+    out_id = await _make_failed_outbound(webhook_session, tenant)
+
+    resp = await client.post(f"/api/v1/admin/dlq/outbound/{out_id}/requeue")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["status"] == "retrying"
+    assert body["retry_count"] == 0
+    assert body["error_message"] is None
+
+
+async def test_requeue_non_failed_outbound_409(
+    client: AsyncClient, webhook_session: AsyncSession
+) -> None:
+    """status != 'failed' 不可 requeue。"""
+    from sqlalchemy import text as _text
+
+    from app.db.models.conversation import Conversation
+    from app.db.models.employee import Employee
+    from app.db.models.outbound_message import OutboundMessage
+
+    tenant = await _seed_tenant(webhook_session, "dlq-nofail")
+    emp = Employee(
+        tenant_id=tenant.id,
+        name="AI",
+        role="customer_service",
+        status="draft",
+        version="1.0.0",
+    )
+    webhook_session.add(emp)
+    await webhook_session.flush()
+    conv = Conversation(
+        tenant_id=tenant.id,
+        employee_id=emp.id,
+        employee_version="1.0.0",
+        end_user_pseudo_id="x",
+        channel="line",
+        channel_user_id="U",
+    )
+    webhook_session.add(conv)
+    await webhook_session.flush()
+    row = (
+        await webhook_session.execute(
+            _text(
+                "INSERT INTO message (id, conversation_id, seq, role, content, created_at) "
+                "VALUES (gen_random_uuid(), :cid, 1, 'assistant', 'x', NOW()) RETURNING id"
+            ),
+            {"cid": str(conv.id)},
+        )
+    ).first()
+    out = OutboundMessage(
+        tenant_id=tenant.id,
+        conversation_id=conv.id,
+        message_id=row[0],
+        channel="line",
+        channel_user_id="U-pending",
+        status="pending",
+    )
+    webhook_session.add(out)
+    await webhook_session.flush()
+
+    resp = await client.post(f"/api/v1/admin/dlq/outbound/{out.id}/requeue")
+    assert resp.status_code == 409
+
+
+async def test_requeue_404_not_found(client: AsyncClient, webhook_session: AsyncSession) -> None:
+    resp = await client.post(f"/api/v1/admin/dlq/outbound/{uuid.uuid4()}/requeue")
+    assert resp.status_code == 404

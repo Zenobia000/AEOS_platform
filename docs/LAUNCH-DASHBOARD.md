@@ -71,6 +71,21 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 
 **新增方法論落地（2026-05-26）**：`skills/AUTHORING-GUIDE.md` — 6 章設計與維護指南，將通用 Claude agentic skill 心法（漸進披露 / 需求識別 / 雙路徑開發 + EDD / Description 三鐵律 / 心法 vs SOP / 維護清債）對映到 AEOS skill registry（ADR-0003 / MC-005）實作。未來新增 vertical / slug / version bump 都應先閱此指南。
 
+**Multi-Vertical Framework 落地（2026-05-26，CR-0001 sprint 完工）**：
+
+| 落點 | 內容 |
+|---|---|
+| `skill_binding` schema | +`routing_rule JSONB` + `is_default BOOLEAN` + partial unique idx（per emp 至多 1 default） |
+| [`ADR-0013`](1-decisions/ADR-0013-skill-routing-rule.md) | Hybrid routing 設計 — 4 種 rule type + priority + fallback |
+| `app/skill/router.py` | SkillRouter service — keyword / llm_intent / channel_match / explicit evaluator |
+| `scripts/new_skill.py` | Vertical scaffolding CLI（`uv run python -m scripts.new_skill <vertical> <slug>`） |
+| `skills/` | 4 vertical 落地：customer-service / **hr** / **it-helpdesk** / **sales**（後 3 個由 CLI 生成） |
+| Admin API | `/api/v1/admin/skills/{tenant}` + `/bindings` CRUD + `/route-preview` |
+| Expert Console | Top-level SkillSelector + URL `?skill_slug=` deep link |
+| Tests | +200 個（schema/router/CLI/stub-loader/admin-api/vitest/playwright 7 層）|
+
+詳細變更影響：[`CR-0001-multi-vertical-framework.md`](4-exploration/CR-0001-multi-vertical-framework.md)。
+
 ## CEO 本週行動
 
 1. **簽第一個 Pilot 客戶** — 目標清單待填入 [PILOT-ICP §3](4-exploration/PILOT-ICP-2026-05.md)；簽約條件見 [PILOT-ICP §5](4-exploration/PILOT-ICP-2026-05.md)

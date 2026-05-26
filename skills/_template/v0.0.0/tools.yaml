@@ -1,0 +1,16 @@
+# 該 Skill 版本可呼叫的工具 — 對應 DB tool 表 + skill_version.tool_bindings
+#
+# Skill Loader 上線時會驗證每個 slug 都在 DB tool 表存在且 enabled=true。
+
+tools:
+  - slug: search_knowledge
+    description: |
+      在當前 tenant 的 approved KnowledgeCard 中搜尋 query 最相關的 top-K 張卡。
+    risk_tier: low
+    enabled: true
+
+  # - slug: {{VERTICAL_TOOL}}
+  #   description: |
+  #     # STUB: replace before production. {{VERTICAL_TOOL_DESC}}
+  #   risk_tier: medium
+  #   enabled: true

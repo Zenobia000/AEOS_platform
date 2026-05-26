@@ -255,6 +255,119 @@ async def test_skill_binding_unique_employee_version(db_session: AsyncSession) -
         await db_session.flush()
 
 
+# ── CR-0001: routing_rule + is_default ──────────────
+
+
+async def test_skill_binding_routing_rule_default(db_session: AsyncSession) -> None:
+    """新建 binding 不指定 routing_rule 時應為空 dict {} 與 is_default=False."""
+    tenant = await _make_tenant(db_session, "sb-rr-default")
+    skill = await _make_skill(db_session, tenant)
+    sv = SkillVersion(
+        skill_id=skill.id, tenant_id=tenant.id, version="1.0.0", prompt_template_ref="x"
+    )
+    db_session.add(sv)
+    emp = Employee(
+        tenant_id=tenant.id,
+        name="AI",
+        role="customer_service",
+        status="draft",
+        version="1.0.0",
+    )
+    db_session.add(emp)
+    await db_session.flush()
+
+    binding = SkillBinding(tenant_id=tenant.id, employee_id=emp.id, skill_version_id=sv.id)
+    db_session.add(binding)
+    await db_session.flush()
+    await db_session.refresh(binding)
+
+    assert binding.routing_rule == {}
+    assert binding.is_default is False
+
+
+async def test_skill_binding_is_default_partial_unique(db_session: AsyncSession) -> None:
+    """同 employee 至多 1 個 is_default=True（partial unique idx 守門）."""
+    tenant = await _make_tenant(db_session, "sb-default-uniq")
+    skill = await _make_skill(db_session, tenant)
+    sv1 = SkillVersion(
+        skill_id=skill.id, tenant_id=tenant.id, version="1.0.0", prompt_template_ref="x"
+    )
+    sv2 = SkillVersion(
+        skill_id=skill.id, tenant_id=tenant.id, version="1.1.0", prompt_template_ref="x"
+    )
+    db_session.add_all([sv1, sv2])
+    emp = Employee(
+        tenant_id=tenant.id,
+        name="AI",
+        role="customer_service",
+        status="draft",
+        version="1.0.0",
+    )
+    db_session.add(emp)
+    await db_session.flush()
+
+    # 第 1 個 default — OK
+    db_session.add(
+        SkillBinding(
+            tenant_id=tenant.id,
+            employee_id=emp.id,
+            skill_version_id=sv1.id,
+            is_default=True,
+        )
+    )
+    await db_session.flush()
+
+    # 第 2 個 default 同 employee — 應炸
+    db_session.add(
+        SkillBinding(
+            tenant_id=tenant.id,
+            employee_id=emp.id,
+            skill_version_id=sv2.id,
+            is_default=True,
+        )
+    )
+    with pytest.raises(IntegrityError):
+        await db_session.flush()
+
+
+async def test_skill_binding_routing_rule_jsonb_query(db_session: AsyncSession) -> None:
+    """JSONB routing_rule 可寫入結構化 rule 並查回."""
+    tenant = await _make_tenant(db_session, "sb-rr-jsonb")
+    skill = await _make_skill(db_session, tenant)
+    sv = SkillVersion(
+        skill_id=skill.id, tenant_id=tenant.id, version="1.0.0", prompt_template_ref="x"
+    )
+    db_session.add(sv)
+    emp = Employee(
+        tenant_id=tenant.id,
+        name="AI",
+        role="customer_service",
+        status="draft",
+        version="1.0.0",
+    )
+    db_session.add(emp)
+    await db_session.flush()
+
+    rule = {
+        "type": "keyword",
+        "params": {"keywords": ["請假", "leave"]},
+        "priority": 10,
+    }
+    binding = SkillBinding(
+        tenant_id=tenant.id,
+        employee_id=emp.id,
+        skill_version_id=sv.id,
+        routing_rule=rule,
+    )
+    db_session.add(binding)
+    await db_session.flush()
+    await db_session.refresh(binding)
+
+    assert binding.routing_rule == rule
+    assert binding.routing_rule["type"] == "keyword"
+    assert "請假" in binding.routing_rule["params"]["keywords"]
+
+
 # ── RLS ─────────────────────────────────────────────
 
 

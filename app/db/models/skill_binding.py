@@ -1,17 +1,20 @@
-"""SkillBinding — Employee ↔ SkillVersion 的多對多綁定.
+"""SkillBinding — Employee ↔ SkillVersion 多對多綁定 + routing rule.
 
-依 db-schema.md §3.3 + MC-005:
-- 一個 employee 可綁多個 skill_version（不同優先順序）
-- (employee_id, skill_version_id) unique — 同一綁定不重複
+依 db-schema.md §3.3 + MC-005 + CR-0001:
+- 一個 employee 可綁多個 skill_version（不同 vertical 並存）
+- (employee_id, skill_version_id) unique — 同綁定不重複
+- routing_rule JSONB — hybrid router (keyword / llm_intent / channel_match / explicit)
+- is_default — 每 employee 至多 1 個 fallback skill（partial unique idx 守門）
 """
 
 from __future__ import annotations
 
 import uuid
 from datetime import datetime
+from typing import Any
 
-from sqlalchemy import ForeignKey, Index, Integer, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Boolean, ForeignKey, Index, Integer, func, text
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.types import DateTime
 
@@ -47,6 +50,18 @@ class SkillBinding(Base):
         server_default="0",
         comment="ordering when employee has multiple skills",
     )
+    routing_rule: Mapped[dict[str, Any]] = mapped_column(
+        JSONB,
+        nullable=False,
+        server_default=text("'{}'::jsonb"),
+        comment="hybrid router rule: {type, params, priority}; '{}' = match-all",
+    )
+    is_default: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        server_default=text("false"),
+        comment="fallback skill when no routing_rule matches",
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
@@ -59,5 +74,11 @@ class SkillBinding(Base):
             "employee_id",
             "skill_version_id",
             unique=True,
+        ),
+        Index(
+            "uq_skill_binding_default_per_emp",
+            "employee_id",
+            unique=True,
+            postgresql_where=text("is_default = true"),
         ),
     )

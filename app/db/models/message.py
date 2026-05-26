@@ -62,6 +62,11 @@ class Message(Base):
         UUID(as_uuid=True),
         nullable=True,
     )
+    skill_version_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        nullable=True,
+        comment="哪個 skill_version 處理了此 turn (CR-0001)",
+    )
     tool_invocations: Mapped[list[Any]] = mapped_column(
         JSONB,
         nullable=False,

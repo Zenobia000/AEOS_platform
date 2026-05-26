@@ -153,9 +153,7 @@ def _expert_to_json(account: ExpertAccount) -> dict[str, object]:
         "role": account.role,
         "tenant_id": (str(account.tenant_id) if account.tenant_id else None),
         "enabled": account.enabled,
-        "last_login_at": (
-            account.last_login_at.isoformat() if account.last_login_at else None
-        ),
+        "last_login_at": (account.last_login_at.isoformat() if account.last_login_at else None),
         "created_at": account.created_at.isoformat(),
     }
 
@@ -170,11 +168,7 @@ async def list_experts() -> dict[str, object]:
 
     async with session_scope() as session:
         rows = list(
-            (
-                await session.execute(
-                    select(ExpertAccount).order_by(ExpertAccount.created_at.desc())
-                )
-            )
+            (await session.execute(select(ExpertAccount).order_by(ExpertAccount.created_at.desc())))
             .scalars()
             .all()
         )
@@ -246,3 +240,183 @@ async def enable_expert(expert_id: uuid.UUID) -> dict[str, object]:
         account.enabled = True
         await session.flush()
         return _expert_to_json(account)
+
+
+# ═══════════════════════════════════════════════════════════
+# CR-0001 #6 — Skill binding admin API
+# ═══════════════════════════════════════════════════════════
+
+from typing import Any  # noqa: E402
+
+from sqlalchemy import select  # noqa: E402
+
+from app.db.models.skill import Skill  # noqa: E402
+from app.db.models.skill_binding import SkillBinding  # noqa: E402
+from app.db.models.skill_version import SkillVersion  # noqa: E402
+
+
+class SkillBindingRequest(BaseModel):
+    """POST /admin/skills/bindings 請求 body."""
+
+    tenant_id: uuid.UUID
+    employee_id: uuid.UUID
+    skill_version_id: uuid.UUID
+    routing_rule: dict[str, Any] = Field(default_factory=dict)
+    is_default: bool = False
+    priority: int = 0
+
+
+class RoutePreviewRequest(BaseModel):
+    """POST /admin/skills/route-preview — 給訊息預覽 routing 結果（不實際送）。"""
+
+    employee_id: uuid.UUID
+    tenant_id: uuid.UUID
+    message: str = Field(min_length=1, max_length=2000)
+    channel_id: str | None = None
+
+
+def _binding_to_json(b: SkillBinding) -> dict[str, object]:
+    return {
+        "id": str(b.id),
+        "tenant_id": str(b.tenant_id),
+        "employee_id": str(b.employee_id),
+        "skill_version_id": str(b.skill_version_id),
+        "routing_rule": b.routing_rule,
+        "is_default": b.is_default,
+        "priority": b.priority,
+        "created_at": b.created_at.isoformat() if b.created_at else None,
+    }
+
+
+@router.get(
+    "/skills/{tenant_id}",
+    summary="List tenant 的所有 skills + bindings (CR-0001 #6)",
+    dependencies=[Depends(require_admin)],
+)
+async def list_tenant_skills(tenant_id: uuid.UUID) -> dict[str, object]:
+    async with session_scope() as session:
+        skills_q = await session.execute(select(Skill).where(Skill.tenant_id == tenant_id))
+        skills = list(skills_q.scalars())
+
+        skill_versions_q = await session.execute(
+            select(SkillVersion).where(SkillVersion.tenant_id == tenant_id)
+        )
+        skill_versions = list(skill_versions_q.scalars())
+
+        bindings_q = await session.execute(
+            select(SkillBinding).where(SkillBinding.tenant_id == tenant_id)
+        )
+        bindings = list(bindings_q.scalars())
+
+        return {
+            "tenant_id": str(tenant_id),
+            "skills": [
+                {
+                    "id": str(s.id),
+                    "slug": s.slug,
+                    "vertical": s.vertical,
+                    "name": s.name,
+                    "current_production_version": s.current_production_version,
+                }
+                for s in skills
+            ],
+            "skill_versions": [
+                {
+                    "id": str(sv.id),
+                    "skill_id": str(sv.skill_id),
+                    "version": sv.version,
+                    "status": sv.status,
+                }
+                for sv in skill_versions
+            ],
+            "bindings": [_binding_to_json(b) for b in bindings],
+        }
+
+
+@router.post(
+    "/skills/bindings",
+    summary="建立或更新 skill binding (CR-0001 #6)",
+    dependencies=[Depends(require_admin)],
+)
+async def create_skill_binding(req: SkillBindingRequest) -> dict[str, object]:
+    """同 (employee_id, skill_version_id) 視為 upsert 更新 routing_rule + is_default + priority。"""
+    async with session_scope() as session:
+        existing = (
+            await session.execute(
+                select(SkillBinding).where(
+                    SkillBinding.employee_id == req.employee_id,
+                    SkillBinding.skill_version_id == req.skill_version_id,
+                )
+            )
+        ).scalar_one_or_none()
+
+        if existing is not None:
+            existing.routing_rule = req.routing_rule
+            existing.is_default = req.is_default
+            existing.priority = req.priority
+            await session.flush()
+            return _binding_to_json(existing)
+
+        binding = SkillBinding(
+            tenant_id=req.tenant_id,
+            employee_id=req.employee_id,
+            skill_version_id=req.skill_version_id,
+            routing_rule=req.routing_rule,
+            is_default=req.is_default,
+            priority=req.priority,
+        )
+        session.add(binding)
+        await session.flush()
+        return _binding_to_json(binding)
+
+
+@router.delete(
+    "/skills/bindings/{binding_id}",
+    summary="刪除 skill binding (CR-0001 #6)",
+    dependencies=[Depends(require_admin)],
+)
+async def delete_skill_binding(binding_id: uuid.UUID) -> dict[str, object]:
+    async with session_scope() as session:
+        b = (
+            await session.execute(select(SkillBinding).where(SkillBinding.id == binding_id))
+        ).scalar_one_or_none()
+        if b is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"binding {binding_id} not found",
+            )
+        await session.delete(b)
+        await session.flush()
+        return {"deleted": str(binding_id)}
+
+
+@router.post(
+    "/skills/route-preview",
+    summary="Dev: 給訊息預覽 routing 結果，不實際送 (CR-0001 #6)",
+    dependencies=[Depends(require_admin)],
+)
+async def preview_routing(req: RoutePreviewRequest) -> dict[str, object]:
+    """直接呼叫 SkillRouter.route()，回 decision 結構；不啟動 DraftProcessor。"""
+    from app.skill import NoSkillBoundError, SkillRouter
+
+    async with session_scope() as session:
+        router_svc = SkillRouter(session)
+        try:
+            decision = await router_svc.route(
+                message=req.message,
+                employee_id=req.employee_id,
+                tenant_id=req.tenant_id,
+                channel_id=req.channel_id,
+            )
+        except NoSkillBoundError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"no skill bound: {exc}",
+            ) from exc
+        return {
+            "skill_version_id": str(decision.skill_version.id),
+            "skill_slug": decision.skill_slug,
+            "skill_version_str": decision.skill_version_str,
+            "matched_rule_type": decision.matched_rule_type,
+            "matched_rule": decision.matched_rule,
+        }

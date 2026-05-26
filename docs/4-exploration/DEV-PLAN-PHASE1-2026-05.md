@@ -114,14 +114,15 @@ related: [PRD-001, PROJ-001, SAD-v0.1, ADR-0011, BF-001, AC-001-to-005]
 任務塊：
 - ✅ MC-011 Channel Gateway: webhook_event dedup + channel_binding + outbound_message retry (`feat/s2-channel-gateway`)
 - ✅ LINE webhook 端點：HMAC-SHA256 驗簽 + dedup (via webhook_event PK) + ≤1s ACK (`feat/s2-line-webhook`)
-- 🟡 Conversation Engine：6 態狀態機 + monthly partition + 30min idle timeout — DB schema + webhook 寫 conversation + DraftProcessor 寫 message 已就位；剩 idle timeout cron + close transitions
+- ✅ Conversation Engine：6 態狀態機 + monthly partition + 30min idle timeout — `app/services/conversation_idle.py` 已實作 + 已掛 worker run_iteration（每 iter 跑一次）
 - ✅ Employee Runtime + LLMClient (Anthropic) + AnthropicClient (`feat/s2-employee-runtime` / `feat/s2-llm-and-registries`)
 - ✅ Governance Hooks (Audit / Policy / Quota)
 - ✅ ToolExecutor (依 MC-006 tool_type 分派) + 2 builtin tools (search_knowledge / request_human_handoff) (`feat/s2-tool-executor`)
 - ✅ DraftProcessor：載入 conversation 歷史 + SkillLoader + EmployeeRuntime + 寫 assistant message + outbound_message (`feat/s2-draft-processor`)
 - ✅ LINE Push OutboundProcessor：429/5xx → retrying；4xx → failed；max_retries → DLQ；audit channel.message_pushed/failed (`feat/s2-outbound-worker`)
-- 🚫 L2.5 Session Summary：Haiku 對話結束摘要寫回 context
-- 🚫 Draft Mode 推播給 Expert（LINE Notify / web push）— UI 已就緒，剩通知機制
+- ✅ DLQ Inspector + Requeue API：admin /dlq/outbound list + requeue endpoint（Phase 1 後續 #18 `de25607`）
+- 🚫 L2.5 Session Summary：Haiku 對話結束摘要寫回 context（pilot 後再做）
+- ✅ Draft Mode 推播給 Expert：`awaiting_review` → Slack notify info（Phase 1 後續 #16 `de25607`）
 - ✅ Expert review 後端 API：approve / edit / reject + ExpertReviewError + audit (`feat/s2-expert-review-api`)
 - ✅ Expert Console UI：Vite + React + Tailwind；1-click approve / edit-send / reject + diff 進 audit (`feat/s2-expert-review-ui`)
 - ✅ Worker polling loop：DraftPoll + OutboundPoll + SKIP LOCKED + idle/exception backoff (`feat/s2-worker-loop`)

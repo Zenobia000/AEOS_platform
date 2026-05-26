@@ -71,6 +71,19 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 
 **新增方法論落地（2026-05-26）**：`skills/AUTHORING-GUIDE.md` — 6 章設計與維護指南，將通用 Claude agentic skill 心法（漸進披露 / 需求識別 / 雙路徑開發 + EDD / Description 三鐵律 / 心法 vs SOP / 維護清債）對映到 AEOS skill registry（ADR-0003 / MC-005）實作。未來新增 vertical / slug / version bump 都應先閱此指南。
 
+**Phase 1 後續清單一輪清理（2026-05-26 ~ 27）**：
+
+| # | 完成 | Commit |
+|---|---|---|
+| CR-0002 | finance + legal vertical → 6 vertical 平台 | `2d4c473` |
+| #18 | DLQ Inspector + Requeue API（/admin/dlq/outbound）| `32f07a8` |
+| #23 | TestSet `skill_slug` filter（schema + API + UI）| `dceee0c` |
+| #24 | `SkillRegistryService.sync_from_git` + admin endpoint | `7041f3c` |
+| #17 | `oncall_schedule` 第 25 張表 → DB schema **25/25 ✅** | `6b96daf` |
+| #16 | Draft `awaiting_review` → Slack notify expert | `de25607` |
+
+新增：+39 自動化測試（pytest 33 + Playwright 4 + vitest 2 update）；total 自動化測試估 ~570。
+
 **Multi-Vertical Framework 落地（2026-05-26，CR-0001 sprint 完工）**：
 
 | 落點 | 內容 |
@@ -102,7 +115,7 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | AI auto-reply 採用率 | n/a | >= 70% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
 | Test set 通過率 | n/a | >= 85% | [PILOT-001 §2.1](3-process/PILOT-001-success-criteria.md) |
 | 程式碼行數 | 24,000+ (app 8515 + tests 9410 + alembic 2020 + skills 236 + web/expert/src 3770) | — | `dev` |
-| DB 表完成數 | 24 / 25 (96%) | 25 | [db-schema.md](2-contracts/db-schema.md) |
+| DB 表完成數 | **25 / 25 (100%) ✅** | 25 | [db-schema.md](2-contracts/db-schema.md) — oncall_schedule 落地 |
 | Governance Layer (Audit/Policy/Quota) | 3 / 3 ✅ | 3 | engineering-charter §1 |
 | LINE 端到端鏈路 (DB 層) | inbound + draft + outbound 全跑通 ✅ | ✓ | AC-003 |
 | Draft Mode 鏈路（Expert review） | 後端 API + UI + E2E smoke ✅ | ✓ | PRD-001 §5.4 |

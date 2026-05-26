@@ -41,7 +41,28 @@ register_app_info(version=settings.app_version, env=settings.app_env)
 
 @app.get("/health", tags=["meta"])
 async def health() -> dict[str, str]:
+    """Lightweight liveness — 不查 DB。給 docker healthcheck / LB 用。"""
     return {"status": "ok", "env": settings.app_env, "version": settings.app_version}
+
+
+@app.get("/health/ready", tags=["meta"])
+async def health_ready() -> dict[str, object]:
+    """Readiness — 含 DB ping。失敗時回 503。給 k8s readiness probe 用。"""
+    from fastapi import HTTPException
+    from sqlalchemy import text as _text
+
+    from app.db.session import session_scope
+
+    checks: dict[str, str] = {"app": "ok"}
+    try:
+        async with session_scope() as session:
+            result = await session.execute(_text("SELECT 1"))
+            _ = result.scalar()
+        checks["db"] = "ok"
+    except Exception as exc:
+        checks["db"] = f"fail: {type(exc).__name__}"
+        raise HTTPException(status_code=503, detail=checks) from exc
+    return {"status": "ready", "checks": checks, "version": settings.app_version}
 
 
 @app.get("/metrics", tags=["meta"], include_in_schema=False)

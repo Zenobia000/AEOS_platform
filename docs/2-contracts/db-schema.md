@@ -5,7 +5,7 @@ status: active
 tier: 2-contracts
 owner: HYBRID
 last-reviewed: 2026-05-15
-last-synced-with: 2b70986920c67fe4e9b80c76cefef998036ee957
+last-synced-with: 69b6c2fd5d1fad0c540acd4b3854137f271d9d26
 sync-source: doc
 related: [SAD-v0.1, MC-001, MC-002, MC-003, MC-004, MC-005, MC-006, MC-008, MC-009, MC-010, MC-011]
 ---
@@ -386,16 +386,27 @@ ALTER TABLE skill_version ENABLE ROW LEVEL SECURITY;
 
 ```sql
 -- Which Employee uses which Skill version
+-- CR-0001: 加 routing_rule JSONB + is_default 支援 multi-vertical routing（見 ADR-0013）
 CREATE TABLE skill_binding (
     id                  UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
     tenant_id           UUID         NOT NULL REFERENCES tenant(id),
     employee_id         UUID         NOT NULL REFERENCES employee(id),
     skill_version_id    UUID         NOT NULL REFERENCES skill_version(id),
-    priority            INT          NOT NULL DEFAULT 0,         -- ordering when employee has multiple skills
+    priority            INT          NOT NULL DEFAULT 0,         -- evaluation order in router
+    routing_rule        JSONB        NOT NULL DEFAULT '{}',      -- CR-0001 / ADR-0013 hybrid router rule
+    is_default          BOOLEAN      NOT NULL DEFAULT false,     -- fallback when no rule matches
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW()
 );
 
 CREATE UNIQUE INDEX idx_skill_binding_emp_sv ON skill_binding (employee_id, skill_version_id);
+-- 每 employee 至多 1 個 default skill（partial unique idx 守門）
+CREATE UNIQUE INDEX uq_skill_binding_default_per_emp
+    ON skill_binding (employee_id) WHERE is_default = true;
+
+-- routing_rule schema（見 ADR-0013）：
+--   { "type": "keyword|llm_intent|channel_match|explicit",
+--     "params": {...},  -- 依 type
+--     "priority": <int>  -- 數字小者先評估 }
 
 -- RLS
 ALTER TABLE skill_binding ENABLE ROW LEVEL SECURITY;
@@ -605,6 +616,7 @@ CREATE TABLE message (
     content             TEXT         NOT NULL,                   -- pseudonymized
     content_raw_ref     UUID,                                    -- FK encrypted_pii(id) if PII vault is used
     skill_invocation_id UUID,
+    skill_version_id    UUID,                                    -- CR-0001: which skill_version 處理此 turn
     tool_invocations    JSONB        NOT NULL DEFAULT '[]',
     token_count         INT,                                     -- for context window budget tracking
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),

@@ -5,7 +5,7 @@ status: draft
 tier: 2-contracts
 owner: HYBRID (AI-drafts, human-approves)
 last-reviewed: 2026-05-15
-last-synced-with: 2a5ff7daab4de9ec6268fc5bb23d3e1b4f386acf
+last-synced-with: 69b6c2fd5d1fad0c540acd4b3854137f271d9d26
 sync-source: doc
 source-paths:
   - src/control/skill_registry/
@@ -285,8 +285,24 @@ file system 讀取        → Redis prompt cache          → CDN-backed prompt 
 flat skill list         → skill dependency graph      → skill marketplace
 ```
 
+## CR-0001 Multi-Vertical Routing Amendment（2026-05-26）
+
+Phase 1 原設計：1 個 skill_binding，DraftProcessor hardcode skill_slug。
+CR-0001 升級為 multi-vertical：
+
+- `skill_binding` +`routing_rule JSONB` + `is_default BOOLEAN` + partial unique idx
+- 新 service: `app/skill/router.py` SkillRouter — 4 種 rule type (keyword / llm_intent / channel_match / explicit)
+- 新 API: `/api/v1/admin/skills/{tenant_id}` + `/bindings` + `/route-preview`
+- 新 message 欄位：`skill_version_id` 記錄哪個 skill 處理此 turn
+- Phase 1.5 落地 4 個 vertical：customer-service / hr / it-helpdesk / sales
+
+設計決策見 [`ADR-0013-skill-routing-rule.md`](../1-decisions/ADR-0013-skill-routing-rule.md)；
+變更影響分析見 [`CR-0001-multi-vertical-framework.md`](../4-exploration/CR-0001-multi-vertical-framework.md)。
+
 ## See Also
 
 - [`skills/AUTHORING-GUIDE.md`](../../skills/AUTHORING-GUIDE.md) — Skill 撰寫與維護心法（6 章：需求識別 / 雙路徑開發 + EDD / Description 三鐵律 / 心法 vs SOP / 200-500 行 / 維護清債）。新增 vertical / slug / version bump 前必讀。
 - [`skills/README.md`](../../skills/README.md) — 目錄結構與上線流程 SOP。
 - [`docs/1-decisions/ADR-0003-skill-registry.md`](../1-decisions/ADR-0003-skill-registry.md) — git monorepo 為 source of truth 的根本決策。
+- [`docs/1-decisions/ADR-0013-skill-routing-rule.md`](../1-decisions/ADR-0013-skill-routing-rule.md) — hybrid routing 設計決策。
+- [`scripts/new_skill.py`](../../scripts/new_skill.py) — vertical/slug scaffolding CLI。

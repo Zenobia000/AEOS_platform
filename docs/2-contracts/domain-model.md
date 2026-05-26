@@ -5,7 +5,7 @@ status: active
 type: contract
 created: 2026-05-14
 last-reviewed: 2026-05-15
-last-synced-with: 9f85145cec3d0dae247b3304cac85fa75fe53015
+last-synced-with: ec2eac3528daaa3e0ee9a5674309f90ec726d3e3
 owner: CTO
 tier: 2
 related: [MC-001, MC-002, MC-003, MC-004, MC-005, MC-006, MC-008, MC-009, MC-010, MC-011, db-schema]
@@ -226,6 +226,25 @@ related: [MC-001, MC-002, MC-003, MC-004, MC-005, MC-006, MC-008, MC-009, MC-010
 - Skill `current_production_version` 只能指向 status=`production` 的版本
 - Production 版本不可改（immutable）；只能新增版本
 - `testing` 狀態由 CI trigger test run 進入；通過後由 CTO/Expert approve
+
+**SkillBinding**（CR-0001 / ADR-0013 升級為 multi-vertical routing 的核心表）：
+
+| Field | Type | 備註 |
+|---|---|---|
+| id | UUID | PK |
+| tenant_id | UUID | FK |
+| employee_id | UUID | FK |
+| skill_version_id | UUID | FK |
+| priority | int | router 評估順序（小者先）|
+| routing_rule | jsonb | `{ type: keyword \| llm_intent \| channel_match \| explicit, params, priority }`（CR-0001） |
+| is_default | bool | 每 employee 至多 1 個 default（partial unique idx 守門） |
+| created_at | timestamptz | |
+
+**Invariants**（CR-0001 新增）：
+- (employee_id, skill_version_id) 唯一
+- 每 employee 至多 1 個 `is_default = true` binding（partial unique idx `uq_skill_binding_default_per_emp`）
+- routing_rule.type 未知時視為 miss（router 不炸；只警告）
+- 沒 default 且所有 rule 都 miss → `NoSkillBoundError`（admin UI 應阻止此狀態）
 
 ### 2.8 KnowledgeCard（root）
 **用途**：客戶的單元知識，例如「退貨流程」「營業時間」「商品 X 的規格」。

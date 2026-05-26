@@ -16,13 +16,21 @@ skills/
             └── test_set.yaml      ← 驗收題庫（對應 skill_version.test_set_ref；S3 加上）
 ```
 
-範例（Phase 1 唯一 skill）：
+範例（Phase 1.5 — CR-0001 落地 4 vertical）：
 
 ```
-skills/customer-service/faq-respond/v1.0.0/
+skills/
+├── customer-service/faq-respond/v1.0.0/   ← Phase 1 原版
+├── hr/leave-request/v1.0.0/                ← CR-0001 #5 stub
+├── it-helpdesk/password-reset/v1.0.0/      ← CR-0001 #5 stub
+└── sales/quote-request/v1.0.0/             ← CR-0001 #5 stub
 ```
 
 > **撰寫心法**：見 [`AUTHORING-GUIDE.md`](./AUTHORING-GUIDE.md) — 6 章設計與維護指南（需求識別 / 雙路徑開發 + EDD / Description 撰寫 / 心法 vs SOP / 維護策略），已對映到 AEOS skill registry 實作。
+>
+> **新增 vertical / slug**：用 `uv run python -m scripts.new_skill <vertical> <slug> --name X --description Y`（CR-0001 #4）一鍵 scaffold；產出 4 檔（manifest/system/tools/test_set）含 placeholder 替換。
+>
+> **Multi-vertical routing**：DraftProcessor 接 SkillRouter 動態決定 inbound message 走哪個 skill（依 hybrid keyword + LLM intent + default fallback；見 [`ADR-0013`](../docs/1-decisions/ADR-0013-skill-routing-rule.md)）。
 
 ## Skill 上線流程
 

@@ -4,6 +4,7 @@ import { KCInbox } from "./pages/KCInbox";
 import { TestSetInbox } from "./pages/TestSetInbox";
 import { AuditBrowser } from "./pages/AuditBrowser";
 import { AdminAccounts } from "./pages/AdminAccounts";
+import { AdminSkills } from "./pages/AdminSkills";
 import { Login } from "./pages/Login";
 import { fetchMe, logout as apiLogout } from "./api/auth";
 import { ApiError } from "./api/expert";
@@ -151,7 +152,13 @@ function AuthenticatedApp({ expert, tab, setTab, onLogout }: AuthedProps) {
         <TestSetInbox expertId={expert.email} skillSlug={skillSlug} />
       )}
       {tab === "audit" && <AuditBrowser />}
-      {tab === "admin" && expert.role === "admin" && <AdminAccounts />}
+      {tab === "admin" && expert.role === "admin" && (
+        <div className="space-y-6">
+          <AdminAccounts />
+          <hr className="border-slate-200" />
+          <AdminSkills />
+        </div>
+      )}
     </div>
   );
 }

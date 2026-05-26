@@ -76,13 +76,38 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 | # | 完成 | Commit |
 |---|---|---|
 | CR-0002 | finance + legal vertical → 6 vertical 平台 | `2d4c473` |
-| #18 | DLQ Inspector + Requeue API（/admin/dlq/outbound）| `32f07a8` |
-| #23 | TestSet `skill_slug` filter（schema + API + UI）| `dceee0c` |
-| #24 | `SkillRegistryService.sync_from_git` + admin endpoint | `7041f3c` |
-| #17 | `oncall_schedule` 第 25 張表 → DB schema **25/25 ✅** | `6b96daf` |
-| #16 | Draft `awaiting_review` → Slack notify expert | `de25607` |
+| #18 | DLQ Inspector + Requeue API | `32f07a8` |
+| #23 | TestSet `skill_slug` filter | `dceee0c` |
+| #24 | `SkillRegistryService.sync_from_git` | `7041f3c` |
+| #17 | `oncall_schedule` 第 25 張表 → DB **25/25 ✅** | `6b96daf` |
+| #16 | Draft `awaiting_review` → Slack notify | `de25607` |
 
-新增：+39 自動化測試（pytest 33 + Playwright 4 + vitest 2 update）；total 自動化測試估 ~570。
+**Phase 1 後續清單二輪清理（2026-05-27）— 全清能做的**：
+
+| # | 完成 | Commit |
+|---|---|---|
+| #1 | seed_demo 擴成 6 vertical + bindings | `7207658` |
+| #2+#3 | `/health/ready` DB ping + `/metrics` Prometheus format test | `f92d33b` |
+| #4+#5 | Audit query +resource_type/actor_id filter + Conversation GDPR export | `b1a9732` |
+| #8 | Skill version 5-state lifecycle promotion API | `cfe416a` |
+| #9 | Tenant admin CRUD（MC-004 4-state） | `dc47105` |
+| #10 | OncallSchedule admin CRUD | `f12c654` |
+| #15 | ToolPolicy admin CRUD | `bf92399` |
+| #12 | L2.5 Session Summary service（LLM + stub fallback）→ DEV-PLAN 🚫 ✅ | `2d80b33` |
+| #17(judge) | LLMJudge AB compare framework | `c4baa1d` |
+| #11 | Dockerfile + Trivy image scan CI → SEC §6.1 **6/13 ✅** | `5eb9cc6` |
+| #7 | Audit tab event_type dropdown UI | (含 #11) |
+| #14+#18 | AdminSkills inspector UI（skills/versions/bindings 三段）| `0c2e3d3` |
+
+**Deferred（goal 範圍外 / 需要外部資源）**：
+
+| # | 為何 defer |
+|---|---|
+| #6 KC tab skill_slug filter UI | KC model 無 skill_slug 欄位，需 schema migration + KC 本身與 skill 弱關聯 |
+| #13 KB Ingest 真實 parser | voyage embedding API key 需外部 |
+| #16 SQLite stub backend | 6 vertical × 2-3 tool 大重構，in-mem dict 對 demo OK |
+
+**累計自動化測試**（兩輪後）：~580+（py + vitest + Playwright）。
 
 **Multi-Vertical Framework 落地（2026-05-26，CR-0001 sprint 完工）**：
 

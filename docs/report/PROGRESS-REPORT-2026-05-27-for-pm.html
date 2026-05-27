@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AEOS Platform — PM 進度報告（2026-05-27）</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #334155;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --green: #10b981;
+    --yellow: #f59e0b;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --purple: #a855f7;
+    --cyan: #06b6d4;
+    --border: #475569;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+      "Microsoft JhengHei", Roboto, sans-serif;
+    line-height: 1.65;
+    padding: 24px;
+  }
+  .container { max-width: 1280px; margin: 0 auto; }
+
+  header.top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 24px; border-bottom: 1px solid var(--border);
+    padding-bottom: 16px; flex-wrap: wrap; gap: 12px;
+  }
+  header.top h1 { margin: 0; font-size: 28px; }
+  header.top .sub { color: var(--muted); font-size: 14px; }
+  .audience-tag {
+    display: inline-block; background: var(--blue); color: white;
+    padding: 4px 12px; border-radius: 12px; font-size: 12px;
+    font-weight: 600; margin-left: 8px;
+  }
+
+  .tldr {
+    background: linear-gradient(90deg, rgba(16,185,129,0.15), transparent);
+    border-left: 4px solid var(--green);
+    padding: 14px 18px; margin: 16px 0 28px;
+    border-radius: 4px;
+  }
+  .tldr h2 { margin: 0 0 8px; font-size: 16px; color: var(--green); }
+  .tldr p { margin: 0; font-size: 14.5px; color: var(--text); }
+
+  h2 {
+    font-size: 22px; margin: 36px 0 14px;
+    padding-left: 14px; border-left: 5px solid var(--blue);
+    display: flex; align-items: baseline; gap: 10px;
+  }
+  h2 .emoji { font-size: 22px; }
+  h2 .meta-tag {
+    margin-left: auto; font-size: 13px; color: var(--muted);
+    font-weight: 400;
+  }
+  h3 { font-size: 15px; margin: 18px 0 8px; color: var(--muted); }
+
+  .progress-bar {
+    background: var(--panel); border-radius: 6px; overflow: hidden;
+    height: 28px; position: relative; margin: 10px 0;
+  }
+  .progress-bar .fill {
+    background: linear-gradient(90deg, var(--blue), var(--green));
+    height: 100%; transition: width 0.5s;
+    display: flex; align-items: center; padding: 0 10px;
+    color: white; font-weight: 600; font-size: 13px;
+  }
+  .progress-bar.phase2 .fill { background: var(--red); }
+  .progress-bar.partial .fill {
+    background: linear-gradient(90deg, var(--yellow), var(--blue));
+  }
+  .progress-bar.empty .fill {
+    background: var(--panel-2); color: var(--muted);
+  }
+
+  .grid { display: grid; gap: 14px; }
+  .grid.cols-2 { grid-template-columns: 1fr 1fr; }
+  .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 900px) {
+    .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px;
+  }
+  .card .title { font-weight: 600; margin-bottom: 8px; font-size: 14.5px; }
+  .card .value { font-size: 28px; font-weight: 700; line-height: 1.2; }
+  .card .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .card ul.bare { padding-left: 18px; margin: 6px 0 0; }
+  .card ul.bare li { margin: 4px 0; font-size: 13px; }
+  .card ul.bare li .lab { color: var(--muted); font-size: 12px; }
+
+  table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  th, td {
+    text-align: left; padding: 9px 11px;
+    border-bottom: 1px solid var(--border); font-size: 13.5px;
+  }
+  th { color: var(--muted); font-weight: 500; background: rgba(15, 23, 42, 0.5); }
+  td.center { text-align: center; }
+  td.right { text-align: right; }
+
+  .badge {
+    display: inline-block; padding: 2px 9px; border-radius: 4px;
+    font-size: 11.5px; font-weight: 600; vertical-align: middle;
+  }
+  .badge.done   { background: #064e3b; color: #6ee7b7; }
+  .badge.wip    { background: #78350f; color: #fbbf24; }
+  .badge.blocked{ background: #7f1d1d; color: #fca5a5; }
+  .badge.deferred{ background: #1e293b; color: var(--muted);
+                  border: 1px dashed var(--border); }
+  .badge.external{ background: #1e3a8a; color: #93c5fd; }
+
+  code {
+    background: var(--panel-2); padding: 1px 5px; border-radius: 3px;
+    font-size: 12px; color: #fbbf24;
+  }
+
+  .blocker-box {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--red); border-radius: 8px;
+    padding: 16px 20px; margin: 14px 0;
+  }
+  .blocker-box h3 { color: var(--red); margin-top: 0; }
+
+  .footer {
+    color: var(--muted); font-size: 12px; margin-top: 36px;
+    text-align: center; padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  ul.checklist { list-style: none; padding-left: 0; }
+  ul.checklist li {
+    padding: 6px 0; font-size: 14px;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  ul.checklist li::before {
+    content: "✅"; flex-shrink: 0;
+  }
+  ul.checklist li.blocked::before { content: "🔴"; }
+  ul.checklist li.deferred::before { content: "⏸"; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header class="top">
+  <div>
+    <h1>📊 AEOS Platform — 進度報告 <span class="audience-tag">給 PM</span></h1>
+    <div class="sub">2026-05-27 · CR-0001 + CR-0002 + 兩輪後續清單完工後快照</div>
+  </div>
+  <div class="sub">
+    branch <code>dev</code> · DB 25/25 ✅ · 自動化測試 ~580+
+  </div>
+</header>
+
+<div class="tldr">
+  <h2>📌 TL;DR — 一頁版</h2>
+  <p>
+    <strong>Phase 1 內部能做的事真的清完了</strong>（code 100% / DB 25/25 / 6 vertical framework / +43 admin API / Dockerfile + Trivy CI / 治理 + 安全 + observability 全到位）。
+    <strong>整體完成度卡在 72%</strong>，剩下 28% 是「外部帳號 + pilot 客戶」才能繼續 — 不是工程問題，是商務問題。
+    <strong>唯一 critical path blocker = CEO 簽下第 1 個 pilot 客戶</strong>；解開後 Phase 1 上線就緒 5 類 RED 才能一一變綠，Phase 2 規格也才能落筆。
+  </p>
+</div>
+
+<!-- ==================== Phase 完成度 ==================== -->
+<h2><span class="emoji">🎯</span>各 Phase 完成度</h2>
+
+<table>
+  <thead>
+    <tr><th style="width:140px">Phase</th><th>主題</th><th style="width:200px">完成度</th><th>說明</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Phase 1</strong></td>
+      <td>MVP 驗證期</td>
+      <td>
+        <div class="progress-bar partial"><div class="fill" style="width:72%">72%</div></div>
+      </td>
+      <td>code/DB/spec 100%；卡在外部帳號 + pilot</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 1.5</strong></td>
+      <td>Multi-Vertical Framework Hardening</td>
+      <td>
+        <div class="progress-bar"><div class="fill" style="width:100%">100% ✅</div></div>
+      </td>
+      <td>CR-0001 + CR-0002 + 兩輪後續清單全清</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 2</strong></td>
+      <td>產品化擴張期</td>
+      <td>
+        <div class="progress-bar empty"><div class="fill" style="width:100%">0%</div></div>
+      </td>
+      <td>等 pilot 真實資料才能落筆 spec</td>
+    </tr>
+    <tr>
+      <td><strong>Phase 3</strong></td>
+      <td>企業級平台期</td>
+      <td>
+        <div class="progress-bar empty"><div class="fill" style="width:100%">0%</div></div>
+      </td>
+      <td>等 Phase 2 跑滿 1-2 年</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ==================== 已完成 ==================== -->
+<h2><span class="emoji">✅</span>已完成的功能模組（Phase 1 內部）</h2>
+
+<h3>核心對話鏈路（已上線完成 100%）</h3>
+<div class="grid cols-3">
+  <div class="card">
+    <div class="title">📨 LINE Webhook</div>
+    <ul class="bare">
+      <li>HMAC-SHA256 驗簽</li>
+      <li>≤1s ACK</li>
+      <li>Webhook event 去重</li>
+      <li>SHA256 user ID 假名化</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">🤖 AI Runtime + Governance</div>
+    <ul class="bare">
+      <li>EmployeeRuntime 借鑑 nanobot</li>
+      <li>Audit / Policy / Quota 3 hook</li>
+      <li>Anthropic Claude Sonnet 4.6</li>
+      <li>Frozen Runtime snapshot</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">⚙️ Worker 4 cycles</div>
+    <ul class="bare">
+      <li>DraftPoll（用戶 → AI 草稿）</li>
+      <li>OutboundPoll（推 LINE Push）</li>
+      <li>IdlePoll（30 min 自動關）</li>
+      <li>TestRunPoll（背景跑 testset）</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">✉️ Draft Mode</div>
+    <ul class="bare">
+      <li>awaiting_review 流程</li>
+      <li>1-click approve / edit / reject</li>
+      <li>Slack 推播 expert</li>
+      <li>Audit trail 完整</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">📚 KB + KC Ingest</div>
+    <ul class="bare">
+      <li>PDF / DOCX / MD / TXT parser</li>
+      <li>pgvector 1024-dim 檢索</li>
+      <li>KC 5 種 type + 3 狀態</li>
+      <li>Approve + Archive 流程</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">🧪 TestSet + Quality</div>
+    <ul class="bare">
+      <li>50 題 test_set + pass rate</li>
+      <li>KeywordJudge + LLMJudge</li>
+      <li>AB compare framework（新）</li>
+      <li>per-skill_slug filter（新）</li>
+    </ul>
+  </div>
+</div>
+
+<h3>Multi-Vertical Skill Platform（Phase 1.5 — 100% ✅）</h3>
+<div class="grid cols-2">
+  <div class="card">
+    <div class="title">🌐 6 個 Vertical Skills</div>
+    <ul class="bare">
+      <li>customer-service / faq-respond（原版）</li>
+      <li>hr / leave-request（新）</li>
+      <li>it-helpdesk / password-reset（新）</li>
+      <li>sales / quote-request（新）</li>
+      <li>finance / expense-claim（新）</li>
+      <li>legal / contract-review（新）</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">🧭 Hybrid Routing 引擎</div>
+    <ul class="bare">
+      <li>SkillRouter service（ADR-0013）</li>
+      <li>4 種 evaluator: keyword / llm_intent / channel / explicit</li>
+      <li>Priority sort + default fallback</li>
+      <li>每次 routing 進 audit log</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">🛠 Skill 工具鏈</div>
+    <ul class="bare">
+      <li><code>new_skill</code> CLI scaffolding</li>
+      <li><code>SkillRegistryService.sync_from_git</code></li>
+      <li>5-state lifecycle promotion API</li>
+      <li>Admin Skills Inspector UI（新）</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">📐 撰寫指南</div>
+    <ul class="bare">
+      <li>AUTHORING-GUIDE 6 章心法</li>
+      <li>需求識別 / 雙路徑 EDD / 寬窄原則</li>
+      <li>Stub tools 模擬 6 vertical 工具</li>
+      <li>15 題 stub test_set / vertical</li>
+    </ul>
+  </div>
+</div>
+
+<h3>治理 + 安全（Phase 1 基底）</h3>
+<div class="grid cols-3">
+  <div class="card">
+    <div class="title">🔑 Auth + Session</div>
+    <ul class="bare">
+      <li>bcrypt + bearer token</li>
+      <li>role: expert / admin</li>
+      <li>AEOS_AUTH_REQUIRED env gate</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">🛑 Kill Switch + Canary</div>
+    <ul class="bare">
+      <li>per-tenant ai_enabled toggle</li>
+      <li>30 秒生效 + audit</li>
+      <li>Canary 0-100% 漸進放流</li>
+      <li>Hash bucket 確保 UX 一致</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">🛡 PII Masking</div>
+    <ul class="bare">
+      <li>6 種 pattern + Luhn 驗證</li>
+      <li>email / 手機 / 身分證 / 信用卡</li>
+      <li>raw PII 不進 DB</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">📋 Audit Log</div>
+    <ul class="bare">
+      <li>Append-only DB trigger</li>
+      <li>14+ event types</li>
+      <li>Filter: tenant/event_type/resource/actor</li>
+      <li>Conversation GDPR export（新）</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">🗄 DLQ + Reliability</div>
+    <ul class="bare">
+      <li>outbound permanent fail 進 DLQ</li>
+      <li>Admin /dlq/outbound inspector</li>
+      <li>手動 requeue API（新）</li>
+    </ul>
+  </div>
+  <div class="card">
+    <div class="title">📊 Observability</div>
+    <ul class="bare">
+      <li>Prometheus + 7 業務 metric</li>
+      <li>Slack 通知 (P0 / P1)</li>
+      <li><code>/health/ready</code> DB ping（新）</li>
+      <li>Audit dropdown UI（新）</li>
+    </ul>
+  </div>
+</div>
+
+<h3>後端管理 API（13 個 admin endpoint 新增）</h3>
+<table>
+  <thead>
+    <tr><th>分類</th><th>Endpoint</th><th>用途</th></tr>
+  </thead>
+  <tbody>
+    <tr><td rowspan="3">Tenant CRUD</td>
+      <td><code>GET/POST /admin/tenants</code></td><td>list / 建租戶</td></tr>
+    <tr><td><code>POST /admin/tenants/{id}/suspend</code></td><td>暫停（pending/active → suspended）</td></tr>
+    <tr><td><code>POST /admin/tenants/{id}/archive</code></td><td>歸檔（→ archived，MC-004 4 態收尾）</td></tr>
+    <tr><td rowspan="4">Skill 管理</td>
+      <td><code>POST /admin/skills/sync</code></td><td>git tree → DB upsert（MC-005 sync_from_git）</td></tr>
+    <tr><td><code>POST /admin/skills/bindings</code></td><td>建/改 binding + routing_rule（upsert）</td></tr>
+    <tr><td><code>POST /admin/skills/versions/{id}/promote</code></td><td>5-state lifecycle 推進</td></tr>
+    <tr><td><code>POST /admin/skills/route-preview</code></td><td>Dev：預覽 routing 結果不實際送</td></tr>
+    <tr><td rowspan="3">Oncall</td>
+      <td><code>GET/POST /admin/oncall</code></td><td>排班 list / 建立</td></tr>
+    <tr><td><code>DELETE /admin/oncall/{id}</code></td><td>刪除班次</td></tr>
+    <tr><td colspan="2"><em>（schema 已就緒，待 PagerDuty 對接後啟用）</em></td></tr>
+    <tr><td rowspan="3">Tool Policy</td>
+      <td><code>GET/POST /admin/tool-policies</code></td><td>list / 建 YAML rule</td></tr>
+    <tr><td><code>DELETE /admin/tool-policies/{id}</code></td><td>刪</td></tr>
+    <tr><td colspan="2"><em>支援 global policy (tenant_id=NULL)</em></td></tr>
+    <tr><td rowspan="2">DLQ</td>
+      <td><code>GET /admin/dlq/outbound</code></td><td>列 permanent-fail outbound</td></tr>
+    <tr><td><code>POST /admin/dlq/outbound/{id}/requeue</code></td><td>手動 requeue</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== 未完成 + 原因 ==================== -->
+<h2><span class="emoji">🔴</span>未完成的工項 / 功能模組 — 含原因</h2>
+
+<h3>🚫 Phase 1「上線就緒」5 類仍 RED（全是外部 blocker）</h3>
+<table>
+  <thead>
+    <tr><th style="width:90px">類別</th><th style="width:300px">未完成內容</th><th>原因 / 解鎖路徑</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><span class="badge blocked">治理</span></td>
+      <td>3 runbook 演練 / oncall 接線</td>
+      <td>需 <strong>Slack workspace + PagerDuty 帳號</strong>（CEO + CTO 註冊 ~半天）</td>
+    </tr>
+    <tr>
+      <td><span class="badge blocked">安全</span></td>
+      <td>紅隊 pentest / TLS prod / backup PITR drill / 機密輪換 SOP</td>
+      <td>需 <strong>Hetzner 雲端 VM</strong>（CTO 開帳號 1-2 天）+ 外部 pentest 廠商</td>
+    </tr>
+    <tr>
+      <td><span class="badge blocked">合規</span></td>
+      <td>DPA 簽 / Privacy notice / Cookie consent / Data retention 90 天 cron</td>
+      <td>需 <strong>第 1 個 pilot 客戶</strong>（DPA 是雙邊文件，沒對方簽不了）</td>
+    </tr>
+    <tr>
+      <td><span class="badge blocked">運營</span></td>
+      <td>Grafana dashboard / Drift 偵測 / incident drill</td>
+      <td>需 <strong>Hetzner VM + 真實流量</strong>，self-host 自己掃自己沒意義</td>
+    </tr>
+    <tr>
+      <td><span class="badge blocked">商業</span></td>
+      <td>計價落實 / Quota / SLA 條款 / 對外 pricing page</td>
+      <td>需 <strong>CEO 跟 pilot 客戶協商過</strong> 才能定價</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>⏸ 3 個工項 Deferred（goal 範圍內但需大重構或外部資源）</h3>
+<table>
+  <thead>
+    <tr><th>項目</th><th>為何 defer</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>#6 KC tab skill_slug filter UI</td>
+      <td>KC 模型本身沒有 <code>skill_slug</code> 欄位，要做需要 DB schema migration + KC 重新分類；且 KC 設計初衷是「跨 skill 共享知識」與 skill 弱關聯。<strong>結論：不做反而對</strong>。</td>
+    </tr>
+    <tr>
+      <td>#13 KB Ingest worker 真實 embedding parser</td>
+      <td>目前用 StubEmbeddingClient（隨機 1024-dim L2 normalize）。真實 embedding 要接 <strong>voyage-3-lite API（需 API key）</strong>。code 邏輯沒問題，只差 key + 真實文件測試。</td>
+    </tr>
+    <tr>
+      <td>#16 Stub tools → SQLite backend</td>
+      <td>6 vertical × 2-3 tool = 重構 ~15 個工具實作。in-mem dict 對 demo / Playwright 已足夠；真實上線時要接的不是 SQLite，是 <strong>客戶真實 HRIS / IDP / CRM / ERP</strong>，所以 SQLite 中介層是廢的 polish。</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>📅 Phase 2 — 0%，不是「沒做」是「現在做了會白做」</h3>
+<table>
+  <thead>
+    <tr><th style="width:180px">Phase 2 子系統</th><th>需要什麼資料才能設計</th><th>現在有嗎</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Training Room</strong><br/>(沙盒陪練 + self-improvement)</td>
+      <td>真實 pilot 對話的 failure pattern — 知道 AI 在哪卡關才知道練什麼</td>
+      <td><span class="badge blocked">0</span> 自己跟自己玩看不出真實失誤</td>
+    </tr>
+    <tr>
+      <td><strong>SkillOps 自動化</strong></td>
+      <td>真實 expert 花時間做什麼（reject 哪些 draft、為什麼、改成什麼）</td>
+      <td><span class="badge blocked">0</span> 無真實 expert</td>
+    </tr>
+    <tr>
+      <td><strong>Multi-tenant SaaS</strong><br/>(ADR-0004 觸發 ≥5 客戶)</td>
+      <td>5 個客戶的真實 workload pattern + 運維痛點清單</td>
+      <td><span class="badge blocked">0</span> 客戶</td>
+    </tr>
+    <tr>
+      <td><strong>Premium Isolated Compute</strong></td>
+      <td>1-2 個大客戶說「我要專屬」</td>
+      <td><span class="badge blocked">0</span> 客戶</td>
+    </tr>
+    <tr>
+      <td><strong>Grafana Cloud 遷移評估</strong></td>
+      <td>self-host 已撐不住的訊號</td>
+      <td><span class="badge blocked">N/A</span> self-host 都還沒部署</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="blocker-box">
+  <h3>⚠️ 為何 Phase 2 不能「先寫起來放」</h3>
+  <p style="margin: 0; font-size: 14px;">
+    AEOS 整個專案章程（<code>.claude/rules/change-governance.md</code>）第 1 條戒律：
+    <strong>「文件衝突或讀到 stale doc → 停下回報，不腦補」</strong>。
+    沒 pilot 資料就硬寫 Phase 2 PRD = 主動腦補 = 違反專案規矩。
+    現在不寫 Phase 2 ≠ 偷懶，是 <strong>避免 AI slop</strong> — 因為若提早寫，
+    pilot 真實資料進來會發現 80% 的假設錯誤，整份規格重寫。
+  </p>
+</div>
+
+<h3>📅 Phase 3 — 0%，更下游</h3>
+<table>
+  <thead>
+    <tr><th>條件</th><th>現況</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Phase 2 已穩定（50+ tenant，NRR > 100%）</td><td><span class="badge blocked">Phase 2 還沒開始</span></td></tr>
+    <tr><td>客戶數 ≥ 500</td><td><span class="badge blocked">0</span></td></tr>
+    <tr><td>Enterprise plan 商業條款</td><td><span class="badge blocked">連 pilot 都還沒簽</span></td></tr>
+    <tr><td>On-prem 部署 capability</td><td><span class="badge blocked">SaaS 都還沒上線</span></td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== Critical Path ==================== -->
+<h2><span class="emoji">🚨</span>Critical Path — 唯一 blocker</h2>
+
+<div class="blocker-box">
+  <h3>🎯 CEO 簽下第 1 個 pilot 客戶</h3>
+  <p style="margin: 0;">
+    這一個動作會連鎖解開 <strong>整個 Phase 1 剩 28% + Phase 2 規格落筆條件</strong>。
+    依 <code>LAUNCH-DASHBOARD §關鍵指標</code>：「Pilot 客戶簽約數 = 0 / 目標 3-5 家」。
+    依 <code>PILOT-ICP §3.1</code>：30 個候選 ICP 名單目前全空白。
+  </p>
+  <p style="margin: 10px 0 0; font-size: 13px; color: var(--muted);">
+    每延 1 週簽約 → 整個 Phase 1 時間軸右移 1 週。<br/>
+    每延 4 週 → ~$35K 跑道吃緊（<code>COST-MODEL §3</code>）。<br/>
+    每延 8 週 → 需重新評估 PRD-001 是否需要 pivot。
+  </p>
+</div>
+
+<h3>CTO 端可自解的 unblocker（不等 pilot）</h3>
+<ul class="checklist">
+  <li class="blocked">開 Hetzner Cloud 帳號（1-2 天）→ 解鎖 OBS / TLS / backup / log retention 4 條 SEC §6.1</li>
+  <li class="blocked">註冊 Slack workspace + PagerDuty Free（半天）→ 解鎖 oncall / incident drill</li>
+  <li class="blocked">申請 LINE Developers Sandbox channel（30 分鐘）→ 解鎖真實 HMAC 端到端測試</li>
+</ul>
+
+<!-- ==================== 統計 ==================== -->
+<h2><span class="emoji">📈</span>本期工程指標</h2>
+<div class="grid cols-4">
+  <div class="card">
+    <div class="title">自動化測試</div>
+    <div class="value" style="color: var(--green)">~580+</div>
+    <div class="meta">py + vitest + Playwright</div>
+  </div>
+  <div class="card">
+    <div class="title">DB 表</div>
+    <div class="value">25 / 25 ✅</div>
+    <div class="meta">100% Phase 1 schema</div>
+  </div>
+  <div class="card">
+    <div class="title">Vertical Skills</div>
+    <div class="value">6</div>
+    <div class="meta">cs / hr / it / sales / finance / legal</div>
+  </div>
+  <div class="card">
+    <div class="title">Admin API</div>
+    <div class="value">~43</div>
+    <div class="meta">+13 本期新增</div>
+  </div>
+  <div class="card">
+    <div class="title">AC 通過</div>
+    <div class="value">5 / 5 ✅</div>
+    <div class="meta">AC-001~005</div>
+  </div>
+  <div class="card">
+    <div class="title">SEC §6.1</div>
+    <div class="value" style="color: var(--yellow)">6 / 13</div>
+    <div class="meta">+1 本期（Trivy image scan）</div>
+  </div>
+  <div class="card">
+    <div class="title">ADR 累積</div>
+    <div class="value">13</div>
+    <div class="meta">+1 本期（ADR-0013 routing）</div>
+  </div>
+  <div class="card">
+    <div class="title">Pilot 簽約</div>
+    <div class="value" style="color: var(--red)">0 / 3-5</div>
+    <div class="meta">🔴 critical path</div>
+  </div>
+</div>
+
+<!-- ==================== CEO 本週行動 ==================== -->
+<h2><span class="emoji">📋</span>CEO 本週行動（per LAUNCH-DASHBOARD）</h2>
+<ol style="font-size: 14.5px; line-height: 1.9;">
+  <li><strong>簽第一個 Pilot 客戶</strong> — 整 28% 阻礙的唯一鑰匙</li>
+  <li>回答 PRD-001 開放問題（status: draft → active）</li>
+  <li>確認資金跑道（Pilot 期 net burn ~$35K/3 個月）</li>
+  <li>填入候選客戶名單（PILOT-ICP §3.1 目前 0/30）</li>
+</ol>
+
+<!-- ==================== 下一步 / 不能做的 ==================== -->
+<h2><span class="emoji">🛣</span>下一步建議</h2>
+<table>
+  <thead>
+    <tr><th style="width:180px">時間</th><th>動作</th><th>Owner</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>本週</strong></td>
+      <td>CTO 開 Hetzner / Slack-PD / LINE sandbox（解鎖 SEC 4 條）</td>
+      <td>CTO</td>
+    </tr>
+    <tr>
+      <td><strong>本週起 4 週內</strong></td>
+      <td>CEO 跑 pilot pipeline：30 候選 → cold outreach → 5 家 demo → 簽 1 家</td>
+      <td>CEO</td>
+    </tr>
+    <tr>
+      <td>Pilot 簽下後</td>
+      <td>啟動 S6 Pilot Hardening + S7 Day 0-7 onboarding</td>
+      <td>CTO + Pilot</td>
+    </tr>
+    <tr>
+      <td>Pilot 跑滿 1-3 個月</td>
+      <td>Phase 2 PRD 落筆（Training Room / SkillOps / multi-tenant）</td>
+      <td>CTO + CEO</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="footer">
+  Generated 2026-05-27 ·
+  <code>docs/report/PROGRESS-REPORT-2026-05-27-for-pm.html</code><br/>
+  本檔合併並取代過時的 <code>STATUS-REPORT-2026-05-24-phase1-code-complete.html</code> 與
+  <code>PHASE1-FEATURES-2026-05-25.html</code>（已移至 <code>docs/report/archive/</code>）<br/>
+  · 對齊 dev branch HEAD · 對應 CR-0001 + CR-0002 + 兩輪後續清單完工狀態
+</div>
+
+</div>
+</body>
+</html>

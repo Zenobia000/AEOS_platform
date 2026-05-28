@@ -1,6 +1,6 @@
 # NFR Matrix — care-copilot（最薄切片 / Pilot）
 
-> **📋 Status**: draft
+> **📋 Status**: frozen（Gate 4 NFR+ADR baseline，2026-05-28；ADR 仍 Proposed，變更走 DR）
 > **🗓 Last updated**: 2026-05-28
 > **👤 Owner**: `devteam-arch`
 > **🔖 Version**: v1

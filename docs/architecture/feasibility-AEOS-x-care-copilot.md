@@ -1,6 +1,6 @@
 # 可行性評估 — AEOS 平台 × Care Copilot 垂直 × nanobot 執行引擎
 
-> **📋 Status**: draft（feasibility spike，非實作承諾）
+> **📋 Status**: reviewed（feasibility spike 完成，導出 ADR-0001~0004，非實作承諾）
 > **🗓 Last updated**: 2026-05-28
 > **👤 Owner**: `devteam-arch`
 > **🔖 Version**: v1

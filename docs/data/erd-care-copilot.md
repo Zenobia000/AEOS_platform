@@ -1,6 +1,6 @@
 # ERD + 模組/Error Model — care-copilot（最薄切片）
 
-> **📋 Status**: draft
+> **📋 Status**: frozen（Gate 5b DB Schema，2026-05-28；變更走 DR）
 > **🗓 Last updated**: 2026-05-28
 > **👤 Owner**: `devteam-design`
 > **🔖 Version**: v1

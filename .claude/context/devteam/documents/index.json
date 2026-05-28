@@ -1,6 +1,6 @@
 {
   "docs/prd/ai-cs-mvg.md": {
-    "status": "draft",
+    "status": "frozen",
     "version": 1,
     "owner_role": "pm",
     "created_at": "2026-05-28T07:09:26Z"
@@ -12,31 +12,31 @@
     "created_at": "2026-05-28T07:09:26Z"
   },
   "docs/analysis/system-spec-care-copilot.md": {
-    "status": "draft",
+    "status": "frozen",
     "version": 1,
     "owner_role": "analyst",
     "created_at": "2026-05-28T07:09:26Z"
   },
   "docs/ux/user-flow-care-copilot.md": {
-    "status": "draft",
+    "status": "frozen",
     "version": 1,
     "owner_role": "ux",
     "created_at": "2026-05-28T07:09:26Z"
   },
   "docs/architecture/feasibility-AEOS-x-care-copilot.md": {
-    "status": "draft",
+    "status": "reviewed",
     "version": 2,
     "owner_role": "arch",
     "created_at": "2026-05-28T07:09:26Z"
   },
   "docs/architecture/nfr-care-copilot.md": {
-    "status": "draft",
+    "status": "frozen",
     "version": 1,
     "owner_role": "arch",
     "created_at": "2026-05-28T07:09:26Z"
   },
   "docs/architecture/c4-care-copilot.md": {
-    "status": "draft",
+    "status": "frozen",
     "version": 1,
     "owner_role": "arch",
     "created_at": "2026-05-28T07:09:26Z"
@@ -72,19 +72,19 @@
     "created_at": "2026-05-28T07:09:26Z"
   },
   "docs/api/openapi-care-copilot.yaml": {
-    "status": "draft",
+    "status": "frozen",
     "version": 1,
     "owner_role": "design",
     "created_at": "2026-05-28T07:09:26Z"
   },
   "docs/data/erd-care-copilot.md": {
-    "status": "draft",
+    "status": "frozen",
     "version": 1,
     "owner_role": "design",
     "created_at": "2026-05-28T07:09:26Z"
   },
   "docs/qa/test-plan-care-copilot.md": {
-    "status": "draft",
+    "status": "frozen",
     "version": 1,
     "owner_role": "qa",
     "created_at": "2026-05-28T07:09:26Z"
@@ -126,7 +126,7 @@
     "created_at": "2026-05-28T11:42:55Z"
   },
   "docs/data/migrations/README.md": {
-    "status": "draft",
+    "status": "frozen",
     "version": 1,
     "owner_role": "dba",
     "created_at": "2026-05-28T11:42:55Z"

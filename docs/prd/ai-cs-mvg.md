@@ -1,6 +1,6 @@
 # PRD — AI 客服 MVG（Draft Mode 草稿模式）
 
-> **📋 Status**: draft
+> **📋 Status**: frozen（Gate 1 PRD，2026-05-28；變更走 DR）
 > **🗓 Last updated**: 2026-05-28
 > **👤 Owner**: PM
 > **🔖 Version**: v1

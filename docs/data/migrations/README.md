@@ -1,6 +1,6 @@
 # Migrations — care-copilot schema
 
-> **📋 Status**: draft
+> **📋 Status**: frozen（Gate 5b DB Schema，2026-05-28；變更走 DR）
 > **🗓 Last updated**: 2026-05-28
 > **👤 Owner**: `devteam-design`（dba）
 > **🔖 Version**: v1

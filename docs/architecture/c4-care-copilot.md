@@ -1,6 +1,6 @@
 # C4 — care-copilot（L1 + L2 + L3 / 最薄切片）
 
-> **📋 Status**: draft
+> **📋 Status**: frozen（Gate 4 NFR+ADR baseline，2026-05-28；變更走 DR）
 > **🗓 Last updated**: 2026-05-28
 > **👤 Owner**: `devteam-arch`
 > **🔖 Version**: v1
@@ -140,6 +140,42 @@ flowchart TB
 | **Audit writer** | append-only(used_chunks/model/decision/decided_by/sent_at) | BR-5 / threat-model T-T-02 |
 
 > **KnowledgeRouter = retrieval 側**（runtime 查詢）;**ingest 側**（知識進場治理）走 `knowledge-pipeline.md` 的 8 階段管線（ADR-0004,W1 只用 3 格:貼上→全當 Static→eval）。兩者經同一 Knowledge Store,但 ingest pipeline 是離線/批次,不在 runtime 熱路徑。
+
+---
+
+## Dynamic View — Sequence（草稿生成 critical path）
+
+> L1/L2/L3 是**靜態結構**（誰在誰裡面）;本 sequence 是**動態互動**（誰先呼誰）。owner = design（KB-07 §3：Sequence＝design primary，關鍵 endpoint flow）。對應 `POST /drafts`（UC-2 / FR-002）。
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor C as 終端客戶 / expert
+    participant App as App 進程 (nanobot loop)
+    participant KR as KnowledgeRouter
+    participant DB as Postgres+pgvector
+    participant Pol as Policy Engine
+    participant LLM as LLM Adapter → Anthropic
+    participant Aud as Audit writer
+
+    C->>App: 訊息 / 生成草稿 (POST /drafts)
+    App->>KR: 檢索（限本租戶）
+    KR->>DB: SQL + RLS (tenant scope)
+    DB-->>KR: contact + knowledge_chunk
+    KR-->>App: grounded context（citation）
+    alt 有依據
+        App->>LLM: 生成 3 語氣草稿（prompt caching）
+        LLM-->>App: draft
+        App->>Pol: 合規掃描（regex 詞庫，獨立於 LLM）
+        Pol-->>App: green / yellow / red
+    else 缺依據
+        App-->>App: needs_human=true（不幻覺，BR-1）
+    end
+    App->>Aud: 寫 used_chunks / model / compliance
+    Aud->>DB: append-only（寫敗→整筆回滾）
+    App-->>C: Draft（needs_human? / compliance 徽章）
+    Note over C,Aud: 人審 approve/edit/reject → 設 sent_at（未審不發，BR-4 / TC-SEC-03）
+```
 
 ---
 

@@ -1,6 +1,6 @@
 # System Spec — care-copilot（最薄切片）
 
-> **📋 Status**: draft
+> **📋 Status**: frozen（Gate 3 System Spec，2026-05-28；變更走 DR）
 > **🗓 Last updated**: 2026-05-28
 > **👤 Owner**: `devteam-analyst`
 > **🔖 Version**: v1

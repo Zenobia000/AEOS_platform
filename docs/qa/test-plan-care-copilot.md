@@ -1,6 +1,6 @@
 # Test Plan — care-copilot（最薄切片）
 
-> **📋 Status**: draft
+> **📋 Status**: frozen（Gate 6 Test Ready 計畫；pre-B1 條件：test-data-strategy。變更走 DR）
 > **🗓 Last updated**: 2026-05-28
 > **👤 Owner**: `devteam-qa`
 > **🔖 Version**: v1

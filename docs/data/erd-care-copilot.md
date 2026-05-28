@@ -1,7 +1,7 @@
 # ERD + 模組/Error Model — care-copilot（最薄切片）
 
 > **Status**: draft · **Owner**: `devteam-design` · **Date**: 2026-05-28 · **Feature**: care-copilot
-> 對應 ADR-0013（結構化 contact）/ system-spec §3-4 / NFR Privacy。所有表帶 `tenant_id` + RLS。
+> 對應 ADR-0003（結構化 contact）/ system-spec §3-4 / NFR Privacy。所有表帶 `tenant_id` + RLS。
 
 ---
 
@@ -23,7 +23,7 @@ tenant (id, name, data_retention_days, compliance_profile)
 ```
 
 > `message` 一張表幹三件事（對話紀錄 + audit log + 訓練素材），消滅資料複製（foundation/02 §3.2）。
-> `contact`(結構化) 與 `knowledge_chunk`(語意檢索) 分開 = ADR-0013 的 KnowledgeRouter 兩路。
+> `contact`(結構化) 與 `knowledge_chunk`(語意檢索) 分開 = ADR-0003 的 KnowledgeRouter 兩路。
 
 ## 路由（KnowledgeRouter，§6.3 三分類）
 

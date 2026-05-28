@@ -1,4 +1,4 @@
-# ADR-0011 — 採 nanobot 為 Frozen Runtime 底層 + AEOS 治理包覆
+# ADR-0001 — 採 nanobot 為 Frozen Runtime 底層 + AEOS 治理包覆
 
 > **📋 Status**: Proposed
 > **🗓 Date**: 2026-05-28
@@ -29,7 +29,7 @@
 ## 🎯 Context
 
 - **觸發**：feasibility（`docs/architecture/feasibility-AEOS-x-care-copilot.md` §4）確認 **MCP/plugin 整合外部系統需要 agentic**（tool-calling 編排），且業主要求**底層全 Python**。
-- **技術限制**：AEOS 設計與 Care Copilot 後端皆 Python(FastAPI)；既有 ADR-0002 規定 Frozen Runtime（學習/生產分離）、ADR-0007 規定多租戶隔離。
+- **技術限制**：AEOS 設計與 Care Copilot 後端皆 Python(FastAPI)；既有 legacy ADR-0002 規定 Frozen Runtime（學習/生產分離）、legacy ADR-0007 規定多租戶隔離。
 - **相關 NFR**：blast radius 須限縮在單一 tenant；MCP 工具呼叫須過 Policy + Audit（原則 3）。
 - **既有決策延續**：`02 §4.1 / §4.4.2` 已把「nanobot 類」列為 Production Frozen Runtime 候選 — 本 ADR 是其落地。
 
@@ -41,7 +41,7 @@
 |:---:|:---|:---|:---|
 | 1 | 與 Python 底層一致（降跨語言 coupling） | high | feasibility §4 |
 | 2 | 原生 agentic + MCP（整合外部系統） | high | KB-08 |
-| 3 | 可被 AEOS 凍結 + 多租戶包覆（blast radius） | high | ADR-0002 / ADR-0007 |
+| 3 | 可被 AEOS 凍結 + 多租戶包覆（blast radius） | high | legacy ADR-0002 / legacy ADR-0007 |
 | 4 | Time-to-market（現成 vs 自建） | high | foundation/02 |
 | 5 | 多模型 + prompt caching（成本） | medium | KB-11 §4 |
 
@@ -101,8 +101,8 @@
 
 ### AEOS 必加的三層治理包覆（boundary）
 
-1. **Frozen Runtime**（ADR-0002）：生產關閉 nanobot 自我擴展（自裝 skill / 自改 prompt / 自由載入任意 MCP）；配置凍結快照，回饋走離線。
-2. **多租戶隔離**（ADR-0007）：每位直銷商一個受隔離 runtime context + RLS；blast radius 限單一 tenant。
+1. **Frozen Runtime**（legacy ADR-0002）：生產關閉 nanobot 自我擴展（自裝 skill / 自改 prompt / 自由載入任意 MCP）；配置凍結快照，回饋走離線。
+2. **多租戶隔離**（legacy ADR-0007）：每位直銷商一個受隔離 runtime context + RLS；blast radius 限單一 tenant。
 3. **Tool Gateway + Policy 前置**（原則 3）：MCP 工具呼叫前過 Policy Engine + Audit；外部系統憑證不入 nanobot。
 
 ---
@@ -116,7 +116,7 @@
 
 ### ⚠️ Negative
 > [!WARNING]
-- nanobot 預設「個人單租戶 + 可自我擴展」與 AEOS「多租戶 + Frozen」相反 → **必須**建包覆層才能生產，否則違反 ADR-0002/0007（mitigation：包覆層列為 design driver 的 P0）
+- nanobot 預設「個人單租戶 + 可自我擴展」與 AEOS「多租戶 + Frozen」相反 → **必須**建包覆層才能生產，否則違反 legacy ADR-0002/0007（mitigation：包覆層列為 design driver 的 P0）
 - 上游活躍開發 → 釘版本 + 包覆而非 fork，降耦合（mitigation：治理層與 nanobot 核心解耦）
 - nanobot 未內建 LINE channel（mitigation：Care Copilot pilot 是「草稿+手動貼 LINE」，pilot 不需 LINE API）
 
@@ -139,7 +139,7 @@
 | Asset | Path |
 |:---|:---|
 | **Feasibility** | [`docs/architecture/feasibility-AEOS-x-care-copilot.md`](../feasibility-AEOS-x-care-copilot.md) §4 |
-| **延續 ADR** | ADR-0002（Frozen Runtime）· ADR-0007（Tenant Isolation）·`_legacy-dev_docs/02-product-architecture.md` §4.4.2 |
+| **延續 ADR** | legacy ADR-0002（Frozen Runtime）· legacy ADR-0007（Tenant Isolation）·`_legacy-dev_docs/02-product-architecture.md` §4.4.2 |
 | **KB references** | [[11_data_and_stack_catalog]] · [[10_resilience_patterns]] · [[08_api_design_catalog]] |
 
 ---

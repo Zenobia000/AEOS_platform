@@ -1,4 +1,4 @@
-# ADR-0013 — 結構化 contact（活檔案）納入 knowledge 模型
+# ADR-0003 — 結構化 contact（活檔案）納入 knowledge 模型
 
 > **📋 Status**: Proposed
 > **🗓 Date**: 2026-05-28
@@ -29,7 +29,7 @@
 ## 🎯 Context
 
 - **觸發**：feasibility §3 標活檔案為 🟡 — AEOS 既有知識偏「文件/RAG」（`02 §6.3` 三分類 Static/Policy/Dynamic），活檔案是**結構化 CRM 記錄**（基本資料、健康關注、家庭、互動史、標籤）。
-- **技術限制**：ADR-0010 記憶五層；ADR-0007 多租戶隔離；隱私底線 = 不爬 LINE 對話歷史，全由直銷商主動補。
+- **技術限制**：legacy ADR-0010 記憶五層；legacy ADR-0007 多租戶隔離；隱私底線 = 不爬 LINE 對話歷史，全由直銷商主動補。
 - **相關 NFR**：Privacy（PII 分級、保留期、可刪除）；多租戶 contact 0 串（feasibility 情境 14 紅隊必過）。
 
 ---
@@ -39,7 +39,7 @@
 | Priority | Driver | Weight | Reference |
 |:---:|:---|:---|:---|
 | 1 | 精度（結構化查詢 vs 語意檢索幻覺） | high | `02 §6.3` |
-| 2 | 多租戶 contact 隔離（blast radius） | high | ADR-0007 |
+| 2 | 多租戶 contact 隔離（blast radius） | high | legacy ADR-0007 |
 | 3 | Privacy（PII 分級 / 保留 / 刪除） | high | KB-11 §1-§3 |
 | 4 | 與既有知識三分類的 boundary 一致 | medium | `02 §6.3` |
 
@@ -99,7 +99,7 @@
 ### ⚠️ Negative
 > [!WARNING]
 - knowledge 模型新增實體 + 路由分支（structured-contact / doc-RAG / policy）複雜度上升（mitigation：KnowledgeRouter 明確三路，沿用 §6.3）
-- 與 ADR-0010 記憶層關係須釐清（活檔案屬 L3 租戶知識的結構化變體，非 L4 推論記憶）
+- 與 legacy ADR-0010 記憶層關係須釐清（活檔案屬 L3 租戶知識的結構化變體，非 L4 推論記憶）
 
 ### 🎯 Follow-up Work
 | Action | Owner | Due | Reference |
@@ -120,7 +120,7 @@
 | Asset | Path |
 |:---|:---|
 | **Feasibility** | [`docs/architecture/feasibility-AEOS-x-care-copilot.md`](../feasibility-AEOS-x-care-copilot.md) §3 #1 |
-| **延續 ADR** | ADR-0010（記憶五層 L3）·`_legacy-dev_docs/02-product-architecture.md` §6.3 知識三分類 |
+| **延續 ADR** | legacy ADR-0010（記憶五層 L3）·`_legacy-dev_docs/02-product-architecture.md` §6.3 知識三分類 |
 | **KB references** | [[11_data_and_stack_catalog]] |
 
 ---

@@ -42,9 +42,9 @@ Care Copilot 的 §5 架構與 §6 NFR **不是照 AEOS 設計的**，卻獨立�
 
 | Care Copilot 自己寫的（pilot_run.md） | 對映的 AEOS 原語 | 收斂度 |
 |---|---|---|
-| Supabase RLS 租戶隔離、「不同直銷商資料 0 串」、紅隊必過（情境 14） | 多租戶隔離（ADR-0007 RLS + app 層） | **完全一致** |
+| Supabase RLS 租戶隔離、「不同直銷商資料 0 串」、紅隊必過（情境 14） | 多租戶隔離（legacy ADR-0007 RLS + app 層） | **完全一致** |
 | 合規低語 regex sidecar <50ms、所有外送都過、100% 紀錄 | Policy Engine + Audit（原則 3 / MC-001） | **完全一致** |
-| 草稿模式「AI 絕不自動送出」 | Frozen Runtime + 草稿閘門（原則 4 / ADR-0002） | **完全一致** |
+| 草稿模式「AI 絕不自動送出」 | Frozen Runtime + 草稿閘門（原則 4 / legacy ADR-0002） | **完全一致** |
 | 學習紀錄 Day 1（情緒判斷/警示採納/草稿採用） | AgentOps Evaluation + SkillOps 回流（原則 5 / §12） | **完全一致** |
 | LangGraph 外包一層抽象「避免被 vendor 綁死」 | 多模型抽象層 LLMProviderAdapter（§13） | **完全一致** |
 | 活檔案（結構化）+ pgvector + 不爬 LINE 歷史 | 知識三分類（§6.3 Static/Policy/Dynamic）+ 隱私底線 | **方向一致** |
@@ -109,8 +109,8 @@ Care Copilot 的 §5 架構與 §6 NFR **不是照 AEOS 設計的**，卻獨立�
 > **強一致性訊號**：AEOS 自己的架構（`02 §4.1 / §4.4.2`）**早就把「nanobot 類」選為 Production Frozen Runtime 候選**，並寫明「保留小核心 agent loop + chat + MCP client；包覆/移除 自由載入 MCP server、自我修改、跨 tenant 存取」。HKUDS/nanobot 正是那個「nanobot 類」的具體實作 → 採用它**不是新決定，是兌現 AEOS 既有架構選型**。
 
 **AEOS 對 nanobot 必加的治理包覆**（這是 AEOS 的價值，不是 nanobot 的責任）：
-1. **Frozen Runtime**：生產關掉 nanobot 的自我擴展（自裝 skill / 自改 prompt / 自由載入任意 MCP）→ 凍結配置快照，回饋走離線（ADR-0002 / 原則 4）
-2. **多租戶隔離**：nanobot 是「個人長駐 agent」非多租戶 → AEOS 以 tenant-manager + RLS 包出 multi-tenant，每位直銷商一個受隔離 runtime context（ADR-0007）
+1. **Frozen Runtime**：生產關掉 nanobot 的自我擴展（自裝 skill / 自改 prompt / 自由載入任意 MCP）→ 凍結配置快照，回饋走離線（legacy ADR-0002 / 原則 4）
+2. **多租戶隔離**：nanobot 是「個人長駐 agent」非多租戶 → AEOS 以 tenant-manager + RLS 包出 multi-tenant，每位直銷商一個受隔離 runtime context（legacy ADR-0007）
 3. **Tool Gateway / Policy 前置**：MCP 工具呼叫前過 AEOS Policy Engine + Audit（原則 3），不讓 nanobot 直連外部系統憑證
 
 ---
@@ -152,7 +152,7 @@ Care Copilot 的 §5 架構與 §6 NFR **不是照 AEOS 設計的**，卻獨立�
 
 | 風險 | 等級 | 護欄 |
 |---|---|---|
-| 直接裸用 nanobot（不加治理包覆）跑生產 | 🔴 | nanobot 預設可自我擴展 + 個人單租戶 → 生產必須先包 Frozen + 多租戶 + Policy/Audit（§4），否則違反 AEOS 原則 4/原則 3/ADR-0007 |
+| 直接裸用 nanobot（不加治理包覆）跑生產 | 🔴 | nanobot 預設可自我擴展 + 個人單租戶 → 生產必須先包 Frozen + 多租戶 + Policy/Audit（§4），否則違反 AEOS 原則 4/原則 3/legacy ADR-0007 |
 | 為了接客戶，AEOS 核心被直銷需求污染（失去垂直無關性） | 🔴 | 垂直特定一律進 vertical pack，核心保持中立 — 違反即偏離橫向平台命題 |
 | pilot 想一次做完 11 工具 | 🟡 | 先做最薄切片 spike（訊息草稿+合規低語+活檔案），證明 AEOS×垂直可行再擴 |
 | 被 nanobot 上游版本變動牽動（活躍開發中） | 🟡 | 釘版本 + 把 AEOS 治理層與 nanobot 核心解耦（包覆而非 fork）；nanobot MIT 可控 |
@@ -164,7 +164,7 @@ Care Copilot 的 §5 架構與 §6 NFR **不是照 AEOS 設計的**，卻獨立�
 
 1. **最薄垂直切片 spike**（建議先做）：用 AEOS 核心 + pi-ai，實作 **訊息草稿 + 合規低語 + 活檔案**3 件，對 1 位 Synergy 教練的真實名單跑——同時驗證「B1 草稿可用」與「AEOS 核心 + vertical pack 可行」。可直接複用既有 `aeos-mvg/` W1 骨架。
 2. **ADR 候選**（若推進，走 `/devteam-arch`）：
-   - ADR：**採 nanobot 為 Frozen Runtime 底層** + 治理包覆邊界（凍結自我擴展 / 多租戶隔離 / Tool Gateway+Policy 前置）— 補充/落地 ADR-0002
+   - ADR：**採 nanobot 為 Frozen Runtime 底層** + 治理包覆邊界（凍結自我擴展 / 多租戶隔離 / Tool Gateway+Policy 前置）— 補充/落地 legacy ADR-0002
    - ADR：vertical pack 抽象（領域模型 + 詞庫 + skill 集的可插拔邊界）= 橫向化關鍵
    - ADR：結構化 contact 納入 knowledge 模型的方式（活檔案 vs 知識三分類）
 3. **不做**：不照 pilot_run.md 全刻 11 工具；不採 pi（TS，與 Python 底層分裂）；**不裸用 nanobot**（生產必先加治理包覆）。

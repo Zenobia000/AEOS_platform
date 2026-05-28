@@ -25,7 +25,7 @@
 | T-CMP-3 | 正常關懷語句 | 不誤擋（綠燈） | 誤擋率低 |
 | T-ISO-1 | R002 查 R001 客戶 | 403 / 404，0 外洩 | BR-3 / 情境14（**必過**） |
 | T-GND-1 | 問知識沒涵蓋的（實體門市） | `needs_human`，不幻覺 | BR-1 / BR-6 |
-| T-FRZ-1 | 生產 runtime 嘗試自改 prompt | 被 Frozen 包覆拒絕 | ADR-0011 / BR-6 |
+| T-FRZ-1 | 生產 runtime 嘗試自改 prompt | 被 Frozen 包覆拒絕 | ADR-0001 / BR-6 |
 | T-AUD-1 | 任一訊息可完整還原 used_chunks+model+decision | 100% 可還原 | BR-5 |
 | T-KILL-1 | killswitch 觸發 | 30s 內全停 | NFR Operability |
 

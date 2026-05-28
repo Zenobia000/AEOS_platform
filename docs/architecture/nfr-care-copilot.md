@@ -2,7 +2,7 @@
 
 > **Status**: draft · **Owner**: `devteam-arch` · **Date**: 2026-05-28 · **Feature**: care-copilot
 > 範圍：AEOS 核心 + Care Copilot 最薄切片（訊息草稿 / 合規低語 / 活檔案）。Pilot 期目標，非 GA。
-> 來源：`docs/prd/ai-cs-mvg.md` §7、`docs/foundation/pilot_run.md` §6、ADR-0011/0012/0013。
+> 來源：`docs/prd/ai-cs-mvg.md` §7、`docs/foundation/pilot_run.md` §6、ADR-0001/0002/0003。
 
 ---
 
@@ -29,4 +29,4 @@
 
 ---
 
-> 對映 Gate 4：本 matrix + C4（`c4-care-copilot.md`）+ ADR-0011~0013 + failure modes/observability 共同構成 NFR/ADR baseline。
+> 對映 Gate 4：本 matrix + C4（`c4-care-copilot.md`）+ ADR-0001~0004 + failure modes/observability 共同構成 NFR/ADR baseline。

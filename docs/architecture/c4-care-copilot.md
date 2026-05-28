@@ -2,7 +2,7 @@
 
 > **Status**: draft · **Owner**: `devteam-arch` · **Date**: 2026-05-28 · **Feature**: care-copilot
 > 範圍：AEOS 核心（垂直無關）+ Care Copilot pack #1（垂直特定）。最薄切片（草稿/合規/活檔案）。
-> 對映 ADR-0011（nanobot runtime）/ ADR-0012（vertical pack 邊界）/ ADR-0013（結構化 contact）。
+> 對映 ADR-0001（nanobot runtime）/ ADR-0002（vertical pack 邊界）/ ADR-0003（結構化 contact）。
 
 ---
 
@@ -34,12 +34,12 @@
 
 | Container | 軌 | Tech | 責任 | 對映 ADR |
 |:---|:--|:---|:---|:---|
-| **nanobot Runtime** | 🟦 | Python(nanobot) | agent loop + MCP 整合；被 AEOS 凍結 | ADR-0011 |
-| **Governance Harness** | 🟦 | Python | Frozen + Policy Engine(合規低語) + Tool Gateway + Audit | ADR-0011, 原則3/4 |
-| **Tenant Manager** | 🟦 | Postgres RLS | 多租戶隔離（blast radius 限單 tenant） | ADR-0007 |
-| **Knowledge Store** | 🟦 | Postgres+pgvector | KnowledgeRouter 三路：結構化 contact / doc-RAG / policy | ADR-0013, §6.3 |
+| **nanobot Runtime** | 🟦 | Python(nanobot) | agent loop + MCP 整合；被 AEOS 凍結 | ADR-0001 |
+| **Governance Harness** | 🟦 | Python | Frozen + Policy Engine(合規低語) + Tool Gateway + Audit | ADR-0001, 原則3/4 |
+| **Tenant Manager** | 🟦 | Postgres RLS | 多租戶隔離（blast radius 限單 tenant） | legacy ADR-0007 |
+| **Knowledge Store** | 🟦 | Postgres+pgvector | KnowledgeRouter 三路：結構化 contact / doc-RAG / policy | ADR-0003, §6.3 |
 | **LLM Adapter** | 🟦 | nanobot 原生 | openai+anthropic+fallback；prompt caching；模型分層 | §13 |
-| **Vertical Pack（Care Copilot）** | 🟨 | manifest(資料) | 直銷領域模型 + FTC/FDA 詞庫 + 3 skills（草稿/合規/活檔案）+ persona | ADR-0012 |
+| **Vertical Pack（Care Copilot）** | 🟨 | manifest(資料) | 直銷領域模型 + FTC/FDA 詞庫 + 3 skills（草稿/合規/活檔案）+ persona | ADR-0002 |
 | **Expert Review（W2）** | 🟨 | 最簡 web | approve/edit/reject；approve→回發 | PRD FR-004 |
 | **Eval（W1）** | 🟦 | CLI | 離線打 B1（draft→judge→採用率） | `aeos-mvg/` |
 
@@ -64,7 +64,7 @@
 | 1 | LLM API 失敗/逾時 | 草稿生成 error / 延遲 | fallback_models 重試 → 仍失敗標 needs-human |
 | 2 | 合規 sidecar 誤判（false positive） | 直銷商關閉率 / 申訴 | 可關單次 + 記原因回收調規則；false negative 由紅隊+人審第二道擋 |
 | 3 | **跨租戶資料外洩（RLS 失效）** | 紅隊測試 / audit | RLS + app 層雙重防護；違規=P0 即停（blast radius 致命） |
-| 4 | nanobot 自我擴展未凍結 → 行為漂移 | 配置快照 diff / drift 偵測 | Frozen 包覆強制關閉自改（ADR-0011） |
+| 4 | nanobot 自我擴展未凍結 → 行為漂移 | 配置快照 diff / drift 偵測 | Frozen 包覆強制關閉自改（ADR-0001） |
 | 5 | 知識檢索缺漏 → 幻覺 | citation 缺 / judge reject | grounding + needs-human guard + 強制 citation |
 | 6 | AI 成本爆量 | 成本/直銷商/日 監控 | Quota + circuit breaker 降階模型 |
 
@@ -79,4 +79,4 @@
 
 ---
 
-> Gate 4 evidence：NFR matrix（`nfr-care-copilot.md`）✓ · C4 L1+L2 ✓ · ADR ≥1（ADR-0011/0012/0013）✓ · Failure modes ≥5 ✓ · Observability 列出 ✓。
+> Gate 4 evidence：NFR matrix（`nfr-care-copilot.md`）✓ · C4 L1+L2 ✓ · ADR ≥1（ADR-0001/0002/0003）✓ · Failure modes ≥5 ✓ · Observability 列出 ✓。

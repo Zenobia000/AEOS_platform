@@ -1,4 +1,4 @@
-# ADR-0012 — Vertical Pack 可插拔抽象（AEOS 橫向化邊界）
+# ADR-0002 — Vertical Pack 可插拔抽象（AEOS 橫向化邊界）
 
 > **📋 Status**: Proposed
 > **🗓 Date**: 2026-05-28

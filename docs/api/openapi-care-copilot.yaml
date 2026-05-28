@@ -4,11 +4,11 @@ info:
   version: 0.1.0
   description: >
     草稿 + 合規 + 活檔案 切片。所有路徑經 AEOS Tenant scope(RLS) + Policy + Audit。
-    對應 ADR-0011(nanobot runtime) / ADR-0013(結構化 contact) / system-spec UC-1~4。
+    對應 ADR-0001(nanobot runtime) / ADR-0003(結構化 contact) / system-spec UC-1~4。
 servers:
   - url: /api/v1
 security:
-  - tenantBearer: []          # 每請求帶 tenant context；RLS 強制隔離(ADR-0007)
+  - tenantBearer: []          # 每請求帶 tenant context；RLS 強制隔離(legacy ADR-0007)
 paths:
   /contacts:
     post:
@@ -74,7 +74,7 @@ components:
     ContactUpsert:
       type: object
       required: [display_name]
-      properties:                 # 活檔案 7 欄位(ADR-0013)；可空、慢慢補
+      properties:                 # 活檔案 7 欄位(ADR-0003)；可空、慢慢補
         display_name: { type: string }
         health_focus: { type: string }
         family: { type: string }

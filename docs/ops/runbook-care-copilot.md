@@ -1,7 +1,7 @@
 # Runbook + SLO — care-copilot（Pilot）
 
 > **Status**: draft · **Owner**: `devteam-ops` · **Date**: 2026-05-28 · **Feature**: care-copilot
-> Pilot 規模：1 tenant、單容器、單一 oncall（CEO）。對應 NFR、ADR-0011、Observability 需求。
+> Pilot 規模：1 tenant、單容器、單一 oncall（CEO）。對應 NFR、ADR-0001、Observability 需求。
 
 ---
 
@@ -9,12 +9,12 @@
 
 ```
 單台 VM（~$50/月，foundation/02）
-├── nanobot runtime（Python，釘版本 — ADR-0011 negative #2）
+├── nanobot runtime（Python，釘版本 — ADR-0001 negative #2）
 │    └── AEOS 治理包覆：Frozen / Tenant(RLS) / Tool Gateway+Policy
 ├── Postgres + pgvector（contact / knowledge_chunk / message / audit）
 └── env：ANTHROPIC_API_KEY、DATABASE_URL（secrets 不進 git）
 ```
-- **凍結檢查**：部署前確認 nanobot 自我擴展（自裝 skill/自改 prompt/自由載 MCP）已關（ADR-0011）。
+- **凍結檢查**：部署前確認 nanobot 自我擴展（自裝 skill/自改 prompt/自由載 MCP）已關（ADR-0001）。
 - **版本**：nanobot 釘 exact version；升級走 staging 驗證。
 
 ## 2. Kill Switch（鐵律，第一週就有）

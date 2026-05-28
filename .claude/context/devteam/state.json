@@ -3,7 +3,9 @@
   "release_id": null,
   "created_at": "2026-05-28T07:09:26Z",
   "current_phase": "P5_RELEASE",
-  "active_features": ["ai-cs-mvg"],
+  "active_features": [
+    "ai-cs-mvg"
+  ],
   "problem_description": "把混亂企業知識在 7 天內量產成可上線、人類只簽核一次的 AI 客服員工（草稿模式）；驗證核心賭注 B1：真實知識→可用草稿回覆採用率。dev_docs 81 份 corpus 已退役為 _legacy-dev_docs/，理念提煉於 docs/foundation/。",
   "phase_history": [
     {
@@ -11,6 +13,12 @@
       "event": "session_init",
       "at": "2026-05-28T07:09:26Z",
       "note": "業主選擇跳過 bootstrap 直進 PRD；_0to1 第一性原理成果已提煉為 docs/foundation/00~03"
+    },
+    {
+      "at": "2026-05-28T12:34:21Z",
+      "event": "freeze_ceremony_backfill",
+      "summary": "按部就班補跑 7 gate freeze;Gate1-6 frozen(5a/6 附條件),Gate7 blocked(法務+pilot資料);新增 traceability-matrix + consistency linter",
+      "report": ".claude/context/devteam/reviews/freeze-gates-care-copilot-2026-05-28.md"
     }
   ],
   "bootstrap_done": true,
@@ -24,17 +32,41 @@
     "docs/foundation/03-validation-and-kill.md"
   ],
   "freeze_gates": {
-    "Gate1_PRD": "ready_to_review",
-    "Gate2_UXFlow": "ready_to_review",
-    "Gate3_SystemSpec": "ready_to_review",
-    "Gate4_NFR_ADR": "ready_to_review",
-    "Gate5a_API": "ready_to_review",
-    "Gate5b_DBSchema": "ready_to_review",
-    "Gate6_TestReady": "ready_to_review",
-    "Gate7_Release": "ready_to_review"
+    "Gate1_PRD": "frozen",
+    "Gate2_UXFlow": "frozen",
+    "Gate3_SystemSpec": "frozen",
+    "Gate4_NFR_ADR": "frozen",
+    "Gate5a_API": "frozen",
+    "Gate5b_DBSchema": "frozen",
+    "Gate6_TestReady": "frozen",
+    "Gate7_Release": "blocked"
   },
-  "pending_user_decisions": [],
+  "pending_user_decisions": [
+    {
+      "id": "REL-1",
+      "gate": "Gate7_Release",
+      "item": "一次外部法務 review sign-off(consent-and-dpa + lexicon-authority)",
+      "type": "external"
+    },
+    {
+      "id": "REL-2",
+      "gate": "Gate7_Release",
+      "item": "簽 Synergy pilot 取真知識+對話(OQ-002)→解 B1 資料前置",
+      "type": "external"
+    },
+    {
+      "id": "REL-3",
+      "gate": "Gate6_TestReady",
+      "item": "AI-Architect 補 qa/test-data-strategy.md(真值集)",
+      "type": "internal"
+    }
+  ],
   "cascade_policy": "manual_confirm",
   "review_intensity_default": "standard",
-  "session_report": ".claude/context/devteam/session-2026-05-28-1509-ai-cs-mvg.md"
+  "session_report": ".claude/context/devteam/session-2026-05-28-1509-ai-cs-mvg.md",
+  "gate_conditions": {
+    "Gate5a_API": "W2 follow-up: Idempotency-Key + x-governance",
+    "Gate6_TestReady": "pre-B1: qa/test-data-strategy.md 須先存在",
+    "Gate7_Release": "BLOCKED: ①外部法務 sign-off ②簽 Synergy pilot 取真資料(OQ-002)"
+  }
 }

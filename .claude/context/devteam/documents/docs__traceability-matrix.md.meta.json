@@ -1,0 +1,18 @@
+{
+  "path": "docs/traceability-matrix.md",
+  "owner_role": "facilitator",
+  "review_personas": ["qa", "sa"],
+  "downstream_deps": [],
+  "upstream_refs": [
+    "docs/prd/ai-cs-mvg.md",
+    "docs/analysis/system-spec-care-copilot.md",
+    "docs/qa/test-plan-care-copilot.md",
+    "docs/api/openapi-care-copilot.yaml",
+    "docs/security/threat-model.md"
+  ],
+  "version_history": [
+    {"v": 1, "at": "2026-05-28T00:00:00Z", "by": "devteam-facilitator", "summary": "跨文件單一真相 FR×UC×BR×endpoint×test×ADR×鐵律;由 scripts/check-doc-consistency.sh 驗"}
+  ],
+  "review_history": [],
+  "verified_by": "scripts/check-doc-consistency.sh"
+}

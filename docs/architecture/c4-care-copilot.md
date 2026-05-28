@@ -1,4 +1,4 @@
-# C4 — care-copilot（L1 + L2 / 最薄切片）
+# C4 — care-copilot（L1 + L2 + L3 / 最薄切片）
 
 > **Status**: draft · **Owner**: `devteam-arch` · **Date**: 2026-05-28 · **Feature**: care-copilot
 > 範圍：AEOS 核心（垂直無關）+ Care Copilot pack #1（垂直特定）。最薄切片（草稿/合規/活檔案）。
@@ -11,49 +11,94 @@
 **Our System 一句話責任**：把直銷商的混亂客戶知識，量產成可審核、合規、有溫度的草稿回覆（員工端工具）。
 
 ```
-        直銷商 / expert (主 actor)          終端客戶 (LINE，間接，pilot 手動貼)
-                │ 貼知識 / 審草稿                       ▲ 收到 approve 後的回覆
-                ▼                                      │
-   ┌──────────────────────────────────────────────────────────┐
-   │  AEOS 平台(治理核心) + Care Copilot vertical pack #1       │
-   │  「混亂知識 → 可審核/合規/有溫度草稿」                     │
-   └───────┬───────────────────────────────┬──────────────────┘
-           │ LLM (多模型)                   │ 合規/法務
-           ▼                                ▼
-     Anthropic API                    DPA / 法務(詞庫 review)
-   (opus 草稿 / haiku judge)          (FTC/FDA 紅線)
+   actors（人）                          Our System                    external systems（runtime 整合）
+  ┌──────────────┐  貼知識/審草稿   ┌────────────────────────────┐   LLM    ┌──────────────┐
+  │ 直銷商/expert │ ───────────────▶│ AEOS 治理核心 + Care Copilot │ ───────▶ │ Anthropic API│
+  └──────────────┘                 │ vertical pack #1            │          │(opus/haiku)  │
+  ┌──────────────┐  approve 後回覆  │「混亂知識→可審核/合規/有溫度  │  W2 回發 ┌──────────────┐
+  │ 終端客戶      │ ◀───────────────│  草稿」                     │ ┄┄┄┄┄▶ │ LINE API(W2) │
+  └──────────────┘                 └────────────────────────────┘          └──────────────┘
+  ┌──────────────┐  詞庫 sign-off / DPA（治理流程，非 runtime 系統）
+  │ 法務 owner    │ ┄┄┄┄┄┄┄┄┄┄┄▶ Policy 詞庫 / 同意書（見 governance/）
+  └──────────────┘
 ```
 
-**邊界澄清**：Pilot **不**整合 LINE 官方 API（草稿 + 手動貼）；**不**做客戶端 App（健康問卷除外，不在最薄切片）；**不**接訂單系統（動態查詢 out, OQ-004）。
+**邊界澄清**：
+- **runtime 外部系統**只有 **Anthropic API**（pilot）；**LINE API 為 W2**（pilot 手動貼，不整合）。
+- **法務/DPA 是治理 actor/流程**，非系統整合（修正：原圖誤列為下游系統）。
+- **不**做客戶端 App（健康問卷不在最薄切片）；**不**接訂單系統（動態查詢 out, OQ-004）。
 
 ---
 
-## L2 — Container
+## L2 — Container（真實可部署單元）
 
-**雙軌**：🟦 AEOS 核心（垂直無關，可複用）/ 🟨 Care Copilot pack（垂直特定）。
+> **修正**：container = 可獨立部署/執行的單元。對應 runbook §1 + threat-model 信任邊界圖的部署拓樸 = **1 VM、1 app 進程、1 DB**。原版把進程內元件與 DB 屬性誤列為 container，已收斂如下；元件細節下放 L3。
 
-| Container | 軌 | Tech | 責任 | 對映 ADR |
-|:---|:--|:---|:---|:---|
-| **nanobot Runtime** | 🟦 | Python(nanobot) | agent loop + MCP 整合；被 AEOS 凍結 | ADR-0001 |
-| **Governance Harness** | 🟦 | Python | Frozen + Policy Engine(合規低語) + Tool Gateway + Audit | ADR-0001, 原則3/4 |
-| **Tenant Manager** | 🟦 | Postgres RLS | 多租戶隔離（blast radius 限單 tenant） | legacy ADR-0007 |
-| **Knowledge Store** | 🟦 | Postgres+pgvector | KnowledgeRouter 三路：結構化 contact / doc-RAG / policy | ADR-0003, §6.3 |
-| **LLM Adapter** | 🟦 | nanobot 原生 | openai+anthropic+fallback；prompt caching；模型分層 | §13 |
-| **Vertical Pack（Care Copilot）** | 🟨 | manifest(資料) | 直銷領域模型 + FTC/FDA 詞庫 + 3 skills（草稿/合規/活檔案）+ persona | ADR-0002 |
-| **Expert Review（W2）** | 🟨 | 最簡 web | approve/edit/reject；approve→回發 | PRD FR-004 |
-| **Eval（W1）** | 🟦 | CLI | 離線打 B1（draft→judge→採用率） | `aeos-mvg/` |
+**雙軌**：🟦 AEOS 核心（垂直無關）/ 🟨 Care Copilot pack（垂直特定）。
 
-### Inter-container（protocol / sync / idempotency / failure）
+| Container | 型態 | 軌 | Tech | 責任 |
+|:---|:---|:--|:---|:---|
+| **AEOS App 進程**（治理包覆的 nanobot runtime） | 進程 | 🟦 | Python(nanobot + AEOS harness) | 單一可部署進程：agent loop + 治理(Frozen/Policy/Tool Gateway/Audit) + KnowledgeRouter + draft。元件見 L3 |
+| **Postgres + pgvector** | datastore | 🟦 | Postgres 16 + pgvector | contact/interaction/knowledge_chunk/message/audit_event;**RLS = 多租戶隔離屬性**(非獨立 container) |
+| **Expert Review web**（W2） | 進程 | 🟨 | 最簡 web | approve/edit/reject;approve→回發(FR-004) |
+| **Eval**（W1） | CLI 執行 | 🟦 | Python CLI(`aeos-mvg/`) | 離線打 B1(draft→judge→採用率);非常駐服務 |
+
+> **Vertical Pack（Care Copilot）= 宣告式 config 構件，非 container**：領域模型 + FTC/FDA 詞庫 + 3 skills + persona，由 App 進程**載入**（ADR-0002：pack 是資料+規則，不另開執行路徑）。
+
+### Inter-container / 外部（protocol / sync / failure）
 
 | Edge | Protocol | Sync | Failure 策略 |
 |:---|:---|:---|:---|
-| Runtime → LLM Adapter | in-proc | sync | timeout + fallback_models 重試（KB-10 §1） |
-| Runtime → Policy(合規) | in-proc | sync | sidecar <50ms；紅燈強制擋(gate)，不可繞過 |
-| Runtime → Knowledge | SQL/RLS | sync | 檢索缺漏 → 草稿標 `[需人工]`（不幻覺） |
-| Runtime → Audit | append-only | sync | 寫入失敗 = 整筆操作回滾（不允許靜默成功） |
-| 全體 → Tenant scope | RLS | — | 跨 tenant = 預設 deny；紅隊必過 |
+| App 進程 → Anthropic API | HTTPS | sync | timeout + fallback_models 重試（KB-10 §1）→ 仍失敗標 needs-human |
+| App 進程 → Postgres | SQL + RLS | sync | 檢索缺漏 → 草稿標 `[需人工]`;audit 寫入失敗 → 整筆回滾 |
+| App 進程 → Vertical Pack | 啟動載入 | — | pack schema 校驗失敗 → 拒載（threat-model §pack 投毒） |
+| Expert Review → App 進程（W2） | HTTPS | sync | decision 落 audit;跨 tenant 預設 deny |
+| 全體 → Tenant scope | RLS(DB 屬性) | — | 跨 tenant = 預設 deny;紅隊 TC-SEC-01 必過 |
 
-**Trust boundary**：外部系統憑證只在 Tool Gateway 後；nanobot 不持有；pack 是宣告式資料，不另開執行路徑。
+**Deployment topology**：單 VM 內 App 進程 + Postgres;secrets 走 env（不進 git）;對外只 egress Anthropic（W2 加 LINE ingress）。對齊 `runbook-care-copilot.md` §1。
+
+---
+
+## L3 — Component（AEOS App 進程內部，驗 anti-bypass）
+
+> 補上一輪 arch critique「C4 缺 L3 → anti-bypass 驗不了」。所有外部憑證在 **Tool Gateway 之後**;nanobot 本體不持有;紅燈與跨租戶在**進程內**就被擋。
+
+```
+   inbound（客戶訊息 / expert 操作）
+        │
+        ▼
+   ┌─────────────────────────────────────────────────────────┐
+   │ AEOS App 進程（Frozen 包覆 nanobot）                       │
+   │   ┌───────────────┐   ┌──────────────────────────────┐   │
+   │   │ nanobot loop  │──▶│ Tool Gateway（憑證/工具白名單） │──▶ Anthropic
+   │   │ (Frozen:不自改 │   │  不暴露 自動發送/改policy/跨租戶 │   │
+   │   │  /不自裝skill) │   └──────────────────────────────┘   │
+   │   └──────┬────────┘                                       │
+   │          ▼                                                │
+   │   ┌──────────────┐  ┌───────────────┐  ┌──────────────┐  │
+   │   │ KnowledgeRtr │  │ Policy Engine │  │ Draft 生成    │  │
+   │   │ contact/RAG  │  │ (regex 詞庫,  │  │ +needs-human │  │
+   │   │ (本租戶 only) │  │  獨立於 LLM)  │  │  guard       │  │
+   │   └──────┬───────┘  └──────┬────────┘  └──────┬───────┘  │
+   │          │     red=強制擋   │                  │          │
+   │          ▼                  ▼                  ▼          │
+   │   ┌──────────────────────────────────────────────────┐  │
+   │   │ Audit writer（append-only;寫敗→整筆回滾）          │  │
+   │   └──────────────────────────────────────────────────┘  │
+   └─────────────────────────────────────────────────────────┘
+        │  SQL + RLS（tenant scope）
+        ▼  Postgres + pgvector
+```
+
+| Component | 責任 | 對映 ADR / 鐵律 |
+|:---|:---|:---|
+| **Frozen 包覆** | 關閉 nanobot 自改 prompt / 自裝 skill / 自由載 MCP | ADR-0001 |
+| **Tool Gateway** | 憑證持有 + 工具白名單;**不暴露**自動發送/改 policy/跨租戶查詢工具 | threat-model T-E-03 / 未審自動發=0 |
+| **Policy Engine（合規低語）** | regex 詞庫掃 green/yellow/red,**獨立於 LLM**;red 強制擋 | ADR-0002 pack 詞庫 / 外送踩線=0 |
+| **KnowledgeRouter** | 三路:contact(結構化)/RAG(pgvector)/policy;檢索限**本租戶** | ADR-0003 / §6.3 |
+| **Draft 生成** | grounded + needs-human guard;缺依據標 `[需人工]` | BR-1 |
+| **LLM Adapter** | openai+anthropic+fallback;prompt caching;模型分層 | §13 |
+| **Audit writer** | append-only(used_chunks/model/decision/decided_by/sent_at) | BR-5 / threat-model T-T-02 |
 
 ---
 
@@ -79,4 +124,5 @@
 
 ---
 
-> Gate 4 evidence：NFR matrix（`nfr-care-copilot.md`）✓ · C4 L1+L2 ✓ · ADR ≥1（ADR-0001/0002/0003）✓ · Failure modes ≥5 ✓ · Observability 列出 ✓。
+> Gate 4 evidence：NFR matrix（`nfr-care-copilot.md`）✓ · C4 L1+L2+L3 ✓ · ADR ≥1（ADR-0001/0002/0003/0004）✓ · Failure modes ≥5 ✓ · Observability 列出 ✓。
+> 部署拓樸與 `runbook-care-copilot.md` §1、`security/threat-model.md` 信任邊界圖一致（1 VM / 1 app 進程 / 1 DB）。

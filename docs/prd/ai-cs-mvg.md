@@ -4,9 +4,15 @@
 > **🗓 Last updated**: 2026-05-28
 > **👤 Owner**: PM
 > **🔖 Version**: v1
-> **🔗 Related**: docs/foundation/00~03 · ADR-TBD(Frozen Runtime) · [[06_quality_attributes_catalog]] · [[11_data_and_stack_catalog]]
+> **🔗 Related**: docs/foundation/00~03 · ADR-0001(Frozen Runtime) · [[06_quality_attributes_catalog]] · [[11_data_and_stack_catalog]]
 
 ---
+
+> [!NOTE]
+> **命名與 source-of-truth（收 docs-gap-audit N1/N2）**:
+> - **`ai-cs-mvg`** = 本 PRD 代號 = AEOS **核心切片**的 B1 賭注（eval-only 北極星 = 草稿原樣 approve 率）。**這份是 freeze 賭注。**
+> - **`care-copilot`** = 對外**垂直產品名**（pack #1）;下游文件（spec/ux/arch/api/data/qa/ops）一律用此名。
+> - **`foundation/pilot_run.md`** = 垂直**商品全集**（Phase I 11 工具 superset）= 願景參考,**非本次 freeze scope**。三者同一賭注、同一 B1，scope 大小不同。
 
 ## 📋 Executive Summary
 
@@ -97,7 +103,7 @@
 
 | Asset | Location |
 |:---|:---|
-| Journey | [`docs/ux/user-flow-ai-cs-mvg.md`](../ux/user-flow-ai-cs-mvg.md)（P1 產出） |
+| Journey | [`docs/ux/user-flow-care-copilot.md`](../ux/user-flow-care-copilot.md)（P1 產出） |
 | Wireframe | TBD（expert 審核台，P1） |
 
 ---
@@ -197,8 +203,11 @@
 
 | ID | Type | Topic | Status |
 |:---|:---|:---|:---:|
-| ADR-TBD | ADR | Frozen Runtime（學習/生產分離）於切片的最小落地 | 🕒 P2 補 |
-| ADR-TBD | ADR | 單體 vs 微服務（切片明確選單體，記錄取捨） | 🕒 P2 補 |
+| ADR-0001 | ADR | nanobot Frozen Runtime（學習/生產分離 + 治理包覆） | ✅ Proposed |
+| ADR-0002 | ADR | Vertical Pack 可插拔抽象 | ✅ Proposed |
+| ADR-0003 | ADR | 結構化 contact（活檔案）納知識模型 | ✅ Proposed |
+| ADR-0004 | ADR | 知識 ingestion 治理管線 | ✅ Proposed |
+| — | — | 單體 vs 微服務（切片明確選單體） | 見 feasibility §4 / ADR-0001 anti-scope |
 
 ---
 
@@ -206,7 +215,7 @@
 
 - **Foundation（理念地基）**: [`docs/foundation/00-the-bet.md`](../foundation/00-the-bet.md) · [`02-mvg-build-sheet.md`](../foundation/02-mvg-build-sheet.md) · [`03-validation-and-kill.md`](../foundation/03-validation-and-kill.md)
 - **Stakeholder map**: [`docs/governance/stakeholders.md`](../governance/stakeholders.md)
-- **User flow**（downstream）: [`docs/ux/user-flow-ai-cs-mvg.md`](../ux/user-flow-ai-cs-mvg.md)
+- **User flow**（downstream）: [`docs/ux/user-flow-care-copilot.md`](../ux/user-flow-care-copilot.md)
 - **KB catalog refs**: [[06_quality_attributes_catalog]] · [[10_resilience_patterns]] · [[11_data_and_stack_catalog]]
 
 ---

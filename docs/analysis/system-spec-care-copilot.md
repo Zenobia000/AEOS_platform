@@ -26,6 +26,8 @@
 | BR-4 | AI 永不自動發訊（draft mode），人類審每一則 | PRD §3.6 / legacy ADR-0002 |
 | BR-5 | 每草稿/每訊息全稽核（used_chunks+model+decision+decided_by） | PRD §7 / 原則3 |
 | BR-6 | 生產配置凍結；approve/edit/reject 回饋走離線改版 | ADR-0001 / 原則4 |
+| BR-7 | 終端客戶個資：取得同意才處理；匯出 30 天 / 刪除 7 天 / 撤回即時 | `governance/consent-and-dpa.md` |
+| BR-8 | 合規判定須溯源到法源（每詞有 authority + 法務 sign-off）；無法源的 red 詞不上線 | `governance/compliance-lexicon-authority.md` |
 
 ## 3. State Model
 

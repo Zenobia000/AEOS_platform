@@ -22,6 +22,20 @@
 
 ---
 
+## ✅ 本輪落地（2026-05-28，致命路徑 + 根因）
+
+| 項 | 狀態 | 產出 |
+|:--|:--:|:--|
+| **根因** | ✅ | `governance/stakeholders.md` 指派 5 缺席 owner（戴帽模式 + 觸發換真人） |
+| **G1** 威脅模型 | ✅ | `security/threat-model.md`（鐵律→攻擊路徑→紅隊驗證 + 注入防禦設計 + pack 投毒 + secret） |
+| **G3** 合規法務 | ✅ | `governance/consent-and-dpa.md` + `compliance-lexicon-authority.md` + system-spec BR-7/BR-8 |
+| **G2** migration | ✅ | `data/migrations/0001_init_schema.up/.down.sql` + README（RLS/HNSW/composite 原文） |
+| **N1** 命名/死連結 | ✅ | PRD 修死連結 + 命名 source-of-truth 註記 + Decision Log ADR-TBD→0001~0004 |
+| **G4** 測試真值集 | ⏳ defer | `qa/test-data-strategy.md`（AI-Architect，打 B1 前） |
+| **G5** GTM + onboarding + DR | ⏳ defer | premortem 判定 post-B1 才 load-bearing |
+
+---
+
 ## 🎯 根因：盲點 ↔ 缺席角色（互相討論的收斂）
 
 | 盲點（無人 own） | 落在哪些角色之間 | 缺席的 owner |

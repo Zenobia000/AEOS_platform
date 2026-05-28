@@ -75,8 +75,9 @@ tenant (id, name, data_retention_days, compliance_profile)
 | audit_event.*（去識別化） | 非 PII | 永久 |
 - 刪除/匿名化 job：到期掃 contact/interaction/message + `knowledge_chunk` 殘留。
 
-### B-4 — migration / index / RLS（必補）
-- **migration**：每表 up/down DDL；結構化 contact 上線走雙寫 ≥ 1 release。
-- **index**：interaction/message 用 `(tenant_id, contact_id)` composite；所有 `tenant_id` FK 建 index；`knowledge_chunk.embedding` 用 pgvector **HNSW**（宣告維度）。
-- **RLS**：每表 `USING (tenant_id = current_tenant())` policy 原文納 migration。
-- **PITR**：備份視窗涵蓋 ≥ 7 天刪除緩衝。
+### B-4 — migration / index / RLS（✅ 已落地 `migrations/`）
+實際 DDL 見 [`docs/data/migrations/0001_init_schema.up.sql`](./migrations/0001_init_schema.up.sql)（+ `.down.sql` + `README.md`）:
+- **migration**：每表 up/down DDL；結構化 contact 上線走雙寫 ≥ 1 release（README §上線注意）。
+- **index**：interaction/message 用 `(tenant_id, contact_id)` composite；所有 `tenant_id` 建 index；`knowledge_chunk.embedding` 用 pgvector **HNSW**（`vector(1024)` ASSUMPTION，W2 對齊 embedding 模型）。
+- **RLS**：每表 `ENABLE + FORCE` + `tenant_isolation` policy 原文納 migration；`current_tenant()` 讀 GUC，缺值 deny。
+- **PITR**：備份視窗涵蓋 ≥ 7 天刪除緩衝（接 `governance/consent-and-dpa.md`）。

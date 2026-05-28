@@ -25,6 +25,21 @@
 
 ---
 
+## 流程 / 機制 / 追溯範本（非 phase 交付物）
+
+上表是 phase driver 產的規範文件。以下範本服務 review 機制、Forum/Roundtable、與跨文件追溯，不綁單一 phase：
+
+| 範本檔案 | 對應位置 | 產出者 | 何時用 |
+|:---------|:---------|:-------|:-------|
+| `fr-skeleton.md` | `docs/_source/FR-<NNNN>.md` | devteam-analyst / pm | FR 殼（含 `mapped_to`/`emits_events`/`superseded_clauses` frontmatter，供追溯 tool 聚合） |
+| `traceability-matrix.md` | `docs/traceability-matrix.md` | tool（聚合各 doc frontmatter） | FR↔BR↔ADR↔Event 三向追溯；QA/audit/Lane A 看 orphan |
+| `review-report.md` | `.claude/context/devteam/reviews/<gate>-<feature>-<date>.md` | devteam-orchestrator | Lane A critique 合併報告 |
+| `forum-topic.md` | `.claude/context/devteam/forum/<topic-id>/topic.md` | devteam-proposer + critics | Lane B 議題元資料 |
+| `forum-final-report.md` | `.claude/context/devteam/forum/<topic-id>/final-report.md` | devteam-facilitator | Lane B 收斂或升級報告 |
+| `mom.md` | `meetings/<id>/MoM.md` | devteam-roundtable | Lane C 圓桌 MoM（業主主要閱讀產出） |
+
+---
+
 ## 範本使用規則
 
 ### 1. 「填能填的、其他標 TBD」

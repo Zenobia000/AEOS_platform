@@ -4,7 +4,7 @@ DevTeam 區分 **driver skill**（主動產文件的角色）與 **critique pers
 
 ---
 
-## 11 Personas Cheat Sheet
+## 12 Personas Cheat Sheet
 
 | Persona | 最該盯的一件事 | 最重要交付物 | 最晚不能錯過 | Critique 視角 |
 |:--------|:--------------|:-------------|:------------|:--------------|
@@ -53,6 +53,36 @@ R = Responsible（執行），A = Accountable（最終負責），C = Consulted�
 | devteam-design | SD, DBA | sd + dba | SD 管 API/Module；DBA 管 schema/migration。 |
 | devteam-qa | QA | qa | Test plan + exit criteria。 |
 | devteam-ops | DevOps, SRE | devops + sre | DevOps 管 pipeline；SRE 管 SLO/observability/incident。 |
+
+---
+
+## 產品角色 ↔ Persona ↔ Driver Crosswalk（單一真相對照表）
+
+> **為什麼需要這張表**：系統裡有三套角色枚舉 —— 產品門面 `product_to_launch/lib/taxonomy.ts` 的 **10 角色**、本檔的 **12 critique persona**、driver skill 的 **7 條合併主線**。三者不是 1:1，缺對照會漂移。任何角色/交付物的新增異動，**先改這張表**再改其他地方。
+
+| 產品角色 (slug) | Critique persona | Driver skill | 產品招牌交付物 | Harness 範本 / 輸出 |
+|:----------------|:-----------------|:-------------|:---------------|:--------------------|
+| pm | pm | devteam-pm | PRD / Roadmap / KPI | `prd.md` (+ `governance/stakeholders.md`) |
+| po | po | devteam-pm（兼） | Ordered Backlog / Acceptance Criteria | ⚠ 無 backlog 範本（harness 為 feature-spec 導向，非 sprint 導向）；AC 落在 `system-spec.md` |
+| ba | ba | devteam-analyst | Stakeholder Map / Business Rules Catalog | `system-spec.md` + `governance/rule-catalog.md` |
+| sa | sa | devteam-analyst | System Spec / SRS / State Machine | `system-spec.md` |
+| ux | ux | devteam-ux | User Journey / Flow / Wireframe | `user-flow.md` (+ `wireframe-*.md`) |
+| ui | ui | devteam-ux（兼） | Hi-fi / Component Spec / Design System | ⚠ 描述落在 `user-flow.md` state coverage，無獨立 UI spec 範本 |
+| architect | arch | devteam-arch | C4 / ADR / NFR Matrix | `c4-l1/l2/l3.md` + `adr.md`（NFR 為 arch 內一段，無獨立範本） |
+| **dev** | **— 無 —** | **— 無 —** | Code / Tests / Migrations / Telemetry | **外部 coding agent 實作**；接手契約 = `specs/<feature>/handoff.md`（見「Scope 邊界」） |
+| qa | qa | devteam-qa | Test Plan / Completion Report | `test-plan.md` |
+| devops（·SRE） | devops + sre | devteam-ops | Pipeline / SLO / Runbook / Postmortem | `runbook.md` + `slo.md` + `release-readiness.md` + `postmortem-template.md` |
+
+**Harness-only persona（產品把它們折進 architect/dev，harness 拆出獨立視角）：**
+
+| Persona | Driver skill | 負責 | 對應產品角色 |
+|:--------|:-------------|:-----|:-------------|
+| sd（System Designer） | devteam-design | API contract / Module Design / Error Model → `openapi.yaml` | 折進產品 `architect`（RACI 欄稱 **Dev Lead**，三者同指實作設計責任） |
+| dba | devteam-design | ERD / DDL / Migration → `erd.md` + `data/migrations/*.sql` | 折進產品 `architect` + `dev` |
+
+**交付物命名 rosetta（產品名 → harness 範本名）：** `srs`/`frd`→`system-spec.md`、`api-spec`→`openapi.yaml`、`data-model`→`erd.md`、`journey-map`→`user-flow.md`、`non-functional-reqs`→ NFR matrix（arch 內一段）。
+
+> **Scope 邊界**：`dev`（Build code）、Operate runtime loop 不在 harness 產出範圍 —— harness 是 **spec 產生器**，產規範包後交外部 coding agent + 運維承接。詳見 `.claude/CLAUDE.md` §Scope 邊界。
 
 ---
 

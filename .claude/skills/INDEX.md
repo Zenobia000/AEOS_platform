@@ -61,6 +61,13 @@
 | `04_freeze_gates.md` | 7 個 gate 的 owner / evidence / personas / intensity |
 | `05_meeting_protocols.md` | Multi-role review prompt 模板 + orchestrator 合併邏輯 |
 | `06_quality_attributes_catalog.md` | NFR / SLO / DORA / ISO 29148 / NIST SSDF / C4 / OpenAPI / Test Plan / Runbook 必填欄位 |
+| `07_diagram_picker.md` | UML/C4/ERD/wireframe 選圖樹 + state coverage checklist |
+| `08_api_design_catalog.md` | REST/GraphQL/gRPC/event 選型 + error code + idempotency + versioning |
+| `09_observability_catalog.md` | log/metric/trace 三柱 + SLI 命名 + alert routing + burn rate |
+| `10_resilience_patterns.md` | retry/CB/bulkhead/timeout + 藍綠/canary + expand-contract + RTO/RPO |
+| `11_data_and_stack_catalog.md` | 資料分級 / PII / GDPR + DB/messaging/auth/cache 選型 |
+| `12_document_format_standard.md` | 文件格式標準（Universal Header / mermaid / 一致性尺） |
+| `13_doc_migration_playbook.md` | ADR supersede 判定樹 + doc 遷移 boundary case study |
 
 ---
 

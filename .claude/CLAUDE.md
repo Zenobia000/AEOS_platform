@@ -2,7 +2,9 @@
 
 ## 概述
 
-業主提出痛點後，AI agent harness 扮演整個軟體開發團隊，依真實流程（11 階段 × 12 角色 × 三條並行主線 × 分層 freeze）產出**所有規範文件**（PRD、User Flow、System Spec、ADR、C4、OpenAPI、ERD、Test Plan、Runbook、Release Readiness），最後把規範包交給外部 coding agent 實作。所有 devteam 相關 skill/command 前綴為 `devteam-`。
+業主提出痛點後，AI agent harness 扮演整個軟體開發團隊，依真實流程（6 phases P0–P5 + handoff × 7 freeze gates × 12 critique persona × 並行主線）產出**所有規範文件**（PRD、User Flow、System Spec、ADR、C4、OpenAPI、ERD、Test Plan、Runbook、Release Readiness），最後把規範包交給外部 coding agent 實作。所有 devteam 相關 skill/command 前綴為 `devteam-`。
+
+> 角色三套枚舉（產品 10 角色 / 12 persona / 7 driver）的單一對照表見 `devteam_knowledge_base/01_role_responsibilities.md` §產品角色 ↔ Persona ↔ Driver Crosswalk。
 
 ## 指令一覽
 
@@ -56,6 +58,13 @@ Lane B 不取代 Lane A，Lane C 不取代 A/B。Lane C 結束後業主回 Open 
 - `devteam_knowledge_base/04_freeze_gates.md` — 7 個 gate 的 owner / evidence / personas
 - `devteam_knowledge_base/05_meeting_protocols.md` — Multi-role review prompt + orchestrator 合併
 - `devteam_knowledge_base/06_quality_attributes_catalog.md` — NFR / SLO / DORA / ISO 29148 / NIST SSDF
+- `devteam_knowledge_base/07_diagram_picker.md` — UML/C4/ERD/wireframe 選圖樹 + state coverage checklist
+- `devteam_knowledge_base/08_api_design_catalog.md` — REST/GraphQL/gRPC/event 選型 + error code + idempotency + versioning
+- `devteam_knowledge_base/09_observability_catalog.md` — log/metric/trace 三柱 + SLI 命名 + alert routing + burn rate
+- `devteam_knowledge_base/10_resilience_patterns.md` — retry/CB/bulkhead/timeout + 藍綠/canary + expand-contract + RTO/RPO
+- `devteam_knowledge_base/11_data_and_stack_catalog.md` — 資料分級 / PII / GDPR + DB/messaging/auth/cache 選型
+- `devteam_knowledge_base/12_document_format_standard.md` — 文件格式標準（Universal Header / mermaid / 一致性尺）
+- `devteam_knowledge_base/13_doc_migration_playbook.md` — ADR supersede 判定樹 + doc 遷移 boundary case study
 - `devteam_knowledge_base/voice-profiles.md` — 12 角色語言指紋（vocab / tone / taboo / frame / example）。persona agent 與 driver skill 開場必讀對應段
 - `devteam_knowledge_base/templates/` — PRD / User Flow / System Spec / C4 / ADR / DR / OpenAPI / ERD / Test Plan / Runbook / Release Readiness / Handoff
 
@@ -71,6 +80,20 @@ DevTeam state 三層持久化於 `.claude/context/devteam/`：
 ## 規範產出位置
 
 所有規範文件落在 `docs/`（PRD / UX / Analysis / Architecture / API / Data / QA / Ops / Release），coding agent 透過 `specs/<feature>/handoff.md` 接手。
+
+---
+
+## Scope 邊界（harness 不做什麼）
+
+harness 是 **spec 產生器**，不是 build/run 引擎。以下刻意不在產出範圍內，由下游承接：
+
+| 邊界 | 誰承接 | harness 觸點 |
+| :--- | :--- | :--- |
+| **Dev / Build code**（實作、unit test、coding standard、PR template） | 外部 coding agent | `specs/<feature>/handoff.md` 為交接契約；harness 無 dev persona/driver |
+| **Operate runtime loop**（填寫 postmortem 實例、capacity、on-call、cost monitor） | 運維團隊 / SRE on-call | harness 只產 runbook / SLO / postmortem **範本** 與 release readiness 證據 |
+| **Sprint backlog 執行**（ordered backlog、sprint planning） | PO / Scrum 流程 | harness 為 feature-spec 導向；PO persona 只在 gate critique 優先序，不 author backlog |
+
+`product_to_launch`（Launch Atlas 圖鑑）列的 54 交付物是**教育型 catalog**（教你每個交付物 + 附可貼用 prompt），不是 harness 自動產出清單；兩者範疇不同，勿視為缺失。
 
 ---
 

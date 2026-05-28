@@ -1,0 +1,19 @@
+{
+  "path": "docs/prd/ai-cs-mvg.md",
+  "owner_role": "pm",
+  "review_personas": ["ba", "sa", "ux"],
+  "downstream_deps": [
+    "docs/ux/user-flow-ai-cs-mvg.md",
+    "docs/analysis/system-spec-ai-cs-mvg.md"
+  ],
+  "upstream_refs": [
+    "docs/governance/stakeholders.md",
+    "docs/foundation/00-the-bet.md",
+    "docs/foundation/02-mvg-build-sheet.md",
+    "docs/foundation/03-validation-and-kill.md"
+  ],
+  "version_history": [
+    {"v": 1, "at": "2026-05-28T07:09:26Z", "by": "devteam-pm", "summary": "initial draft — 精簡版 PRD，seeded from docs/foundation, 對齊 _0to1 最薄切片"}
+  ],
+  "review_history": []
+}

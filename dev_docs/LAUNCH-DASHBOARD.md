@@ -13,6 +13,10 @@ related: [PROJ-001, PILOT-001, PRD-001, COST-MODEL-2026-05, PILOT-ICP-2026-05, O
 
 > 產品上線的唯一入口。每週五更新。
 
+> **⚠ 0→1 重置（2026-05-28）**：決策與開工的**唯一關鍵路徑**已收斂到 [`_0to1/`](./_0to1/README.md)（5 份種子文件）。
+> 開工 handoff = [`_0to1/02-mvg-build-sheet.md`](./_0to1/02-mvg-build-sheet.md)；殺死條件 = [`_0to1/03-validation-and-kill.md`](./_0to1/03-validation-and-kill.md)。
+> 既有 81 份文件中 61 份已歸檔至 `_archive-pre-0to1/`（不刪、git 可還原、被觸發再加回）。下方歷史儀表板與必讀清單中，標 ARCHIVE 的連結已移位，裁決理由見 [`_0to1/01-delete-ledger.md`](./_0to1/01-delete-ledger.md)。
+
 ## 現在在哪
 
 | Sprint | 主題 | 狀態 | 目標週 | Gate |

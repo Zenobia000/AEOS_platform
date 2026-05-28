@@ -1,5 +1,10 @@
 # AI 員工作業系統 — 白皮書 (拆檔版)
 
+> **⚠ 0→1 重置（2026-05-28）— 先讀這段**
+> 決策與開工的**唯一關鍵路徑**已收斂到 [`_0to1/`](./_0to1/README.md)（5 份種子文件，Elon 心智模型重置）。
+> 本檔以下的完整索引**退為歷史 reference**：原 81 份文件中 61 份已 `git mv` 至 [`_archive-pre-0to1/`](./_archive-pre-0to1/)（內容未改、可還原、被真實事件觸發再加回），~20 份 KEEP 留原地。逐份裁決見 [`_0to1/01-delete-ledger.md`](./_0to1/01-delete-ledger.md)。
+> **下方表格的相對連結，凡指向已歸檔檔案者需改在 `_archive-pre-0to1/` 下尋找。**
+
 > **推進產品上線？** 從 [LAUNCH-DASHBOARD.md](./LAUNCH-DASHBOARD.md) 開始 — 狀態、阻塞項、下一步、必讀清單全在一頁。
 
 > 本目錄為 `whitepaper.md` v1.0 的主題拆檔版本，供內部團隊 reference 與個人寫作思路梳理使用。

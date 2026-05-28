@@ -1,1 +1,16 @@
-{}
+{
+  "runtime": ["ADR-0011"],
+  "agent-harness": ["ADR-0011"],
+  "frozen-runtime": ["ADR-0011"],
+  "mcp": ["ADR-0011"],
+  "tenant-isolation": ["ADR-0011", "ADR-0013"],
+  "vertical-pack": ["ADR-0012"],
+  "bounded-context": ["ADR-0012"],
+  "platform": ["ADR-0012"],
+  "extensibility": ["ADR-0012"],
+  "coupling": ["ADR-0012"],
+  "knowledge-model": ["ADR-0013"],
+  "structured-data": ["ADR-0013"],
+  "privacy": ["ADR-0013"],
+  "memory": ["ADR-0013"]
+}

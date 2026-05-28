@@ -10,5 +10,59 @@
     "version": 1,
     "owner_role": "pm",
     "created_at": "2026-05-28T07:09:26Z"
-  }
+  },
+  "docs/analysis/system-spec-care-copilot.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "analyst",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/ux/user-flow-care-copilot.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "ux",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/architecture/feasibility-AEOS-x-care-copilot.md": {
+    "status": "draft",
+    "version": 2,
+    "owner_role": "arch",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/architecture/nfr-care-copilot.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "arch",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/architecture/c4-care-copilot.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "arch",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/architecture/adr/ADR-0011-nanobot-frozen-runtime.md": {
+    "status": "proposed",
+    "version": 1,
+    "owner_role": "arch",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/architecture/adr/ADR-0012-vertical-pack-abstraction.md": {
+    "status": "proposed",
+    "version": 1,
+    "owner_role": "arch",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/architecture/adr/ADR-0013-structured-contact-knowledge.md": {
+    "status": "proposed",
+    "version": 1,
+    "owner_role": "arch",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/api/openapi-care-copilot.yaml": { "status": "draft", "version": 1, "owner_role": "design", "created_at": "2026-05-28T07:09:26Z" },
+  "docs/data/erd-care-copilot.md": { "status": "draft", "version": 1, "owner_role": "design", "created_at": "2026-05-28T07:09:26Z" },
+  "docs/qa/test-plan-care-copilot.md": { "status": "draft", "version": 1, "owner_role": "qa", "created_at": "2026-05-28T07:09:26Z" },
+  "docs/ops/runbook-care-copilot.md": { "status": "draft", "version": 1, "owner_role": "ops", "created_at": "2026-05-28T07:09:26Z" },
+  "docs/ops/release-readiness-care-copilot.md": { "status": "draft", "version": 1, "owner_role": "ops", "created_at": "2026-05-28T07:09:26Z" },
+  "specs/care-copilot/handoff.md": { "status": "draft", "version": 1, "owner_role": "router", "created_at": "2026-05-28T07:09:26Z" }
 }

@@ -48,3 +48,27 @@
 - **OQ-002 裁決**：驗證載具 = **Care Copilot Synergy 教練 design-partner pilot**。ai-cs-mvg（AEOS 核心：草稿+合規+活檔案）= 此驗證核心；Care Copilot = 第一個 vertical pack。兩者對齊（同賭注/同 B1/同北極星數字）。
 - **剩餘硬閘門**：需一位真實簽下的 Synergy 教練提供真知識+真對話（市場賭注，非技術）。
 - 已提交：feasibility 評估 / aeos-mvg W1 / foundation 地基 / devteam infra / poetry.lock（5 commit，未 push）。
+
+## [2026-05-28] devteam-arch — 3 ADR（Proposed）
+
+依 feasibility §8 正式化 3 個 ADR（`docs/architecture/adr/`）：
+- **ADR-0011** 採 nanobot(Python) 為 Frozen Runtime 底層 + 治理包覆（凍結/多租戶/Tool Gateway）— 延續 ADR-0002/0007
+- **ADR-0012** Vertical Pack 可插拔抽象（AEOS 橫向化邊界）— 核心中立，Care Copilot = pack #1
+- **ADR-0013** 結構化 contact(活檔案) 納入 knowledge 模型（Dynamic 變體，per-tenant RLS）— 延續 ADR-0010 / §6.3
+
+adr-ledger + indexes(feature/topic/catalog_usage) 已 rebuild。Status 皆 Proposed（待業主簽核）。
+Gate 4 未達（僅 ADR，缺 NFR matrix / C4 L1+L2 / failure modes / observability）。
+
+## [2026-05-28] 全套 devteam 文件產出（最薄切片 × 兩軌）
+
+業主定調：AEOS 主架構 + Care Copilot = pack #1（兩軌）；全套 devteam 文件 × 最薄切片（3 工具，不展開 11）。一口氣跑完 pipeline：
+
+- **P1**：`docs/analysis/system-spec-care-copilot.md` + `docs/ux/user-flow-care-copilot.md` → Gate2/3 ready
+- **P2**：`docs/architecture/nfr-care-copilot.md` + `c4-care-copilot.md` + ADR-0011~0013 → Gate4 ready
+- **P3**：`docs/api/openapi-care-copilot.yaml` + `docs/data/erd-care-copilot.md` → Gate5a/5b ready
+- **P4**：`docs/qa/test-plan-care-copilot.md` → Gate6 ready
+- **P5**：`docs/ops/runbook-care-copilot.md` + `release-readiness-care-copilot.md` → Gate7 ready
+- **Handoff**：`specs/care-copilot/handoff.md`
+
+全部 Status = draft/proposed（待 multi-role review + 業主簽核轉 frozen）。current_phase=P5_RELEASE。未 commit。
+唯一未決硬閘門：OQ-002 簽真實 Synergy 教練（market bet）。

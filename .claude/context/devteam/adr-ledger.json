@@ -1,1 +1,41 @@
-[]
+[
+  {
+    "id": "ADR-0011",
+    "type": "ADR",
+    "topic": "採 nanobot(Python) 為 Frozen Runtime 底層 + AEOS 治理包覆",
+    "status": "proposed",
+    "scope": "cross-team",
+    "feature": "care-copilot",
+    "tags": ["runtime", "agent-harness", "frozen-runtime", "mcp", "tenant-isolation"],
+    "related_kb": ["KB-11", "KB-10", "KB-08"],
+    "path": "docs/architecture/adr/ADR-0011-nanobot-frozen-runtime.md",
+    "supersedes": null,
+    "extends": ["ADR-0002", "ADR-0007"]
+  },
+  {
+    "id": "ADR-0012",
+    "type": "ADR",
+    "topic": "Vertical Pack 可插拔抽象(AEOS 橫向化邊界)",
+    "status": "proposed",
+    "scope": "cross-team",
+    "feature": "care-copilot",
+    "tags": ["vertical-pack", "bounded-context", "platform", "extensibility", "coupling"],
+    "related_kb": ["KB-06", "KB-11"],
+    "path": "docs/architecture/adr/ADR-0012-vertical-pack-abstraction.md",
+    "supersedes": null,
+    "extends": []
+  },
+  {
+    "id": "ADR-0013",
+    "type": "ADR",
+    "topic": "結構化 contact(活檔案) 納入 knowledge 模型",
+    "status": "proposed",
+    "scope": "feature",
+    "feature": "care-copilot",
+    "tags": ["knowledge-model", "structured-data", "privacy", "tenant-isolation", "memory"],
+    "related_kb": ["KB-11"],
+    "path": "docs/architecture/adr/ADR-0013-structured-contact-knowledge.md",
+    "supersedes": null,
+    "extends": ["ADR-0010"]
+  }
+]

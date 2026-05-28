@@ -2,7 +2,7 @@
   "session_id": "2026-05-28-1509-ai-cs-mvg",
   "release_id": null,
   "created_at": "2026-05-28T07:09:26Z",
-  "current_phase": "P0_DISCOVERY",
+  "current_phase": "P5_RELEASE",
   "active_features": ["ai-cs-mvg"],
   "problem_description": "把混亂企業知識在 7 天內量產成可上線、人類只簽核一次的 AI 客服員工（草稿模式）；驗證核心賭注 B1：真實知識→可用草稿回覆採用率。dev_docs 81 份 corpus 已退役為 _legacy-dev_docs/，理念提煉於 docs/foundation/。",
   "phase_history": [
@@ -25,13 +25,13 @@
   ],
   "freeze_gates": {
     "Gate1_PRD": "ready_to_review",
-    "Gate2_UXFlow": "not_reached",
-    "Gate3_SystemSpec": "not_reached",
-    "Gate4_NFR_ADR": "not_reached",
-    "Gate5a_API": "not_reached",
-    "Gate5b_DBSchema": "not_reached",
-    "Gate6_TestReady": "not_reached",
-    "Gate7_Release": "not_reached"
+    "Gate2_UXFlow": "ready_to_review",
+    "Gate3_SystemSpec": "ready_to_review",
+    "Gate4_NFR_ADR": "ready_to_review",
+    "Gate5a_API": "ready_to_review",
+    "Gate5b_DBSchema": "ready_to_review",
+    "Gate6_TestReady": "ready_to_review",
+    "Gate7_Release": "ready_to_review"
   },
   "pending_user_decisions": [],
   "cascade_policy": "manual_confirm",

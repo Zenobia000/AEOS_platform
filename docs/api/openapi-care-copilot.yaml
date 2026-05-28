@@ -18,7 +18,7 @@ paths:
         content: { application/json: { schema: { $ref: '#/components/schemas/ContactUpsert' } } }
       responses:
         '201': { description: created, content: { application/json: { schema: { $ref: '#/components/schemas/Contact' } } } }
-        '403': { description: 跨租戶拒絕(deny by default) }
+        '403': { description: 跨租戶拒絕(deny by default), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
   /contacts/{id}/ingest:
     post:
       summary: UC-1 貼上 markdown/截圖文字 → 抽取補欄位 + 知識索引
@@ -43,7 +43,8 @@ paths:
                 tone: { type: string, enum: [care, casual, business], default: care }
       responses:
         '200': { description: 草稿, content: { application/json: { schema: { $ref: '#/components/schemas/Draft' } } } }
-        '422': { description: 知識缺依據 → needs_human=true(不幻覺) }
+        '422': { description: 知識缺依據 → needs_human=true(不幻覺), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '503': { description: LLM 失敗(fallback 仍失敗 → needs_human), content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
   /drafts/{id}/decision:
     post:
       summary: UC-3 expert 審核 approve/edit/reject(draft mode，AI 不自動發)
@@ -60,7 +61,11 @@ paths:
                 edited_text: { type: string }
                 reason: { type: string }       # reject/關閉合規警示時記錄(回收訓練)
                 decided_by: { type: string }
-      responses: { '200': { description: 已記錄 + 全稽核(used_chunks/model/decision/decided_by) } }
+      responses:
+        '200': { description: 已記錄 + 全稽核(used_chunks/model/decision/decided_by), content: { application/json: { schema: { $ref: '#/components/schemas/Draft' } } } }
+        '403': { description: 跨租戶拒絕, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '422': { description: edit 後重跑合規為 red → 阻擋, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '500': { description: audit 寫入失敗 → 整筆回滾, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
   /eval:
     post:
       summary: UC-5 離線對測試集打 B1(draft→judge→採用率)
@@ -96,7 +101,7 @@ components:
         at: { type: string, format: date-time }
         kind: { type: string }
         summary: { type: string }
-    Draft:
+    Draft:                          # 對應 message 一表多用(ERD)：草稿 + 審核決定 + 送達狀態
       type: object
       properties:
         id: { type: string }
@@ -106,6 +111,9 @@ components:
         compliance_note: { type: string }     # red 時的改寫建議
         used_chunks: { type: array, items: { type: string } }
         model: { type: string }
+        decision: { type: string, enum: [approve, edit, reject, needs_human, manual_override] }
+        decided_by: { type: string }          # NULL = 未審
+        sent_at: { type: string, format: date-time, nullable: true }  # 與 decision 正交；W1 恆 null，W2 回發後填(鐵律掃描 TC-SEC-03)
     # --- Review 修正 R2 (2026-05-28, B-5) ---
     Error:                          # 統一 error model，全 4xx/5xx 引用
       type: object
@@ -120,8 +128,11 @@ components:
     EvalResult:
       type: object
       properties: { approve_rate: { type: number }, adopt_rate: { type: number }, verdict: { type: string, enum: [go, pivot, kill] } }
-# --- B-5 待落地（OpenAPI 層約定，design 實作）---
-# 1. 寫入端 (POST /contacts /ingest /drafts) 加 Idempotency-Key header + 24h 去重窗
-# 2. 全路徑 4xx/5xx 回 $ref '#/components/schemas/Error'；/ingest /eval response 補上 IngestResult/EvalResult
-# 3. C4: 合規判定 authority = Policy Engine；needs_human authority = 知識/grounding 層；API 僅傳輸
-# 4. telemetry: x-telemetry span = draft.generate / policy.scan / audit.write
+# --- 已落地（本輪圓桌收斂）---
+# - 主要 4xx/5xx 已 $ref Error（contacts 403 / drafts 422·503 / decision 403·422·500）
+# - Draft 含 decision/decided_by/sent_at，與 message schema(migration) 對齊
+# - C4 authority：合規判定 = Policy Engine；needs_human = 知識/grounding 層；API 僅傳輸
+# --- 明確 defer 至 W2 design（非 limbo TODO，owner = SD）---
+# - Idempotency-Key header + 24h 去重窗（W1 無寫入 API，eval-only）
+# - /ingest /eval response 綁 IngestResult/EvalResult schema
+# - telemetry x-telemetry span = draft.generate / policy.scan / audit.write

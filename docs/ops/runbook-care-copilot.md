@@ -31,6 +31,7 @@
 | 草稿延遲 p95 | < 5s | 持續 > 10s 告警 |
 | **跨租戶違規數** | **= 0** | **> 0 → P0 即停（killswitch）** |
 | **外送踩線數** | **= 0** | **> 0 → P0** |
+| 注入偵測（`prompt_injection_pattern_detected`） | 標記不阻擋 | 趨勢異常 → 人工複查 audit；**「忽略」也是 action**，非自動停（threat-model §防禦1） |
 | 成本 / 直銷商 / 日 | ≤ $0.30 | 超 quota → circuit breaker 降階 + 告警 |
 | 草稿採用率 | 監控趨勢 | 崩（<40%）→ 觸發 Kill 重評 |
 

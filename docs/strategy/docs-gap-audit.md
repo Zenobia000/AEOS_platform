@@ -22,6 +22,22 @@
 
 ---
 
+## 🟢 收斂判定（2026-05-28 圓桌兩波，Elon-lens）
+
+> [!IMPORTANT]
+> **三軸內部一致性達成收斂**:**架構**(arch 驗證 ADR↔C4↔NFR↔ERD↔migration↔threat-model 端到端一致;ADR Proposed 經判定非 blocker)、**內容**(stale ref 清、鐵律破口修)、**關聯**(0 斷連結;`sent_at` 跨 migration/threat-model/test-plan/openapi 一致;TC-SEC 三方對齊)。
+> **天花板**:文件可達的是「內部一致」,「驗證正確」需真 pilot 資料(OQ-002 未簽)。剩餘開放項**全為署名 defer**(G4 真值集/G5 GTM·DR/openapi idempotency-W2/WCAG-GA),非盲點。
+> 圓桌兩波覆蓋 8 個視角:pm·ba·dba·qa·arch(前輪) + arch·dba·qa·sd·sre(本輪);所有 hard blocker(G1/G2/G3 + B-1 sent_at + S-1 audit append-only)已修。
+
+| 軸 | 狀態 | 殘留(皆 defer,非 gap) |
+|:--|:--:|:--|
+| 架構 | 🟢 收斂 | ADR freeze 時點(刻意延至 B1 後) |
+| 內容 | 🟢 收斂 | G4 真值集(pre-B1)、openapi idempotency(W2) |
+| 關聯 | 🟢 收斂 | — |
+| 商業/ops | 🟡 defer | G5 GTM/onboarding、dr-backup(RPO)、WCAG(GA) |
+
+---
+
 ## ✅ 本輪落地（2026-05-28，致命路徑 + 根因）
 
 | 項 | 狀態 | 產出 |

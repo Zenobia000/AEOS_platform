@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  title: Care Copilot — 最薄切片 API（AEOS core + pack #1）
+  version: 0.1.0
+  description: >
+    草稿 + 合規 + 活檔案 切片。所有路徑經 AEOS Tenant scope(RLS) + Policy + Audit。
+    對應 ADR-0011(nanobot runtime) / ADR-0013(結構化 contact) / system-spec UC-1~4。
+servers:
+  - url: /api/v1
+security:
+  - tenantBearer: []          # 每請求帶 tenant context；RLS 強制隔離(ADR-0007)
+paths:
+  /contacts:
+    post:
+      summary: UC-1 建立/補充活檔案(結構化 contact)
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/ContactUpsert' } } }
+      responses:
+        '201': { description: created, content: { application/json: { schema: { $ref: '#/components/schemas/Contact' } } } }
+        '403': { description: 跨租戶拒絕(deny by default) }
+  /contacts/{id}/ingest:
+    post:
+      summary: UC-1 貼上 markdown/截圖文字 → 抽取補欄位 + 知識索引
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content: { application/json: { schema: { type: object, properties: { text: { type: string } }, required: [text] } } }
+      responses: { '200': { description: 已索引 + 抽取欄位 } }
+  /drafts:
+    post:
+      summary: UC-2 生成草稿(grounded + 過合規 + 多語氣)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [contact_id, inbound_message]
+              properties:
+                contact_id: { type: string }
+                inbound_message: { type: string }
+                tone: { type: string, enum: [care, casual, business], default: care }
+      responses:
+        '200': { description: 草稿, content: { application/json: { schema: { $ref: '#/components/schemas/Draft' } } } }
+        '422': { description: 知識缺依據 → needs_human=true(不幻覺) }
+  /drafts/{id}/decision:
+    post:
+      summary: UC-3 expert 審核 approve/edit/reject(draft mode，AI 不自動發)
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [decision, decided_by]
+              properties:
+                decision: { type: string, enum: [approve, edit, reject] }
+                edited_text: { type: string }
+                reason: { type: string }       # reject/關閉合規警示時記錄(回收訓練)
+                decided_by: { type: string }
+      responses: { '200': { description: 已記錄 + 全稽核(used_chunks/model/decision/decided_by) } }
+  /eval:
+    post:
+      summary: UC-5 離線對測試集打 B1(draft→judge→採用率)
+      requestBody:
+        content: { application/json: { schema: { type: object, properties: { knowledge_ref: {type: string}, testset_ref: {type: string} } } } }
+      responses: { '200': { description: 採用率 + GO/PIVOT/KILL 裁決 } }
+components:
+  securitySchemes:
+    tenantBearer: { type: http, scheme: bearer }
+  schemas:
+    ContactUpsert:
+      type: object
+      required: [display_name]
+      properties:                 # 活檔案 7 欄位(ADR-0013)；可空、慢慢補
+        display_name: { type: string }
+        health_focus: { type: string }
+        family: { type: string }
+        work: { type: string }
+        interests: { type: string }
+        comm_pref: { type: string }
+        tags: { type: array, items: { type: string } }
+    Contact:
+      allOf:
+        - $ref: '#/components/schemas/ContactUpsert'
+        - type: object
+          properties:
+            id: { type: string }
+            tenant_id: { type: string }
+            timeline: { type: array, items: { $ref: '#/components/schemas/Interaction' } }
+    Interaction:
+      type: object                # append-only 互動時間軸
+      properties:
+        at: { type: string, format: date-time }
+        kind: { type: string }
+        summary: { type: string }
+    Draft:
+      type: object
+      properties:
+        id: { type: string }
+        text: { type: string }
+        needs_human: { type: boolean }
+        compliance: { type: string, enum: [green, yellow, red] }
+        compliance_note: { type: string }     # red 時的改寫建議
+        used_chunks: { type: array, items: { type: string } }
+        model: { type: string }

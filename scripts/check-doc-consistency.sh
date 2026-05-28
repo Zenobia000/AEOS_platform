@@ -82,16 +82,10 @@ root=sys.argv[1]
 state=json.load(open(f"{root}/.claude/context/devteam/state.json"))
 gates=state.get("freeze_gates",{})
 idx=json.load(open(f"{root}/.claude/context/devteam/documents/index.json"))
-owner={
- "Gate1_PRD":"docs/prd/ai-cs-mvg.md",
- "Gate2_UXFlow":"docs/ux/user-flow-care-copilot.md",
- "Gate3_SystemSpec":"docs/analysis/system-spec-care-copilot.md",
- "Gate4_NFR_ADR":"docs/architecture/nfr-care-copilot.md",
- "Gate5a_API":"docs/api/openapi-care-copilot.yaml",
- "Gate5b_DBSchema":"docs/data/erd-care-copilot.md",
- "Gate6_TestReady":"docs/qa/test-plan-care-copilot.md",
- "Gate7_Release":"docs/ops/release-readiness-care-copilot.md",
-}
+# gate→owner doc 讀 registry feature_bindings（不再硬編，消滅 linter↔KB 漂移點）
+reg=json.load(open(f"{root}/devteam_knowledge_base/_registry.json"))
+feat=(state.get("active_features") or ["care-copilot"])[0]
+owner=reg.get("feature_bindings",{}).get(feat,{})
 def doc_status(p):
     if p.endswith(".yaml"): return idx.get(p,{}).get("status","")   # openapi 無 Status pill → 用 index
     fp=f"{root}/{p}"
@@ -163,6 +157,51 @@ PY
 echo "$c12" | grep -v "^RESULT" | sed 's/^//'
 n12=$(echo "$c12"|grep "^RESULT"|awk '{print $2}')
 [ "${n12:-1}" -eq 0 ] && pass "index ↔ docs 雙向 parity 一致" || fail "$n12 個 parity 缺口"
+
+echo "== C13 _registry.json ↔ KB/state/agents 一致（防 KB-to-KB 漂移 HB-1）=="
+c13=$(python3 - "$ROOT" <<'PY'
+import json,re,sys,os
+root=sys.argv[1]
+reg=json.load(open(f"{root}/devteam_knowledge_base/_registry.json"))
+state=json.load(open(f"{root}/.claude/context/devteam/state.json"))
+fails=0
+# C13a: registry gate IDs == state.json freeze_gates keys
+rg_gates=set(reg["gates"]); st_gates=set(state.get("freeze_gates",{}))
+if rg_gates!=st_gates:
+    print(f"    registry gates {sorted(rg_gates)} ≠ state freeze_gates {sorted(st_gates)}"); fails+=1
+# C13b: 每 gate 的 required_diagrams 須現身 KB-04 對應 gate 段
+kb04=open(f"{root}/devteam_knowledge_base/04_freeze_gates.md",encoding="utf-8").read()
+# 切 KB-04 為各 gate 段：## Gate <label>: ...
+secs={}
+parts=re.split(r"\n## Gate (\S+?):",kb04)
+# parts[0]=前言; 之後成對 (label, body)
+labelmap={"1":"Gate1_PRD","2":"Gate2_UXFlow","3":"Gate3_SystemSpec","4":"Gate4_NFR_ADR",
+          "5a":"Gate5a_API","5b":"Gate5b_DBSchema","6":"Gate6_TestReady","7":"Gate7_Release"}
+for i in range(1,len(parts),2):
+    lab=parts[i].strip(); body=parts[i+1] if i+1<len(parts) else ""
+    gid=labelmap.get(lab)
+    if gid: secs[gid]=body
+for gid,gd in reg["gates"].items():
+    body=secs.get(gid,"")
+    for dia in gd.get("required_diagrams",[]):
+        kw=reg["diagrams"].get(dia,{}).get("kb04_keyword",dia)
+        if not re.search(kw,body):
+            print(f"    {gid} 須畫 {dia} 但 KB-04 evidence 無對應關鍵字 /{kw}/"); fails+=1
+# C13c: feature_bindings owner_doc 檔須存在
+for feat,gmap in reg.get("feature_bindings",{}).items():
+    for gid,doc in gmap.items():
+        if not os.path.exists(f"{root}/{doc}"):
+            print(f"    feature_bindings[{feat}][{gid}] 指向不存在的檔: {doc}"); fails+=1
+# C13d: registry roles 每 persona 須有 agent 檔
+for p in reg["roles"]:
+    if not os.path.exists(f"{root}/.claude/agents/devteam-{p}-persona.md"):
+        print(f"    role {p} 無對應 agent: .claude/agents/devteam-{p}-persona.md"); fails+=1
+print(f"RESULT {fails}")
+PY
+)
+echo "$c13" | grep -v "^RESULT" | sed 's/^//'
+n13=$(echo "$c13"|grep "^RESULT"|awk '{print $2}')
+[ "${n13:-1}" -eq 0 ] && pass "registry ↔ KB-04 / state / agents 一致" || fail "$n13 個 registry 漂移"
 
 echo ""
 if [ "$FAIL" -eq 0 ]; then echo "✅ 全部一致性檢查通過（$FAIL fail）"; exit 0

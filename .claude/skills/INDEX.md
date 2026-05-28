@@ -68,6 +68,7 @@
 | `11_data_and_stack_catalog.md` | 資料分級 / PII / GDPR + DB/messaging/auth/cache 選型 |
 | `12_document_format_standard.md` | 文件格式標準（Universal Header / mermaid / 一致性尺） |
 | `13_doc_migration_playbook.md` | ADR supersede 判定樹 + doc 遷移 boundary case study |
+| `_registry.json` | **枚舉事實單一真相**（gates / roles / diagrams / feature_bindings）— KB-01/04/07 cross-ref 不複製；linter C9/C13 讀此檔驗一致（防 KB-to-KB 漂移 HB-1） |
 
 ---
 

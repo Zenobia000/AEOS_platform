@@ -61,6 +61,8 @@ R = Responsible（執行），A = Accountable（最終負責），C = Consulted�
 ## 產品角色 ↔ Persona ↔ Driver Crosswalk（單一真相對照表）
 
 > **為什麼需要這張表**：系統裡有三套角色枚舉 —— 產品門面 `product_to_launch/lib/taxonomy.ts` 的 **10 角色**、本檔的 **12 critique persona**、driver skill 的 **7 條合併主線**。三者不是 1:1，缺對照會漂移。任何角色/交付物的新增異動，**先改這張表**再改其他地方。
+>
+> **機械單一真相 = `devteam_knowledge_base/_registry.json` 的 `roles` 段**（persona ↔ driver ↔ product_role）。本表為人類可讀版；linter C13d 驗每個 persona 有對應 `.claude/agents/devteam-<persona>-persona.md`（防 role 枚舉漂移 HB-1）。
 
 | 產品角色 (slug) | Critique persona | Driver skill | 產品招牌交付物 | Harness 範本 / 輸出 |
 |:----------------|:-----------------|:-------------|:---------------|:--------------------|

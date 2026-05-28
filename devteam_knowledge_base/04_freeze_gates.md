@@ -30,6 +30,8 @@
 
 > 設計：一致性不再靠 persona 肉眼或 AI 記得 — Stop hook 每 turn 結束自動跑 linter，drift 寫 `consistency-drift.md` 並於下次 SessionStart 浮現補償。gate 只是再確認一次全綠。
 
+> **gate 枚舉的機械單一真相 = `devteam_knowledge_base/_registry.json`**（owner_driver / personas / intensity / required_diagrams / feature owner_doc）。改 gate 先改 registry，本檔 cross-ref 不複製；linter C9 讀 registry 的 feature_bindings、C13 驗 registry↔本檔↔state↔agents 對齊（防 KB-to-KB 漂移 HB-1）。
+
 ---
 
 ## Gate 1: PRD Freeze

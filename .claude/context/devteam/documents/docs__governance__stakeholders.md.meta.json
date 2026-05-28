@@ -1,0 +1,21 @@
+{
+  "path": "docs/governance/stakeholders.md",
+  "owner_role": "pm",
+  "review_personas": [
+    "pm",
+    "ba"
+  ],
+  "downstream_deps": [
+    "docs/prd/ai-cs-mvg.md"
+  ],
+  "upstream_refs": [],
+  "version_history": [
+    {
+      "v": 1,
+      "at": "2026-05-28T07:09:26Z",
+      "by": "devteam-pm",
+      "summary": "backfill meta（依賴圖補登，2026-05-28 圓桌收斂後）"
+    }
+  ],
+  "review_history": []
+}

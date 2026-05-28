@@ -1,0 +1,28 @@
+{
+  "path": "docs/architecture/adr/ADR-0001-nanobot-frozen-runtime.md",
+  "owner_role": "arch",
+  "review_personas": [
+    "pm",
+    "sre",
+    "dba"
+  ],
+  "downstream_deps": [
+    "docs/architecture/c4-care-copilot.md",
+    "docs/architecture/nfr-care-copilot.md",
+    "docs/ops/runbook-care-copilot.md",
+    "docs/security/threat-model.md",
+    "docs/api/openapi-care-copilot.yaml"
+  ],
+  "upstream_refs": [
+    "docs/architecture/feasibility-AEOS-x-care-copilot.md"
+  ],
+  "version_history": [
+    {
+      "v": 1,
+      "at": "2026-05-28T07:09:26Z",
+      "by": "devteam-arch",
+      "summary": "backfill meta（依賴圖補登，2026-05-28 圓桌收斂後）"
+    }
+  ],
+  "review_history": []
+}

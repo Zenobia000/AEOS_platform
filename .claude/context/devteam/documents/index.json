@@ -59,12 +59,88 @@
     "owner_role": "arch",
     "created_at": "2026-05-28T07:09:26Z"
   },
-  "docs/architecture/adr/ADR-0004-knowledge-ingestion-governance-pipeline.md": { "status": "proposed", "version": 1, "owner_role": "arch", "created_at": "2026-05-28T07:09:26Z" },
-  "docs/architecture/knowledge-pipeline.md": { "status": "draft", "version": 1, "owner_role": "arch", "created_at": "2026-05-28T07:09:26Z" },
-  "docs/api/openapi-care-copilot.yaml": { "status": "draft", "version": 1, "owner_role": "design", "created_at": "2026-05-28T07:09:26Z" },
-  "docs/data/erd-care-copilot.md": { "status": "draft", "version": 1, "owner_role": "design", "created_at": "2026-05-28T07:09:26Z" },
-  "docs/qa/test-plan-care-copilot.md": { "status": "draft", "version": 1, "owner_role": "qa", "created_at": "2026-05-28T07:09:26Z" },
-  "docs/ops/runbook-care-copilot.md": { "status": "draft", "version": 1, "owner_role": "ops", "created_at": "2026-05-28T07:09:26Z" },
-  "docs/ops/release-readiness-care-copilot.md": { "status": "draft", "version": 1, "owner_role": "ops", "created_at": "2026-05-28T07:09:26Z" },
-  "specs/care-copilot/handoff.md": { "status": "draft", "version": 1, "owner_role": "router", "created_at": "2026-05-28T07:09:26Z" }
+  "docs/architecture/adr/ADR-0004-knowledge-ingestion-governance-pipeline.md": {
+    "status": "proposed",
+    "version": 1,
+    "owner_role": "arch",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/architecture/knowledge-pipeline.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "arch",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/api/openapi-care-copilot.yaml": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "design",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/data/erd-care-copilot.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "design",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/qa/test-plan-care-copilot.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "qa",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/ops/runbook-care-copilot.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "ops",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/ops/release-readiness-care-copilot.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "ops",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "specs/care-copilot/handoff.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "router",
+    "created_at": "2026-05-28T07:09:26Z"
+  },
+  "docs/security/threat-model.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "security",
+    "created_at": "2026-05-28T11:42:55Z"
+  },
+  "docs/governance/consent-and-dpa.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "ba",
+    "created_at": "2026-05-28T11:42:55Z"
+  },
+  "docs/governance/compliance-lexicon-authority.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "ba",
+    "created_at": "2026-05-28T11:42:55Z"
+  },
+  "docs/data/migrations/README.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "dba",
+    "created_at": "2026-05-28T11:42:55Z"
+  },
+  "docs/strategy/business-model-convergence.md": {
+    "status": "draft",
+    "version": 2,
+    "owner_role": "pm",
+    "created_at": "2026-05-28T11:42:55Z"
+  },
+  "docs/strategy/docs-gap-audit.md": {
+    "status": "draft",
+    "version": 1,
+    "owner_role": "facilitator",
+    "created_at": "2026-05-28T11:42:55Z"
+  }
 }

@@ -1,0 +1,26 @@
+{
+  "path": "docs/architecture/knowledge-pipeline.md",
+  "owner_role": "arch",
+  "review_personas": [
+    "arch",
+    "dba",
+    "sd"
+  ],
+  "downstream_deps": [
+    "docs/data/erd-care-copilot.md",
+    "docs/data/migrations/README.md"
+  ],
+  "upstream_refs": [
+    "docs/architecture/adr/ADR-0002-vertical-pack-abstraction.md",
+    "docs/architecture/adr/ADR-0004-knowledge-ingestion-governance-pipeline.md"
+  ],
+  "version_history": [
+    {
+      "v": 1,
+      "at": "2026-05-28T07:09:26Z",
+      "by": "devteam-arch",
+      "summary": "backfill meta（依賴圖補登，2026-05-28 圓桌收斂後）"
+    }
+  ],
+  "review_history": []
+}

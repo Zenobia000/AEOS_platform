@@ -3,8 +3,8 @@
   "owner_role": "pm",
   "review_personas": ["ba", "sa", "ux"],
   "downstream_deps": [
-    "docs/ux/user-flow-ai-cs-mvg.md",
-    "docs/analysis/system-spec-ai-cs-mvg.md"
+    "docs/ux/user-flow-care-copilot.md",
+    "docs/analysis/system-spec-care-copilot.md"
   ],
   "upstream_refs": [
     "docs/governance/stakeholders.md",

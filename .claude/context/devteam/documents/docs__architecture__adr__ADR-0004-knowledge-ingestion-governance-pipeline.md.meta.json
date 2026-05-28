@@ -1,0 +1,26 @@
+{
+  "path": "docs/architecture/adr/ADR-0004-knowledge-ingestion-governance-pipeline.md",
+  "owner_role": "arch",
+  "review_personas": [
+    "pm",
+    "sre",
+    "dba"
+  ],
+  "downstream_deps": [
+    "docs/architecture/knowledge-pipeline.md",
+    "docs/governance/consent-and-dpa.md",
+    "docs/security/threat-model.md"
+  ],
+  "upstream_refs": [
+    "docs/architecture/feasibility-AEOS-x-care-copilot.md"
+  ],
+  "version_history": [
+    {
+      "v": 1,
+      "at": "2026-05-28T07:09:26Z",
+      "by": "devteam-arch",
+      "summary": "backfill meta（依賴圖補登，2026-05-28 圓桌收斂後）"
+    }
+  ],
+  "review_history": []
+}

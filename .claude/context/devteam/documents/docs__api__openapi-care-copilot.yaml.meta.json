@@ -1,0 +1,27 @@
+{
+  "path": "docs/api/openapi-care-copilot.yaml",
+  "owner_role": "design",
+  "review_personas": [
+    "sd",
+    "sa",
+    "qa"
+  ],
+  "downstream_deps": [
+    "specs/care-copilot/handoff.md"
+  ],
+  "upstream_refs": [
+    "docs/analysis/system-spec-care-copilot.md",
+    "docs/architecture/c4-care-copilot.md",
+    "docs/architecture/adr/ADR-0003-structured-contact-knowledge.md",
+    "docs/architecture/nfr-care-copilot.md"
+  ],
+  "version_history": [
+    {
+      "v": 1,
+      "at": "2026-05-28T07:09:26Z",
+      "by": "devteam-design",
+      "summary": "backfill meta（依賴圖補登，2026-05-28 圓桌收斂後）"
+    }
+  ],
+  "review_history": []
+}

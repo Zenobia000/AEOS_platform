@@ -1,0 +1,23 @@
+{
+  "path": "docs/security/threat-model.md",
+  "owner_role": "security",
+  "review_personas": ["arch", "dba", "sre"],
+  "downstream_deps": [
+    "docs/qa/test-plan-care-copilot.md",
+    "docs/ops/runbook-care-copilot.md"
+  ],
+  "upstream_refs": [
+    "docs/architecture/nfr-care-copilot.md",
+    "docs/architecture/adr/ADR-0001-nanobot-frozen-runtime.md",
+    "docs/architecture/adr/ADR-0002-vertical-pack-abstraction.md",
+    "docs/architecture/adr/ADR-0004-knowledge-ingestion-governance-pipeline.md",
+    "docs/governance/consent-and-dpa.md",
+    "docs/data/migrations/README.md"
+  ],
+  "version_history": [
+    {"v": 1, "at": "2026-05-28T00:00:00Z", "by": "devteam-arch", "summary": "G1 威脅模型 — 三鐵律對抗驗證 + prompt injection 四層防禦 + pack 投毒 + secret 管理 + Go/No-Go"}
+  ],
+  "review_history": [
+    {"at": "2026-05-28", "lane": "C-roundtable", "personas": ["arch", "dba", "qa", "sd", "sre"], "verdict": "收斂 — B-1 sent_at 鐵律破口已修"}
+  ]
+}

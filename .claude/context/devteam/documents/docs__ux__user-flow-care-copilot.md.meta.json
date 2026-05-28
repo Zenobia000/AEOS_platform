@@ -1,0 +1,25 @@
+{
+  "path": "docs/ux/user-flow-care-copilot.md",
+  "owner_role": "ux",
+  "review_personas": [
+    "ux",
+    "ui",
+    "pm"
+  ],
+  "downstream_deps": [
+    "docs/api/openapi-care-copilot.yaml",
+    "docs/qa/test-plan-care-copilot.md"
+  ],
+  "upstream_refs": [
+    "docs/prd/ai-cs-mvg.md"
+  ],
+  "version_history": [
+    {
+      "v": 1,
+      "at": "2026-05-28T07:09:26Z",
+      "by": "devteam-ux",
+      "summary": "backfill meta（依賴圖補登，2026-05-28 圓桌收斂後）"
+    }
+  ],
+  "review_history": []
+}

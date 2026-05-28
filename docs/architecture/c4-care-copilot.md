@@ -92,13 +92,15 @@
 
 | Component | 責任 | 對映 ADR / 鐵律 |
 |:---|:---|:---|
-| **Frozen 包覆** | 關閉 nanobot 自改 prompt / 自裝 skill / 自由載 MCP | ADR-0001 |
-| **Tool Gateway** | 憑證持有 + 工具白名單;**不暴露**自動發送/改 policy/跨租戶查詢工具 | threat-model T-E-03 / 未審自動發=0 |
+| **Frozen 包覆** | 關閉 nanobot 自改 prompt / 自裝 skill / 自由載 MCP | ADR-0001 / threat-model **T-E-03** |
+| **Tool Gateway** | 憑證持有 + 工具白名單;**不暴露**自動發送/改 policy/跨租戶查詢工具 | threat-model **LLM07/08**(excessive agency) / 未審自動發=0 |
 | **Policy Engine（合規低語）** | regex 詞庫掃 green/yellow/red,**獨立於 LLM**;red 強制擋 | ADR-0002 pack 詞庫 / 外送踩線=0 |
 | **KnowledgeRouter** | 三路:contact(結構化)/RAG(pgvector)/policy;檢索限**本租戶** | ADR-0003 / §6.3 |
 | **Draft 生成** | grounded + needs-human guard;缺依據標 `[需人工]` | BR-1 |
 | **LLM Adapter** | openai+anthropic+fallback;prompt caching;模型分層 | §13 |
 | **Audit writer** | append-only(used_chunks/model/decision/decided_by/sent_at) | BR-5 / threat-model T-T-02 |
+
+> **KnowledgeRouter = retrieval 側**（runtime 查詢）;**ingest 側**（知識進場治理）走 `knowledge-pipeline.md` 的 8 階段管線（ADR-0004,W1 只用 3 格:貼上→全當 Static→eval）。兩者經同一 Knowledge Store,但 ingest pipeline 是離線/批次,不在 runtime 熱路徑。
 
 ---
 

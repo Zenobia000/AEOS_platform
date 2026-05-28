@@ -84,4 +84,4 @@ user_msg → draft_generated → [compliance gate] → expert_review
 | UC-1 | 抽取欄位正確率 ≥ 80%（對標註集）；不同租戶 0 串（紅隊） |
 | UC-2 | 對測試集 pass ≥ 70%（W1）；grounded = 有 citation 且 judge 不判幻覺 |
 | UC-4 | 高風險詞召回 100%；誤擋率 ≤ 5% |
-- 每 UC 補 source FR-ID（UC-1=FR-001 … UC-7=FR-007）。
+- UC↔FR 對映（5 UC ↔ 7 FR，**非 1:1**）：UC-1→FR-001、UC-2→FR-002、UC-3→FR-004、UC-4→FR-002 合規 gate(BR-2)、UC-5→FR-007;**FR-003**(訊息入口,W1 手動貼)/**FR-005**(稽核,橫切所有 UC)/**FR-006**(killswitch,ops)無專屬 UC。

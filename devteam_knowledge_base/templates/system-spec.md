@@ -162,7 +162,7 @@ stateDiagram-v2
 | [`docs/architecture/adr/ADR-*.md`](../../docs/architecture/adr/) | Architecture decisions |
 | [`docs/api/openapi-{service}.yaml`](../../docs/api/openapi-{service}.yaml) | API contract |
 | [`docs/data/erd-{feature}.md`](../../docs/data/erd-{feature}.md) | Data model |
-| [`docs/architecture/threat-model-{feature}.md`](../../docs/architecture/threat-model-{feature}.md) | （條件式）Threat model — abuse case ↔ `UC-NNN.alt-N` 雙向、security negative test 來源 |
+| [`docs/security/threat-model-{feature}.md`](../../docs/security/threat-model-{feature}.md) | （條件式）Threat model — abuse case ↔ `UC-NNN.alt-N` 雙向、security negative test 來源 |
 | [`docs/qa/test-plan-{release}.md`](../../docs/qa/test-plan-{release}.md) | Test plan |
 
 ---

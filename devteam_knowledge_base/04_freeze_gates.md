@@ -81,6 +81,7 @@
 - [ ] 例外流與 edge case 已列
 - [ ] 外部依賴與假設可追溯
 - [ ] Acceptance criteria 可被 QA 直接使用
+- [ ] **State Machine（核心聚合根生命週期，KB-07 §3 必畫）**：有意義狀態的物件須畫 mermaid `stateDiagram`，含終結態與每邊 event；無狀態物件可免
 
 **Review personas**:
 - `arch`: 系統行為是否需要新架構決策
@@ -125,6 +126,7 @@ threat_model_required =
 | **閉環** | 觸發時每條 STRIDE 須結到 ADR mitigation + API error model/status code/telemetry + 一條 security negative test（寫進 system-spec acceptance） |
 | **合規背書** | GDPR Art.32 / Art.35 DPIA、個資法第 27 條 / 特種個資第 6 條 |
 | **與 NFR 關係** | 互補非重複 — NFR matrix 答「達標常數」，threat model 答「誰攻 / 攻哪 / 怎麼防」 |
+| **詞彙橋接** | 既有 prose ERD（特種個資 / PII / 脫敏）先經 [[11_data_and_stack_catalog]] §2.1 詞彙橋接正規化為 `pii_type` / `classification` 機械值再評估觸發 |
 
 ---
 
@@ -138,6 +140,7 @@ threat_model_required =
 - [ ] Mock server 可生成
 - [ ] FE / BE / QA 能依此 contract 平行工作
 - [ ] Breaking change 政策已寫入 `x-governance`
+- [ ] **Sequence（關鍵 endpoint flow，KB-07 §3 必畫）**：每個 endpoint 的呼叫鏈畫 mermaid `sequenceDiagram` + `autonumber`，含失敗路徑；步驟對應 OpenAPI endpoint
 
 **Review personas**:
 - `pm`: contract 是否支援所有 use cases
@@ -190,6 +193,8 @@ threat_model_required =
 - [ ] Rollback plan 可執行（不只是寫「rollback」）
 - [ ] Go / No-go 標準明文，依 evidence 決策非氣氛
 - [ ] Canary / staged rollout 策略已定
+- [ ] **Deployment topology 圖**（KB-07 §3 必畫）：部署拓樸 mermaid（節點 / DB / 對外 egress），與 C4 L2 + threat-model 信任邊界一致
+- [ ] **Activity 圖**（KB-07 §3 必畫）：runbook 關鍵流程（P0 incident response：detect→killswitch→稽核→通報→RCA）畫 mermaid flowchart
 
 **Review personas**:
 - `pm`: 是否符合 release plan 的 rollout

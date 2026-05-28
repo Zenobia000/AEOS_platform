@@ -69,7 +69,7 @@ erDiagram
 
 ## Data Dictionary
 
-<!-- HINT: 每欄位的 PII 分類套 KB 11 §1（4 級 public/internal/confidential/restricted）+ §2（identifier/quasi-identifier/sensitive）；Retention 標示套 KB 11 §3.3；缺 retention / classification / jurisdictions → DBA persona 必標 blocker。 -->
+<!-- HINT: 每欄位的 PII 分類套 KB 11 §1（4 級 public/internal/confidential/restricted）+ §2（identifier/quasi-identifier/sensitive）；Retention 標示套 KB 11 §3.3；缺 retention / classification / jurisdictions → DBA persona 必標 blocker。建議直接用機械值欄位（classification/pii_type）；若沿用 prose 標籤（特種個資/PII/脫敏），Gate 4 threat-model trigger 會經 KB 11 §2.1 詞彙橋接正規化。 -->
 
 ### Table: `users`
 

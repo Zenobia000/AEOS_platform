@@ -49,6 +49,21 @@ threat_model_required =
 - 命中 ⟹ Gate 4 必備 `templates/threat-model.md`（hard rule，豁免須 DR）。詳見 [`04_freeze_gates.md` §Gate 4 Threat Model 觸發規則](04_freeze_gates.md)。
 - 合規背書：GDPR Art.32（安全措施）、Art.35（DPIA）；個資法第 27 條、特種個資第 6 條 → 見 §3.2。
 
+### 詞彙橋接（向後相容既有 prose ERD）
+
+trigger 的 `pii_type` / `classification` 是機械值，但既有 ERD 可能用中文 / prose 標籤（如 care-copilot 的 PII map 用「特種個資 / PII / 脫敏」）。**評估 trigger 前先過此表把 prose 正規化為機械值**。新 ERD 建議直接用機械值欄位；橋接層是給尚未機械化的既有 ERD 的相容層。
+
+| ERD prose 標籤 | 正規化機械值 | 觸發 |
+|:---|:---|:---|
+| 特種個資 / 特殊類別 / sensitive | `pii_type = sensitive` | ✅ |
+| PII（未細分）/ 個資 / personal | `pii_type = identifier`（保守視為直接識別） | ✅ |
+| 準識別 / quasi(-identifier) | `pii_type = quasi-identifier` | 需伴 `consent_required = explicit` 才觸發 |
+| 機密 / confidential | `classification = confidential` | 單獨不觸發（除非另含 PII） |
+| 受限 / 最高 / restricted | `classification = restricted` | ✅ |
+| 脫敏 / 去識別化 / 非 PII / public | `none` | ❌ |
+
+> 例：care-copilot `contact.health_focus = 特種個資` → 橋接為 `sensitive` → trigger = TRUE（與既有 `docs/security/threat-model.md` 存在一致）。
+
 ---
 
 ## 3. GDPR + 台灣個資法欄位標示

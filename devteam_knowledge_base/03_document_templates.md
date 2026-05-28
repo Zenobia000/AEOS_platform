@@ -15,7 +15,7 @@
 | `c4-l2.md` | `docs/architecture/c4-l2-<feature>.md` | devteam-arch | arch | P2 Architecture |
 | `c4-l3.md` | `docs/architecture/c4-l3-<feature>.md` | devteam-arch | arch | P2 Architecture（按需） |
 | `adr.md` | `docs/architecture/adr/ADR-<NNN>-<topic>.md` | devteam-arch | arch | 任何架構決策 |
-| `threat-model.md` | `docs/architecture/threat-model-<feature>.md` | devteam-arch | arch | P2 Architecture（**條件式**：資料分級觸發，掛 Gate 4；見 [`04_freeze_gates.md` §Gate 4 Threat Model 觸發規則](04_freeze_gates.md)） |
+| `threat-model.md` | `docs/security/threat-model-<feature>.md` | devteam-arch | arch | P2 Architecture（**條件式**：資料分級觸發，掛 Gate 4；見 [`04_freeze_gates.md` §Gate 4 Threat Model 觸發規則](04_freeze_gates.md）。linter C4/C6 以此路徑驗 TC-SEC） |
 | `decision-record.md` | `docs/architecture/dr/DR-<NNN>-<topic>.md` | 對應 driver | 對應 persona | 非架構決策（產品/流程） |
 | `openapi.yaml` | `docs/api/openapi-<service>.yaml` | devteam-design | sd | P3 Design |
 | `erd.md` | `docs/data/erd-<feature>.md` | devteam-design | dba | P3 Design |

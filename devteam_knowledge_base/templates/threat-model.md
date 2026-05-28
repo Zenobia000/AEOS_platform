@@ -24,6 +24,7 @@
 >     OR (ERD.pii_type = quasi-identifier AND consent_required = explicit)
 > ```
 > Hard rule：命中卻無本檔、且無豁免 DR ⟹ **Gate 4 阻擋**。
+> 既有 ERD 用 prose 標籤（特種個資 / PII / 脫敏）時，先經 [[11_data_and_stack_catalog]] §2.1 詞彙橋接正規化為 `pii_type` / `classification` 再評估。
 
 | 命中條件 | 證據（哪個欄位 / surface） |
 |:---|:---|

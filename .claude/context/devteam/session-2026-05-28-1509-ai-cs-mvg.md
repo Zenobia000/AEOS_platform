@@ -52,9 +52,9 @@
 ## [2026-05-28] devteam-arch — 3 ADR（Proposed）
 
 依 feasibility §8 正式化 3 個 ADR（`docs/architecture/adr/`）：
-- **ADR-0011** 採 nanobot(Python) 為 Frozen Runtime 底層 + 治理包覆（凍結/多租戶/Tool Gateway）— 延續 ADR-0002/0007
-- **ADR-0012** Vertical Pack 可插拔抽象（AEOS 橫向化邊界）— 核心中立，Care Copilot = pack #1
-- **ADR-0013** 結構化 contact(活檔案) 納入 knowledge 模型（Dynamic 變體，per-tenant RLS）— 延續 ADR-0010 / §6.3
+- **ADR-0001** 採 nanobot(Python) 為 Frozen Runtime 底層 + 治理包覆（凍結/多租戶/Tool Gateway）— 延續 legacy ADR-0002/0007
+- **ADR-0002** Vertical Pack 可插拔抽象（AEOS 橫向化邊界）— 核心中立，Care Copilot = pack #1
+- **ADR-0003** 結構化 contact(活檔案) 納入 knowledge 模型（Dynamic 變體，per-tenant RLS）— 延續 legacy ADR-0010 / §6.3
 
 adr-ledger + indexes(feature/topic/catalog_usage) 已 rebuild。Status 皆 Proposed（待業主簽核）。
 Gate 4 未達（僅 ADR，缺 NFR matrix / C4 L1+L2 / failure modes / observability）。
@@ -64,7 +64,7 @@ Gate 4 未達（僅 ADR，缺 NFR matrix / C4 L1+L2 / failure modes / observabil
 業主定調：AEOS 主架構 + Care Copilot = pack #1（兩軌）；全套 devteam 文件 × 最薄切片（3 工具，不展開 11）。一口氣跑完 pipeline：
 
 - **P1**：`docs/analysis/system-spec-care-copilot.md` + `docs/ux/user-flow-care-copilot.md` → Gate2/3 ready
-- **P2**：`docs/architecture/nfr-care-copilot.md` + `c4-care-copilot.md` + ADR-0011~0013 → Gate4 ready
+- **P2**：`docs/architecture/nfr-care-copilot.md` + `c4-care-copilot.md` + ADR-0001~0004 → Gate4 ready
 - **P3**：`docs/api/openapi-care-copilot.yaml` + `docs/data/erd-care-copilot.md` → Gate5a/5b ready
 - **P4**：`docs/qa/test-plan-care-copilot.md` → Gate6 ready
 - **P5**：`docs/ops/runbook-care-copilot.md` + `release-readiness-care-copilot.md` → Gate7 ready

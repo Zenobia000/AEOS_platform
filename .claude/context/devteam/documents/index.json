@@ -41,24 +41,26 @@
     "owner_role": "arch",
     "created_at": "2026-05-28T07:09:26Z"
   },
-  "docs/architecture/adr/ADR-0011-nanobot-frozen-runtime.md": {
+  "docs/architecture/adr/ADR-0001-nanobot-frozen-runtime.md": {
     "status": "proposed",
     "version": 1,
     "owner_role": "arch",
     "created_at": "2026-05-28T07:09:26Z"
   },
-  "docs/architecture/adr/ADR-0012-vertical-pack-abstraction.md": {
+  "docs/architecture/adr/ADR-0002-vertical-pack-abstraction.md": {
     "status": "proposed",
     "version": 1,
     "owner_role": "arch",
     "created_at": "2026-05-28T07:09:26Z"
   },
-  "docs/architecture/adr/ADR-0013-structured-contact-knowledge.md": {
+  "docs/architecture/adr/ADR-0003-structured-contact-knowledge.md": {
     "status": "proposed",
     "version": 1,
     "owner_role": "arch",
     "created_at": "2026-05-28T07:09:26Z"
   },
+  "docs/architecture/adr/ADR-0004-knowledge-ingestion-governance-pipeline.md": { "status": "proposed", "version": 1, "owner_role": "arch", "created_at": "2026-05-28T07:09:26Z" },
+  "docs/architecture/knowledge-pipeline.md": { "status": "draft", "version": 1, "owner_role": "arch", "created_at": "2026-05-28T07:09:26Z" },
   "docs/api/openapi-care-copilot.yaml": { "status": "draft", "version": 1, "owner_role": "design", "created_at": "2026-05-28T07:09:26Z" },
   "docs/data/erd-care-copilot.md": { "status": "draft", "version": 1, "owner_role": "design", "created_at": "2026-05-28T07:09:26Z" },
   "docs/qa/test-plan-care-copilot.md": { "status": "draft", "version": 1, "owner_role": "qa", "created_at": "2026-05-28T07:09:26Z" },

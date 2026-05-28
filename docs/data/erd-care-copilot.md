@@ -1,29 +1,74 @@
 # ERD + 模組/Error Model — care-copilot（最薄切片）
 
-> **Status**: draft · **Owner**: `devteam-design` · **Date**: 2026-05-28 · **Feature**: care-copilot
-> 對應 ADR-0003（結構化 contact）/ system-spec §3-4 / NFR Privacy。所有**業務表**帶 `tenant_id` + RLS；`tenant` root 表無 tenant_id，由 GRANT 控管讀取範圍。
+> **📋 Status**: draft
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-design`
+> **🔖 Version**: v1
+> **🎯 Scope**: care-copilot 切片資料模型（6 表）+ Error Model。所有**業務表**帶 `tenant_id` + RLS；`tenant` root 表無 tenant_id，由 GRANT 控管讀取範圍
+> **🔗 Related**: ADR-0003（結構化 contact）· system-spec §3-4 · NFR Privacy · `data/migrations/`
 
 ---
 
 ## ERD（切片 6 表）
 
-```
-tenant (id, name, data_retention_days, compliance_profile)
-   │1
-   ├──< contact (id, tenant_id, display_name, health_focus, family, work,
-   │             interests, comm_pref, tags jsonb, created_at)        ← 活檔案 7 欄位
-   │        │1
-   │        └──< interaction (id, contact_id, tenant_id, at, kind, summary)  ← append-only 時間軸
-   │
-   ├──< knowledge_chunk (id, tenant_id, source, text, embedding vector)  ← doc-RAG(pgvector)
-   │
-   └──< message (id, tenant_id, contact_id, role, text,
-                 draft_text, decision, decided_by, compliance, used_chunks jsonb,
-                 model, created_at)        ← 對話+草稿+稽核+訓練素材，一表多用
+```mermaid
+erDiagram
+    tenant ||--o{ contact : has
+    tenant ||--o{ knowledge_chunk : has
+    tenant ||--o{ message : has
+    contact ||--o{ interaction : "append-only 時間軸"
+    contact |o--o{ message : "linked (nullable)"
+    tenant {
+        uuid id PK
+        string name
+        int data_retention_days "隨 DPA"
+        string compliance_profile
+    }
+    contact {
+        uuid id PK
+        uuid tenant_id FK
+        string display_name
+        string health_focus "特種個資"
+        string family_work_interests_comm "活檔案 7 欄位"
+        jsonb tags
+    }
+    interaction {
+        uuid id PK
+        uuid contact_id FK
+        uuid tenant_id FK
+        timestamptz at
+        string kind
+        string summary
+    }
+    knowledge_chunk {
+        uuid id PK
+        uuid tenant_id FK
+        string source
+        string text "脫敏後"
+        vector embedding "pgvector HNSW"
+    }
+    message {
+        uuid id PK
+        uuid tenant_id FK
+        uuid contact_id FK "nullable"
+        string text_draft_text "PII"
+        string decision
+        string decided_by "NULL=未審"
+        timestamptz sent_at "⊥decision"
+        jsonb used_chunks
+    }
+    audit_event {
+        uuid id PK
+        uuid tenant_id "非FK,永久"
+        string event_type
+        string decision
+        string decided_by
+    }
 ```
 
 > `message` 一張表幹三件事（對話紀錄 + audit log + 訓練素材），消滅資料複製（foundation/02 §3.2）。
 > `contact`(結構化) 與 `knowledge_chunk`(語意檢索) 分開 = ADR-0003 的 KnowledgeRouter 兩路。
+> `audit_event`（R2）去識別化、append-only、永久，不存原文、`tenant_id` 非 FK（tenant 刪除後仍留）。
 
 ## 路由（KnowledgeRouter，§6.3 三分類）
 

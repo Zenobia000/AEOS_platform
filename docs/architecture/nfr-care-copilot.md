@@ -1,8 +1,11 @@
 # NFR Matrix — care-copilot（最薄切片 / Pilot）
 
-> **Status**: draft · **Owner**: `devteam-arch` · **Date**: 2026-05-28 · **Feature**: care-copilot
-> 範圍：AEOS 核心 + Care Copilot 最薄切片（訊息草稿 / 合規低語 / 活檔案）。Pilot 期目標，非 GA。
-> 來源：`docs/prd/ai-cs-mvg.md` §7、`docs/foundation/pilot_run.md` §6、ADR-0001/0002/0003。
+> **📋 Status**: draft
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-arch`
+> **🔖 Version**: v1
+> **🎯 Scope**: AEOS 核心 + Care Copilot 最薄切片（訊息草稿 / 合規低語 / 活檔案）。Pilot 期目標，非 GA
+> **🔗 Related**: `docs/prd/ai-cs-mvg.md` §7 · `docs/foundation/pilot_run.md` §6 · ADR-0001/0002/0003
 
 ---
 

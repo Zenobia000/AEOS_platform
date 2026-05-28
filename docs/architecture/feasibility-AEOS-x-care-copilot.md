@@ -1,5 +1,12 @@
 # 可行性評估 — AEOS 平台 × Care Copilot 垂直 × nanobot 執行引擎
 
+> **📋 Status**: draft（feasibility spike，非實作承諾）
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-arch`
+> **🔖 Version**: v1
+> **🎯 Scope**: AEOS × Care Copilot × nanobot 可行性評估（歷史 spike，導出 ADR-0001~0004）
+> **🔗 Related**: `docs/foundation/pilot_run.md`（Care Copilot PRD v0.3）· `c4-care-copilot.md` · ADR-0001~0004 · `_legacy-dev_docs/02-product-architecture.md`
+
 > [!NOTE]
 > **詞彙對映（本文為歷史 spike，沿用 legacy 詞彙；當前架構以 C4 + ADR-0001~0004 為準）**：
 > - **執行引擎**：本文評估 pi 後**收斂為 nanobot**（§4 / ADR-0001）；標題與 §1 已更新，內文 pi 段保留為決策軌跡。
@@ -9,13 +16,6 @@
 > **問題**：現有 AEOS 架構能滿足 Care Copilot（直銷關懷 Copilot, pilot_run.md）的客戶需求到什麼程度？底層用 pi agent 跑是否可行？這個垂直能否驗證「AEOS = 跨所有垂直領域的平台」這個本質目標？
 >
 > **一句話結論**：**可行，且強烈正向。** Care Copilot 的客戶 PRD **獨立地重新推導出 AEOS ~70% 的治理原語**（多租戶隔離 / 合規 sidecar / 學習紀錄 / 多模型抽象 / 草稿不自動送 / 知識結構化）——這是 AEOS 抓對「垂直無關的真需求」的最強證據。執行引擎已收斂為 **nanobot（Python）+ AEOS 治理包覆**；剩餘缺口集中在**垂直領域模型 + 結構化 contact 知識模型**，不在治理核心。
-
-| | |
-|---|---|
-| **Status** | draft v1（feasibility spike，非實作承諾） |
-| **Date** | 2026-05-28 |
-| **Owner** | Architect |
-| **來源** | `docs/foundation/pilot_run.md`（Care Copilot PRD v0.3）、`_legacy-dev_docs/02-product-architecture.md`、`07-north-star.md`、pi（github.com/earendil-works/pi） |
 
 ---
 

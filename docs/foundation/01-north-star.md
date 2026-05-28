@@ -16,14 +16,13 @@ spine: 工廠即產品 (the machine that builds the machine)
 
 AEOS 真正的產品不是 AI 員工，是**量產 AI 員工的工廠**。
 
-```
- [原料] 混亂企業知識
-    ▼
- 鑄造 → 訓練室 → 品管閘門 → 出廠凍結
-    ▲          標準化零件倉          │
-    │       記憶 / 身體 / 技能        ▼
-    └──── 售後遙測回流 ◀──── 出廠 Frozen 員工 → 部署
-                                (漂移即召回)
+```mermaid
+flowchart TB
+    raw["［原料］混亂企業知識"] --> cast["鑄造"]
+    parts["標準化零件倉<br/>記憶 / 身體 / 技能"] --> cast
+    cast --> train["訓練室"] --> qa["品管閘門"] --> freeze["出廠凍結"]
+    freeze --> emp["出廠 Frozen 員工"] --> deploy["部署"]
+    deploy -.->|"售後遙測回流（漂移即召回）"| cast
 ```
 
 ## 2. 五大未來科技支柱

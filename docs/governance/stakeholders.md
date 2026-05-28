@@ -1,7 +1,11 @@
 # Stakeholder Map — care-copilot（AEOS 核心切片代號 ai-cs-mvg）
 
-> **Status**: draft · **Updated**: 2026-05-28 · **Owner**: PM
-> 收 `strategy/docs-gap-audit.md` 根因：5 個盲點 = 未指派的 owner。種子前 = founder 戴帽 / AI persona 代理，標明**觸發換真人**的條件。
+> **📋 Status**: draft
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-pm`
+> **🔖 Version**: v1
+> **🎯 Scope**: care-copilot stakeholder map（外部 + 5 內部 owner，戴帽模式）
+> **🔗 Related**: `strategy/docs-gap-audit.md`（根因：5 盲點 = 未指派 owner）· `governance/consent-and-dpa.md`
 
 ## 外部 / 核心 stakeholder
 

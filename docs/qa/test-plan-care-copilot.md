@@ -1,7 +1,11 @@
 # Test Plan — care-copilot（最薄切片）
 
-> **Status**: draft · **Owner**: `devteam-qa` · **Date**: 2026-05-28 · **Feature**: care-copilot
-> 對應 system-spec UC/BR、foundation/03 殺死條件、NFR 鐵律。Pilot 回歸通過率目標 70% / GA 85%。
+> **📋 Status**: draft
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-qa`
+> **🔖 Version**: v1
+> **🎯 Scope**: care-copilot 測試計畫（Pilot 回歸通過率目標 70% / GA 85%）
+> **🔗 Related**: system-spec UC/BR · foundation/03 殺死條件 · NFR 鐵律 · `security/threat-model.md` TC-SEC · `traceability-matrix.md`
 
 ---
 

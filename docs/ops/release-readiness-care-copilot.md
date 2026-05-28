@@ -1,7 +1,11 @@
 # Release Readiness — care-copilot（Pilot Go-Checklist）
 
-> **Status**: draft · **Owner**: `devteam-ops` · **Date**: 2026-05-28 · **Feature**: care-copilot
-> Pilot 上線前檢核。對應 Gate 7。Go = 全部勾選 + 業主簽核。
+> **📋 Status**: draft
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-ops`
+> **🔖 Version**: v1
+> **🎯 Scope**: care-copilot pilot 上線前 Go-Checklist（對應 Gate 7）。Go = 全部勾選 + 業主簽核
+> **🔗 Related**: runbook · `security/threat-model.md` §Go/No-Go · `governance/consent-and-dpa.md` · foundation/03
 
 ---
 

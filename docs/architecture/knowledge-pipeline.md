@@ -1,20 +1,29 @@
 # 知識攝取與治理管線 — Spec（core 骨架 + vertical pack）
 
-> **Status**: draft · **Owner**: `devteam-arch`/`devteam-design` · **Date**: 2026-05-28 · **Feature**: care-copilot（pack #1）
-> 對應 ADR-0004（管線決策）· ADR-0002（pack 邊界）· ADR-0003（結構化 contact）· legacy ADR-0005（PII）· `02 §6.3`（三分類）。
+> **📋 Status**: draft
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-arch` / `devteam-design`
+> **🔖 Version**: v1
+> **🎯 Scope**: care-copilot（pack #1）知識 ingestion 治理管線（8 階段，W1 用 3 格）
+> **🔗 Related**: ADR-0004（管線決策）· ADR-0002（pack 邊界）· ADR-0003（結構化 contact）· legacy ADR-0005（PII）· `02 §6.3`（三分類）
+>
 > **定位**：B1 的原料端 = 北極星工廠的「原料倉 → 鑄造」段。**階段(機制)通用、不變;每產業差異是各階段的 config。**
 
 ---
 
 ## 0. 管線總覽
 
-```
-異質生料(per-vertical)
- 客服對話 / 公司文件 / 處理報告 / 產品資料 / 規章
-   │
- [1]INGEST → [2]DE-ID → [3]CLASSIFY → [4]EXTRACT → [5]GOVERN → [6]REVIEW → [7]PUBLISH → [8]EVAL
-                                                                                          │
-                                              └──────────── 飛輪:採用率回饋精煉 ──────────┘
+```mermaid
+flowchart LR
+    raw["異質生料 (per-vertical)<br/>客服對話 / 公司文件 / 處理報告 / 產品資料 / 規章"]
+    s1["[1] INGEST"] --> s2["[2] DE-ID"] --> s3["[3] CLASSIFY"] --> s4["[4] EXTRACT"]
+    s4 --> s5["[5] GOVERN"] --> s6["[6] REVIEW"] --> s7["[7] PUBLISH"] --> s8["[8] EVAL"]
+    raw --> s1
+    s8 -.->|"飛輪：採用率回饋精煉"| s4
+
+    classDef b1 fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class s1,s3,s8 b1
+    %% 綠 = B1 最小路徑只走的 3 格（[1]貼上 → [3]全當 Static → [8]eval）
 ```
 
 **最小 B1 路徑（先只走這 3 格）**：`[1]貼上 → [3]全當 Static → draft → [8]eval 採用率` = 現有 `aeos-mvg/` W1。其餘階段被真實需求觸發才加（見 §3 成長觸發）。

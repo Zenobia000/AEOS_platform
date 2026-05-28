@@ -1,7 +1,11 @@
 # Migrations — care-copilot schema
 
-> **Status**: draft · **Owner**: dba · **對應**: `docs/data/erd-care-copilot.md`
-> 補 audit G2:ERD 原僅口頭註記,本目錄是 handoff 的 **schema source of truth**。
+> **📋 Status**: draft
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-design`（dba）
+> **🔖 Version**: v1
+> **🎯 Scope**: care-copilot schema migration（handoff 的 schema source of truth）
+> **🔗 Related**: `docs/data/erd-care-copilot.md` · `security/threat-model.md`（RLS/append-only）
 
 ## 慣例
 

@@ -1,8 +1,11 @@
 # System Spec — care-copilot（最薄切片）
 
-> **Status**: draft · **Owner**: `devteam-analyst` · **Date**: 2026-05-28 · **Feature**: care-copilot
-> 範圍：AEOS 核心 + Care Copilot pack #1 的最薄切片 = **訊息草稿 + 合規低語 + 活檔案**（+ 離線 eval）。
-> 對應：`docs/prd/ai-cs-mvg.md`、`docs/foundation/pilot_run.md` §3.1/§3.6/§3.12、ADR-0001~0004。
+> **📋 Status**: draft
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-analyst`
+> **🔖 Version**: v1
+> **🎯 Scope**: care-copilot 最薄切片 = 訊息草稿 + 合規低語 + 活檔案（+ 離線 eval）
+> **🔗 Related**: `docs/prd/ai-cs-mvg.md` · `docs/foundation/pilot_run.md` §3.1/§3.6/§3.12 · ADR-0001~0004
 
 ---
 
@@ -32,13 +35,25 @@
 ## 3. State Model
 
 **Message lifecycle**：
+
+```mermaid
+stateDiagram-v2
+    [*] --> user_msg
+    user_msg --> draft_generated: 檢索+生成
+    draft_generated --> compliance_gate: 過合規低語
+    draft_generated --> needs_human: 缺依據
+    compliance_gate --> expert_review: green / yellow
+    compliance_gate --> draft_generated: red 強制改寫
+    expert_review --> sent: approve
+    expert_review --> edited: edit
+    edited --> compliance_gate: 重跑 gate（不可繞，C2）
+    expert_review --> discarded: reject（記原因，回收訓練）
+    needs_human --> sent: 人工接手回覆
+    needs_human --> discarded: 逾時
+    sent --> [*]
+    discarded --> [*]
 ```
-user_msg → draft_generated → [compliance gate] → expert_review
-   → approve → sent
-   → edit    → edited → sent
-   → reject  → discarded（記原因，回收訓練）
-   → needs_human（缺依據）→ 人工接手
-```
+
 **Compliance gate**：`green`（直接過）/ `yellow`（提醒可送）/ `red`（強制改寫，阻擋）。
 
 ## 4. Integration Inventory

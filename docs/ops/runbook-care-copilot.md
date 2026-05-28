@@ -1,7 +1,11 @@
 # Runbook + SLO — care-copilot（Pilot）
 
-> **Status**: draft · **Owner**: `devteam-ops` · **Date**: 2026-05-28 · **Feature**: care-copilot
-> Pilot 規模：1 tenant、單容器、單一 oncall（CEO）。對應 NFR、ADR-0001、Observability 需求。
+> **📋 Status**: draft
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-ops`
+> **🔖 Version**: v1
+> **🎯 Scope**: care-copilot pilot runbook + SLO（1 tenant、單容器、單一 oncall=CEO）
+> **🔗 Related**: NFR · ADR-0001 · `security/threat-model.md` · Observability 需求
 
 ---
 

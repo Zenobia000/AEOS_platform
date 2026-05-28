@@ -1,8 +1,11 @@
 # C4 — care-copilot（L1 + L2 + L3 / 最薄切片）
 
-> **Status**: draft · **Owner**: `devteam-arch` · **Date**: 2026-05-28 · **Feature**: care-copilot
-> 範圍：AEOS 核心（垂直無關）+ Care Copilot pack #1（垂直特定）。最薄切片（草稿/合規/活檔案）。
-> 對映 ADR-0001（nanobot runtime）/ ADR-0002（vertical pack 邊界）/ ADR-0003（結構化 contact）。
+> **📋 Status**: draft
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-arch`
+> **🔖 Version**: v1
+> **🎯 Scope**: AEOS 核心（垂直無關）+ Care Copilot pack #1（垂直特定）最薄切片（草稿/合規/活檔案）
+> **🔗 Related**: ADR-0001（nanobot runtime）· ADR-0002（vertical pack 邊界）· ADR-0003（結構化 contact）· ADR-0004（知識管線）
 
 ---
 

@@ -1,18 +1,24 @@
 # User Flow — care-copilot（最薄切片，expert 視角）
 
-> **Status**: draft · **Owner**: `devteam-ux` · **Date**: 2026-05-28 · **Feature**: care-copilot
-> 主 actor：直銷商/expert（Amy）。範圍：草稿 + 合規 + 活檔案。對應 PRD §4 情境 1/3/6/7。
+> **📋 Status**: draft
+> **🗓 Last updated**: 2026-05-28
+> **👤 Owner**: `devteam-ux`
+> **🔖 Version**: v1
+> **🎯 Scope**: care-copilot expert 視角 user flow（草稿 + 合規 + 活檔案）。主 actor：直銷商/expert（Amy）
+> **🔗 Related**: PRD §4 情境 1/3/6/7 · system-spec UC-1~4
 
 ---
 
 ## 主流程（happy path）
 
-```
-1. 建檔   expert 在客戶詳情頁「貼對話/截圖/手填」→ 活檔案累積（UC-1）
-2. 收訊   客戶訊息進來 → 系統檢索活檔案+知識 → 生 3 語氣草稿（UC-2）
-3. 把關   草稿過合規低語 → 綠/黃/紅 徽章（UC-4）
-4. 審核   expert 看草稿 → approve / edit / reject（UC-3）
-5. 送出   approve → 一鍵複製到 LINE（pilot 手動貼）；全程進稽核
+```mermaid
+flowchart TB
+    s1["1. 建檔｜貼對話/截圖/手填 → 活檔案累積（UC-1）"]
+    s2["2. 收訊｜客戶訊息 → 檢索活檔案+知識 → 生 3 語氣草稿（UC-2）"]
+    s3["3. 把關｜過合規低語 → 綠/黃/紅 徽章（UC-4）"]
+    s4["4. 審核｜expert 看草稿 → approve / edit / reject（UC-3）"]
+    s5["5. 送出｜approve → 一鍵複製到 LINE（pilot 手動貼）；全程進稽核"]
+    s1 --> s2 --> s3 --> s4 --> s5
 ```
 
 ## 關鍵狀態覆蓋（每步都要有）
@@ -55,11 +61,14 @@
 ## Review 修正 R3（2026-05-28 Gate 2 補審，ux B-1/S-2）
 
 ### UC-3 edit 閉環（edit → 重過合規，對齊 system-spec C2）
-```
-審核 → edit（改寫草稿）→ 重新過合規 gate（必跑，不可繞）
-   ├─ 綠/黃 → 可送（一鍵複製 LINE）→ 稽核記 decision=edit + sent_at
-   └─ 紅   → 回 red modal：可再 edit，或「轉人工（我自己寫）」
-            → decision=manual_override，AI 草稿不送，紅旗留 audit
+```mermaid
+flowchart TB
+    rev["審核"] --> edit["edit 改寫草稿"]
+    edit --> gate["重新過合規 gate（必跑，不可繞）"]
+    gate -->|"綠/黃"| send["可送（一鍵複製 LINE）<br/>稽核記 decision=edit + sent_at"]
+    gate -->|"紅"| modal["red modal"]
+    modal -->|"可再 edit"| edit
+    modal -->|"轉人工（我自己寫）"| manual["decision=manual_override<br/>AI 草稿不送，紅旗留 audit"]
 ```
 edit 中間態：顯示「重新檢查合規中…」loading；改完變紅燈要明示，不可靜默放行。
 

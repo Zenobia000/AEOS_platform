@@ -40,21 +40,31 @@
 
 切片元件（**只列實際存在的**,不含 legacy 的 Admin Console/OAuth/mTLS/S3）:
 
-```
-        公開（W2 才有）                    單台 VM（私有）
-  ┌──────────────┐                ┌──────────────────────────────────┐
-  │ 直銷商(expert)│──W2 HTTPS─────▶│  nanobot runtime（Frozen 包覆）   │
-  │  審核台       │                │   ├─ Tool Gateway + Policy(前置)  │
-  └──────────────┘                │   ├─ KnowledgeRouter(contact/RAG) │
-  ┌──────────────┐  W1=手動貼      │   └─ draft / audit / eval         │
-  │ 終端客戶訊息  │  W2=LINE ───────▶│                                   │
-  └──────────────┘                │  Postgres + pgvector（RLS）        │
-                                   │  env: ANTHROPIC_API_KEY/DATABASE_URL│
-                                   └───────────────┬───────────────────┘
-                                                   ▼ HTTPS（不傳超量 PII）
-                                              ┌──────────┐
-                                              │Anthropic │（external,zero-retention 條款）
-                                              └──────────┘
+```mermaid
+flowchart TB
+    subgraph public["公開（W2 才有）"]
+        expert["直銷商 expert 審核台"]
+        inbound["終端客戶訊息<br/>W1=手動貼 / W2=LINE"]
+    end
+    subgraph vm["單台 VM（私有）"]
+        rt["nanobot runtime（Frozen 包覆）<br/>Tool Gateway + Policy(前置)<br/>KnowledgeRouter(contact/RAG)<br/>draft / audit / eval"]
+        db[("Postgres + pgvector（RLS）")]
+        env["env: ANTHROPIC_API_KEY / DATABASE_URL"]
+    end
+    anthropic["Anthropic（external<br/>zero-retention 條款）"]
+
+    expert -->|"W2 HTTPS"| rt
+    inbound --> rt
+    rt --- db
+    rt -.- env
+    rt -->|"HTTPS（不傳超量 PII）"| anthropic
+
+    classDef priv fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef pub fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
+    classDef ext fill:#f1f5f9,stroke:#64748b,color:#334155
+    class rt,db,env priv
+    class expert,inbound pub
+    class anthropic ext
 ```
 
 **信任邊界**:

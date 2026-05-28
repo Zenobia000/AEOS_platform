@@ -7,12 +7,15 @@
 
 ## 1. 部署（nanobot runtime + AEOS 包覆）
 
-```
-單台 VM（~$50/月，foundation/02）
-├── nanobot runtime（Python，釘版本 — ADR-0001 negative #2）
-│    └── AEOS 治理包覆：Frozen / Tenant(RLS) / Tool Gateway+Policy
-├── Postgres + pgvector（contact / knowledge_chunk / message / audit）
-└── env：ANTHROPIC_API_KEY、DATABASE_URL（secrets 不進 git）
+```mermaid
+flowchart TB
+    subgraph vm["單台 VM（~$50/月，foundation/02）"]
+        rt["nanobot runtime（Python，釘版本 — ADR-0001 negative #2）<br/>AEOS 治理包覆：Frozen / Tenant(RLS) / Tool Gateway+Policy"]
+        db[("Postgres + pgvector<br/>contact / knowledge_chunk / message / audit")]
+        env["env：ANTHROPIC_API_KEY、DATABASE_URL（secrets 不進 git）"]
+    end
+    rt --- db
+    rt -.- env
 ```
 - **凍結檢查**：部署前確認 nanobot 自我擴展（自裝 skill/自改 prompt/自由載 MCP）已關（ADR-0001）。
 - **版本**：nanobot 釘 exact version；升級走 staging 驗證。

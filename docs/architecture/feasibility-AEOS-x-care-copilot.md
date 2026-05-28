@@ -21,21 +21,19 @@
 
 ## 1. 三層堆疊模型（誰負責什麼）
 
-```
-┌──────────────────────────────────────────────────────────┐
-│  L3  Care Copilot（垂直應用）                            │
-│      11 個工具 + 4 persona + 直銷領域模型 + FTC/FDA 詞庫 │
-│      = AEOS 工廠產出的「一位 AI 直銷關懷員工」            │
-├──────────────────────────────────────────────────────────┤
-│  L2  AEOS（治理 + 方法論平台）★ 本評估主角               │
-│      Frozen Runtime / 知識三分類 / Policy Engine /        │
-│      多租戶隔離 / SkillOps / AgentOps / 多模型抽象 / Audit│
-│      = 把混亂知識量產成「可上線、可監控、可召回」員工     │
-├──────────────────────────────────────────────────────────┤
-│  L1  nanobot（執行引擎，Python）★ §4 改採                │
-│      小核心 agent loop + 原生 MCP + 多模型 + 排程         │
-│      = AI 員工的「身體 / runtime」（AEOS 凍結+多租戶包覆）│
-└──────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    L3["<b>L3 — Care Copilot（垂直應用）</b><br/>11 工具 + 4 persona + 直銷領域模型 + FTC/FDA 詞庫<br/>= AEOS 工廠產出的『一位 AI 直銷關懷員工』"]
+    L2["<b>L2 — AEOS（治理 + 方法論平台）★ 本評估主角</b><br/>Frozen Runtime / 知識三分類 / Policy Engine /<br/>多租戶隔離 / SkillOps / AgentOps / 多模型抽象 / Audit<br/>= 把混亂知識量產成『可上線、可監控、可召回』員工"]
+    L1["<b>L1 — nanobot（執行引擎，Python）★ §4 改採</b><br/>小核心 agent loop + 原生 MCP + 多模型 + 排程<br/>= AI 員工的『身體 / runtime』（AEOS 凍結+多租戶包覆）"]
+    L3 --> L2 --> L1
+
+    classDef vert fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    classDef plat fill:#dbeafe,stroke:#2563eb,color:#1e3a8a
+    classDef eng fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class L3 vert
+    class L2 plat
+    class L1 eng
 ```
 
 對映北極星（`07-north-star.md`）：**Care Copilot = 工廠產出的第一台員工；11 工具 = 它的 skills；直銷商 = tenants；pi = 可重組的身體；AEOS = 工廠本身。** 這正是「工廠即產品」要驗證的第一個垂直。

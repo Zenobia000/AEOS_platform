@@ -75,6 +75,95 @@ maxdef=$(echo "$defined" | rg -o "[0-9]" | sort -rn | head -1)
 bad=$(rg -o "UC-[0-9]" "$DOCS/analysis/system-spec-care-copilot.md" 2>/dev/null | rg -o "[0-9]" | sort -u | awk -v m="${maxdef:-5}" '$1>m')
 [ -z "$bad" ] && pass "無引用未定義 UC（已定義 UC-1~${maxdef:-5}）" || fail "引用了未定義的 UC-$bad"
 
+echo "== C9 gate ↔ doc Status 同步（frozen gate ⟹ doc Status∈{frozen,reviewed}；blocked 不誤殺）=="
+c9=$(python3 - "$ROOT" <<'PY'
+import json,re,sys,os
+root=sys.argv[1]
+state=json.load(open(f"{root}/.claude/context/devteam/state.json"))
+gates=state.get("freeze_gates",{})
+idx=json.load(open(f"{root}/.claude/context/devteam/documents/index.json"))
+owner={
+ "Gate1_PRD":"docs/prd/ai-cs-mvg.md",
+ "Gate2_UXFlow":"docs/ux/user-flow-care-copilot.md",
+ "Gate3_SystemSpec":"docs/analysis/system-spec-care-copilot.md",
+ "Gate4_NFR_ADR":"docs/architecture/nfr-care-copilot.md",
+ "Gate5a_API":"docs/api/openapi-care-copilot.yaml",
+ "Gate5b_DBSchema":"docs/data/erd-care-copilot.md",
+ "Gate6_TestReady":"docs/qa/test-plan-care-copilot.md",
+ "Gate7_Release":"docs/ops/release-readiness-care-copilot.md",
+}
+def doc_status(p):
+    if p.endswith(".yaml"): return idx.get(p,{}).get("status","")   # openapi 無 Status pill → 用 index
+    fp=f"{root}/{p}"
+    if not os.path.exists(fp): return None
+    head="\n".join(open(fp,encoding="utf-8").read().splitlines()[:12])
+    m=re.search(r"Status\*?\*?:\s*([A-Za-z]+)",head)
+    return m.group(1) if m else ""
+fails=0
+for g,st in gates.items():
+    doc=owner.get(g)
+    if not doc: continue
+    ds=doc_status(doc)
+    if st=="frozen":
+        if ds not in ("frozen","reviewed"):
+            print(f"    gate {g}=frozen 但 {doc} Status={ds!r}（須 frozen/reviewed）"); fails+=1
+    elif ds=="frozen":
+        print(f"    {doc} Status=frozen 但 gate {g}={st}（gate 未 frozen）"); fails+=1
+print(f"RESULT {fails}")
+PY
+)
+echo "$c9" | grep -v "^RESULT" | sed 's/^//'
+n9=$(echo "$c9"|grep "^RESULT"|awk '{print $2}')
+[ "${n9:-1}" -eq 0 ] && pass "frozen gate 與 doc Status 一致" || fail "$n9 個 gate↔Status 不一致"
+
+echo "== C10 KB-12 Universal Header（spec 文件 5 pill；豁免 foundation/README）=="
+c10=$(python3 - "$ROOT" <<'PY'
+import os,sys,glob,re
+root=sys.argv[1]
+exempt_dirs=("docs/foundation/",); exempt=("docs/README.md",)
+pills=["📋","🗓","🔖","👤"]
+ok={"draft","reviewed","frozen","superseded","Proposed","Accepted","generated"}
+fails=0
+for fp in sorted(glob.glob(f"{root}/docs/**/*.md",recursive=True)):
+    rel=os.path.relpath(fp,root)
+    if rel.startswith(exempt_dirs) or rel in exempt: continue
+    head="\n".join(open(fp,encoding="utf-8").read().splitlines()[:14])
+    miss=[p for p in pills if p not in head]
+    if "🔗" not in head and "🎯" not in head: miss.append("🔗/🎯")
+    if miss: print(f"    {rel} 缺 pill: {' '.join(miss)}"); fails+=1; continue
+    m=re.search(r"Status\*?\*?:\s*([A-Za-z]+)",head)
+    if m and m.group(1) not in ok: print(f"    {rel} Status 值非法: {m.group(1)}"); fails+=1
+print(f"RESULT {fails}")
+PY
+)
+echo "$c10" | grep -v "^RESULT" | sed 's/^//'
+n10=$(echo "$c10"|grep "^RESULT"|awk '{print $2}')
+[ "${n10:-1}" -eq 0 ] && pass "spec 文件 header 皆合 KB-12" || fail "$n10 份 header 不合格"
+
+echo "== C11 ASCII 框圖殘留（phase 文件應全 mermaid；豁免 foundation/README）=="
+ascii=$(rg -n "[┌┐└┘▼▲◀▶◄►]" "$DOCS" -g '*.md' -g '!**/foundation/**' -g '!**/README.md' 2>/dev/null || true)
+[ -z "$ascii" ] && pass "phase 文件無 ASCII 框圖" || { fail "ASCII 框圖殘留（應轉 mermaid）"; echo "$ascii" | sed 's/^/    /'; }
+
+echo "== C12 index ↔ docs 雙向 parity =="
+c12=$(python3 - "$ROOT" <<'PY'
+import json,os,sys,glob
+root=sys.argv[1]
+idx=json.load(open(f"{root}/.claude/context/devteam/documents/index.json"))
+exempt_dirs=("docs/foundation/",); exempt=("docs/README.md",)
+fails=0
+for p in idx:
+    if not os.path.exists(f"{root}/{p}"): print(f"    index 登記但檔不存在: {p}"); fails+=1
+for fp in sorted(glob.glob(f"{root}/docs/**/*.md",recursive=True)):
+    rel=os.path.relpath(fp,root)
+    if rel.startswith(exempt_dirs) or rel in exempt: continue
+    if rel not in idx: print(f"    docs 有檔但未登記 index: {rel}"); fails+=1
+print(f"RESULT {fails}")
+PY
+)
+echo "$c12" | grep -v "^RESULT" | sed 's/^//'
+n12=$(echo "$c12"|grep "^RESULT"|awk '{print $2}')
+[ "${n12:-1}" -eq 0 ] && pass "index ↔ docs 雙向 parity 一致" || fail "$n12 個 parity 缺口"
+
 echo ""
 if [ "$FAIL" -eq 0 ]; then echo "✅ 全部一致性檢查通過（$FAIL fail）"; exit 0
 else echo "❌ $FAIL 項一致性檢查失敗"; exit 1; fi

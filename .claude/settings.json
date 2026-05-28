@@ -30,5 +30,28 @@
     "ask": []
   },
   "model": "opus",
-  "hooks": {}
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/scripts/check-doc-consistency.sh\" > \"$CLAUDE_PROJECT_DIR/.claude/context/devteam/consistency-drift.md\" 2>&1 && rm -f \"$CLAUDE_PROJECT_DIR/.claude/context/devteam/consistency-drift.md\"; echo '[doc-lint] 文件一致性已檢查（drift 見 .claude/context/devteam/consistency-drift.md，綠則無檔）' >&2; exit 0"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "[ -s \"$CLAUDE_PROJECT_DIR/.claude/context/devteam/consistency-drift.md\" ] && { echo '⚠ 上次留有未解的文件一致性 drift，請優先補償（修正後 drift 自動清除）：'; cat \"$CLAUDE_PROJECT_DIR/.claude/context/devteam/consistency-drift.md\"; } || true"
+          }
+        ]
+      }
+    ]
+  }
 }

@@ -201,7 +201,9 @@ dispatch `/devteam-{role}` 來產出 {expected_artifact}。
 
 ## Phase 5: Freeze Gate 偵測
 
-每次 driver skill 完成回報後，router 檢查：
+**觸發時機（明確化）**：router 在以下時點檢查 freeze gate — ① 每次 driver skill 完成後（同一輪內 router 接手即檢查，不等業主再呼叫）；② 業主執行 `/devteam` / `/devteam-freeze` 時。**不依賴背景看門狗**。
+
+> **一致性安全網（與 gate 偵測正交）**：跨文件一致性不靠 router 是否被重入 — Stop hook 每 turn 結束自動跑 `scripts/check-doc-consistency.sh`，drift 寫 `consistency-drift.md` 並於下次 SessionStart 浮現。router 偵測 gate 之外，dispatch 前順手讀 index 補登記即可，不再是一致性的單點故障。
 
 ```
 讀 state.json.freeze_gates[Gate_N]
@@ -301,7 +303,9 @@ conflicts_count >= 2 (or escalation_recommended == true)
 
 ## Phase 6.5: ADR / DR Index Rebuild
 
-每次 driver 在 `adr-ledger.json` 寫入新條目後，router 應 rebuild `.claude/context/devteam/indexes/` 下三份檔：
+> **觸發（明確化 + 降級為兜底）**：寫新 ADR/DR 的 driver（arch）在**同一輪寫入 adr-ledger 的下一步**即 rebuild，不延後、不依賴業主再呼叫。index↔docs parity 由 **linter C12 強制驗**（漏 rebuild 會被抓），所以 rebuild 不再是「靠 router 記得」的單點故障 — router 每次 dispatch 前順手讀 index 補即可。
+
+每次 driver 在 `adr-ledger.json` 寫入新條目後，於同輪 rebuild `.claude/context/devteam/indexes/` 下三份檔：
 
 1. 讀全部 `docs/architecture/adr/ADR-*.md` 與 `docs/architecture/dr/DR-*.md` 的 frontmatter 區
 2. 解析 `Tags:`（comma-separated topic）、`Feature:`（feature-slug）、`Related KB:`（KB-NN §X，可多筆）

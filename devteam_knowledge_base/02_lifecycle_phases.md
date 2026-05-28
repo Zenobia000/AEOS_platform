@@ -122,3 +122,5 @@ driver skill 偵測上游變更時，依以下規則標 stale：
 - [ ] 追加 session narrative
 - [ ] 檢查對應 gate 的 evidence 條件（見 04 KB）
 - [ ] 若達 ready_to_review，回報 router
+- [ ] **gate 狀態 ↔ doc Status 綁同一步**：把某 gate 標 `frozen` 時，必須同步把該 gate owner doc 的 `📋 Status` 改 `frozen`（ADR 例外：維持 `Proposed` 至明確 Accept）。只改一邊 = drift，linter C9 會抓。
+- [ ] **跑 `scripts/check-doc-consistency.sh`**：一致性全綠才算離開。Stop hook 會在 turn 結束自動驗並把 drift 寫進 `.claude/context/devteam/consistency-drift.md`（advisory，不擋），但 driver 應主動先跑先修，不靠 hook 兜底。

@@ -16,8 +16,19 @@
 | 4 | NFR + ADR Baseline | devteam-arch | **strict** | pm, sre, dba |
 | 5a | API Contract Freeze | devteam-design | **strict** | pm, qa, sre |
 | 5b | DB Schema Freeze | devteam-design | **strict** | arch, qa, sre |
-| 6 | Test Ready | devteam-qa | standard | dev-lead, devops |
+| 6 | Test Ready | devteam-qa | standard | arch（as dev-lead lens）, devops |
 | 7 | Release Ready | devteam-ops | **strict** | pm, qa, arch |
+
+---
+
+## 共通 evidence（所有 gate 強制，機械驗）
+
+每個 gate freeze 前，除各自 evidence 外，以下兩項由 `scripts/check-doc-consistency.sh` 強制：
+
+- [ ] **`scripts/check-doc-consistency.sh` 全綠**（C1–C12：斷連結 / 命名 / ID / TC-SEC / parity / 鐵律 / orphan / UC / gate↔Status / header / ASCII / 雙向 parity）
+- [ ] **gate owner doc 的 `📋 Status` 已同步**：freeze 該 gate ⟹ owner doc Status = `frozen`（ADR 例外 `Proposed`）。C9 驗。
+
+> 設計：一致性不再靠 persona 肉眼或 AI 記得 — Stop hook 每 turn 結束自動跑 linter，drift 寫 `consistency-drift.md` 並於下次 SessionStart 浮現補償。gate 只是再確認一次全綠。
 
 ---
 
@@ -147,7 +158,7 @@
 
 ## Gate 7: Release Ready
 
-**Owner**: devteam-ops（Dev Lead / SRE persona）
+**Owner**: devteam-ops（devops + sre persona；harness 無獨立 dev-lead agent，實作設計視角由 sd/arch 兼）
 
 **必備 evidence**:
 - [ ] Build / defect / perf / security 證據齊

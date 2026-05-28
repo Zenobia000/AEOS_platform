@@ -21,6 +21,8 @@ DevTeam 區分 **driver skill**（主動產文件的角色）與 **critique pers
 | **DevOps** | 是否可重複部署 | Pipeline / Runbook | Release 前 | pipeline gate、rollback、env 自動化 |
 | **SRE** | 是否可觀測、可回滾 | SLO / Alerts / Postmortem | Release 前與後 | observability、SLO、error budget、incident path |
 
+> **圖級交付物（單一權威 = KB-07 §3 By Role × Phase）**：上表交付物欄為**文件級**；各 driver **必畫 / 按需** 的圖（State Machine / Sequence / C4 / ERD / Deployment / Activity / Class）以 **`07_diagram_picker.md` §3** 為唯一歸屬權威，本檔不複製清單（避免漂移）。**圖是 conditional 交付物**（非每模組都畫，依 KB-07 §1/§2 觸發條件）：analyst 必畫 State Machine（核心聚合根）、design 必畫 Sequence（關鍵 endpoint）、ops 必畫 Deployment + Activity（rollout / runbook 流程）、Class 僅 domain model 複雜時補。freeze 時由 KB-04 各 gate evidence 強制。
+
 ---
 
 ## RACI 表（交付物 × 角色）
@@ -71,13 +73,13 @@ R = Responsible（執行），A = Accountable（最終負責），C = Consulted�
 | architect | arch | devteam-arch | C4 / ADR / NFR Matrix / Threat Model | `c4-l1/l2/l3.md` + `adr.md` + `threat-model.md`（條件式，資料分級觸發掛 Gate 4）；NFR 為 arch 內一段 |
 | **dev** | **— 無 —** | **— 無 —** | Code / Tests / Migrations / Telemetry | **外部 coding agent 實作**；接手契約 = `specs/<feature>/handoff.md`（見「Scope 邊界」） |
 | qa | qa | devteam-qa | Test Plan / Completion Report | `test-plan.md` |
-| devops（·SRE） | devops + sre | devteam-ops | Pipeline / SLO / Runbook / Postmortem | `runbook.md` + `slo.md` + `release-readiness.md` + `postmortem-template.md` |
+| devops（·SRE） | devops + sre | devteam-ops | Pipeline / SLO / Runbook / Postmortem / **Deployment + Activity 圖**（KB-07 必畫） | `runbook.md`（含 Deployment topology + incident Activity 圖）+ `slo.md` + `release-readiness.md` + `postmortem-template.md` |
 
 **Harness-only persona（產品把它們折進 architect/dev，harness 拆出獨立視角）：**
 
 | Persona | Driver skill | 負責 | 對應產品角色 |
 |:--------|:-------------|:-----|:-------------|
-| sd（System Designer） | devteam-design | API contract / Module Design / Error Model → `openapi.yaml` | 折進產品 `architect`（RACI 欄稱 **Dev Lead**，三者同指實作設計責任） |
+| sd（System Designer） | devteam-design | API contract / Module Design / Error Model / **Sequence（關鍵 endpoint，KB-07 必畫）** / Class（按需）→ `openapi.yaml` + sequence/class（落 c4 或 design 文件） | 折進產品 `architect`（RACI 欄稱 **Dev Lead**，三者同指實作設計責任） |
 | dba | devteam-design | ERD / DDL / Migration → `erd.md` + `data/migrations/*.sql` | 折進產品 `architect` + `dev` |
 
 **交付物命名 rosetta（產品名 → harness 範本名）：** `srs`/`frd`→`system-spec.md`、`api-spec`→`openapi.yaml`、`data-model`→`erd.md`、`journey-map`→`user-flow.md`、`non-functional-reqs`→ NFR matrix（arch 內一段）、`threat-model`→`threat-model.md`（條件式）、`jtbd`/`value-hypothesis`→`prd.md` 必填段、`ordered-backlog`→`prd.md` §Prioritized Scope Slice（不產 sprint backlog）。

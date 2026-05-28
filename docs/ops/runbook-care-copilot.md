@@ -52,6 +52,26 @@ flowchart TB
 | 成本暴衝 | circuit breaker 降階；查異常用量來源 |
 | 資料復原 | 最壞 15 分鐘內（PRD §6）；從備份還原 |
 
+### P0 Incident Response Activity（KB-07 ops 必畫；CEO 深夜照走）
+
+```mermaid
+flowchart TD
+    detect["P0 偵測<br/>(SLI 自動：跨租戶 RLS 拒絕 / 詞庫攔截 > 0)"] --> kill["killswitch：set killswitch=on（30s 全停）"]
+    kill --> verify{"killswitch_active 心跳<br/>確認已停？"}
+    verify -- 否 --> kill
+    verify -- 是 --> audit["撈 audit_event（該 tenant 範圍）"]
+    audit --> typ{事故類型}
+    typ -- 跨租戶外洩 --> n1["72h 通報控制者（DPA）<br/>RCA：RLS 破口"]
+    typ -- 外送踩線 --> n2["撈該則 → 補詞庫<br/>RCA"]
+    typ -- LLM 中斷 --> n3["fallback_models；<br/>持續 → 暫停 pilot 通知教練"]
+    typ -- 成本暴衝 --> n4["circuit breaker 降階<br/>→ 查異常用量"]
+    n1 --> rca["RCA + postmortem<br/>→ 修補後解除 killswitch"]
+    n2 --> rca
+    n3 --> rca
+    n4 --> rca
+    rca --> done([恢復服務])
+```
+
 ## 5. Observability（實作 arch C4 列的需求）
 - Metrics：Prometheus/簡易；Logs：structured + `conversation_id`；Traces：draft→policy→audit；Alerts：上表 P0 條件。
 - Pilot 可先 log to stdout + 一張採用率列表（foundation/02），完整 stack 過早。

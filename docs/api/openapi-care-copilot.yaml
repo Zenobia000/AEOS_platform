@@ -106,3 +106,22 @@ components:
         compliance_note: { type: string }     # red 時的改寫建議
         used_chunks: { type: array, items: { type: string } }
         model: { type: string }
+    # --- Review 修正 R2 (2026-05-28, B-5) ---
+    Error:                          # 統一 error model，全 4xx/5xx 引用
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }      # e.g. cross_tenant_denied / knowledge_insufficient / llm_unavailable
+        message: { type: string }
+        details: { type: object }
+    IngestResult:
+      type: object
+      properties: { indexed_chunks: { type: integer }, extracted_fields: { type: array, items: { type: string } } }
+    EvalResult:
+      type: object
+      properties: { approve_rate: { type: number }, adopt_rate: { type: number }, verdict: { type: string, enum: [go, pivot, kill] } }
+# --- B-5 待落地（OpenAPI 層約定，design 實作）---
+# 1. 寫入端 (POST /contacts /ingest /drafts) 加 Idempotency-Key header + 24h 去重窗
+# 2. 全路徑 4xx/5xx 回 $ref '#/components/schemas/Error'；/ingest /eval response 補上 IngestResult/EvalResult
+# 3. C4: 合規判定 authority = Policy Engine；needs_human authority = 知識/grounding 層；API 僅傳輸
+# 4. telemetry: x-telemetry span = draft.generate / policy.scan / audit.write

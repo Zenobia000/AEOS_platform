@@ -54,3 +54,17 @@
 1. **B-1/B-2/B-8/B-9 是上線前死線**（可測性 + 紅隊 coverage + state 完整）— 優先修。
 2. **B-3/B-4 (PII/migration/RLS)** 碰真資料前必補（與 C1 一起裁）。
 3. **5 個衝突點**集中在「retention / 逃生出口 / 契約 ownership」— 跨領域 trade-off,**符合 Lane B Forum-Lite 升級條件**。
+
+---
+
+## 6. 衝突裁決（2026-05-28，業主委派 orchestrator 代裁，可推翻）
+
+| # | 裁決 | 落地位置（step 1 fix pass 實作） |
+|:--|:--|:--|
+| **C1** | `message.text` 原始 PII 隨 DPA 7 天刪；**另立 `audit_event` append-only 表只存去識別化事實**（chunk ids/model/decision/decided_by/時間，無原文）永久保留 | erd.md：拆表 + retention map |
+| **C2** | red-gate 加「轉人工」退路：`decision=manual_override+reason`，全程留稽核、AI 草稿不送、不繞送出 gate | user-flow.md + system-spec UC-4 |
+| **C3** | UC-3（審核台）標 **W2**；W1 = eval-only 無 UI（離線 judge 代人審） | system-spec UC-3 precondition |
+| **C4** | 合規判定（green/yellow/red）= **Policy Engine 權威**；needs_human = **知識/grounding 層權威**；API 僅傳輸 | system-spec + openapi 註記 |
+| **C5** | pack schema = **design own**（pipeline §1）、boundary = **arch own**（ADR-0002）；pack 契約 **post-B1 才 freeze** | ADR-0002 + ADR-0004 freeze 時點 |
+
+→ 裁決已定，於 **step 1 blocker fix pass** 連同 B-1~B-10 一併落地進文件。

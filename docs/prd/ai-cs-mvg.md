@@ -224,4 +224,14 @@
 
 **End of PRD**
 
+---
+
+## Review 修正 R2（2026-05-28 multi-role review）
+
+- **B-2 baseline**：W0 量「無 AI 時 expert 自寫」的 approve 對照與每則耗時，作 K1/K3 對照組（避免 50% 其實是退步）。
+- **B-2 付費 KPI**：補 business KPI「pilot 末願付費簽約 ≥ 1」（OQ-002 簽 pilot 是入場券，非成功本身）。
+- **B-3 客戶側 counter-metric**：補一個終端客戶側指標（重問率 / 投訴）— expert approve ≠ 客戶滿意。
+- **S-1 scope 一致化**：FR-003「LINE webhook 自動收訊」與切片「草稿+手動貼 LINE」不一致 → **pilot 切片 FR-003 改為手動入口（貼上/截圖）**，LINE webhook 排 W2+。
+- **Decision Log**：ADR-TBD → 已落地 **ADR-0001**（nanobot Frozen Runtime）；單體決策見 feasibility §4 / ADR-0001 anti-scope。
+
 > 給業主：主要看 **Executive Summary + Goals & KPI + Risks & Open Questions + Sign-off** 四段。其餘是給下游 phase（analyst / ux / arch）的輸入。

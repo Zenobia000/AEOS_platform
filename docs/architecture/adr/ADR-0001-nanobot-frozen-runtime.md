@@ -150,4 +150,12 @@
 
 ---
 
+## Review 修正 R2（2026-05-28，B-6 legacy 依賴鏈）
+本 ADR 的 boundary 依賴退役的 legacy ADR-0002（Frozen Runtime）/ legacy ADR-0007（Tenant Isolation）。為免可追溯性斷裂：**被依賴的 legacy 決策內聯重述於下，視為本 ADR 的一部分**（不需回溯 _legacy-dev_docs 即可實作）：
+- **Frozen Runtime**（原 legacy ADR-0002）：上線配置（prompt+知識快照）凍結;生產不可自我學習改行為;回饋走離線改版。
+- **Tenant Isolation**（原 legacy ADR-0007）：RLS + 應用層雙重;跨租戶預設 deny;blast radius 限單 tenant。
+> 後續可選擇將此二者正式重發為新 docs/ ADR-0005/0006，或維持本內聯。
+
+---
+
 **End of ADR**

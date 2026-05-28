@@ -30,3 +30,12 @@
 ---
 
 > 對映 Gate 4：本 matrix + C4（`c4-care-copilot.md`）+ ADR-0001~0004 + failure modes/observability 共同構成 NFR/ADR baseline。
+
+---
+
+## Review 修正 R2（2026-05-28 multi-role review，B-7 arch×sre）
+- **Availability baseline（非全 best-effort）**：pilot 核心日間 best-effort，但 **killswitch 觸發後 recovery < N 分鐘**（恢復決策人 = CEO）。
+- **killswitch 驗證**：加 `killswitch_active` 心跳 metric + 觸發後 30s 內無新草稿的自動 assert（防 flag 設了 runtime 沒讀到的假停）。
+- **P0 SLI 偵測來源（非人工）**：跨租戶違規 = RLS 拒絕事件計數；外送踩線 = 詞庫攔截計數；**>0 自動觸發 killswitch**。
+- **Cost 觸頂終態**：circuit breaker 降階後仍超限 → 定義終態（拒服務 / 排隊 / 告警續跑）;加 burn rate alert（50%/80%）。
+- **RPO**：補備份頻率（RPO），與 RTO 15 分鐘並列，還原實測納 Go-checklist。

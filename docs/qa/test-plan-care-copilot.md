@@ -47,3 +47,18 @@
 | P2 | 單題草稿品質 | 回收調 prompt/知識 |
 
 > Kill 對映（foundation/03）：總採用 <40% / reject >30% / 跨租戶或踩線 ≥1（鐵律）→ 觸發 Kill 重評。
+
+---
+
+## 5. Review 修正 R2（2026-05-28 multi-role review）
+
+### B-1 — 北極星可信度
+- T-B1-2 採用率：**n ≥ 50 訊息、雙評分者 + κ ≥ 0.7**（評分者間一致性），否則數字不採信。
+
+### B-8 — 紅隊 coverage 補強
+- 隔離 negative case **≥ 6**（每資料層各一：直查 / vector 檢索 / 稽核 / 快取 / embedding 索引 / JWT 竄改）。
+- **T-CMP-4 注入測試集 ≥ 10 題**（prompt injection 誘導外洩），對齊 system-spec Edge「惡意/注入」。
+
+### B-1 / S — 量化 exit + 自動化
+- 誤擋率 **≤ 5%**、高風險召回 **100%**（附標註集當分母）。
+- 標 automation 欄（哪些進 CI regression）；T-KILL-1 量測：觸發 → 最後一則被擋的時間戳；補草稿 **p95 < 5s** perf case。

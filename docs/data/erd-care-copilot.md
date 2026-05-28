@@ -57,3 +57,26 @@ tenant (id, name, data_retention_days, compliance_profile)
 ## Privacy（NFR 對應）
 - `contact`/`interaction` 含 PII；`data_retention_days` 隨 tenant DPA；匯出 30 天 / 刪除 7 天。
 - 不爬 LINE 歷史；資料全由直銷商主動補。
+
+---
+
+## Review 修正 R2（2026-05-28 multi-role review）
+
+### C1 / B-3 — audit 與 PII retention 拆解（dba×sre 衝突裁決）
+- 新增 **`audit_event`**（append-only、**永久**、去識別化）：`(id, tenant_id, event_type, message_id, used_chunks jsonb, model, decision, decided_by, at)` — **不存原文**。
+- `message.text` / `draft_text` / contact PII 隨 `tenant.data_retention_days`（DPA，到期刪）。
+- 結論：audit 100% 長存（去識別化）+ PII 可刪，**不再互斥**。
+
+### B-3 — PII map（欄位 × 等級 × retention）
+| 表.欄位 | 等級 | retention |
+|---|---|---|
+| contact.* / interaction.summary / message.text·draft_text | PII | 隨 DPA（匯出 30 天 / 刪除 7 天） |
+| knowledge_chunk.text | 脫敏後 | 隨 DPA |
+| audit_event.*（去識別化） | 非 PII | 永久 |
+- 刪除/匿名化 job：到期掃 contact/interaction/message + `knowledge_chunk` 殘留。
+
+### B-4 — migration / index / RLS（必補）
+- **migration**：每表 up/down DDL；結構化 contact 上線走雙寫 ≥ 1 release。
+- **index**：interaction/message 用 `(tenant_id, contact_id)` composite；所有 `tenant_id` FK 建 index；`knowledge_chunk.embedding` 用 pgvector **HNSW**（宣告維度）。
+- **RLS**：每表 `USING (tenant_id = current_tenant())` policy 原文納 migration。
+- **PITR**：備份視窗涵蓋 ≥ 7 天刪除緩衝。

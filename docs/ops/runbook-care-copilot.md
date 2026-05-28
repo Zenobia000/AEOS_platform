@@ -47,3 +47,18 @@
 ## 5. Observability（實作 arch C4 列的需求）
 - Metrics：Prometheus/簡易；Logs：structured + `conversation_id`；Traces：draft→policy→audit；Alerts：上表 P0 條件。
 - Pilot 可先 log to stdout + 一張採用率列表（foundation/02），完整 stack 過早。
+
+---
+
+## 6. Review 修正 R2（2026-05-28，sre B-7）
+
+### P0 first-responder runbook（CEO 深夜可照做）
+每條 P0 標準 5 步：**detect → killswitch(`set killswitch=on`) → 撈 audit_event(該 tenant 範圍) → 通報 → RCA**。
+
+### killswitch 驗證（防假停）
+- `killswitch_active` 心跳 metric；觸發後 30s 內無新草稿的自動 assert。
+- 違規 SLI 自動化：跨租戶=RLS 拒絕事件、踩線=詞庫攔截計數，**>0 自動觸發 killswitch**（非人工看 audit）。
+
+### 成本 burn rate + RPO
+- 每小時累計 vs 日預算 burn rate alert（50%/80%），不等日結。
+- 補 RPO（備份頻率）；還原實測一次納 Go-checklist。

@@ -140,4 +140,11 @@ Frozen Runtime / Policy Engine / 多租戶隔離 / Audit / 知識治理 / AgentO
 
 ---
 
+## Review 修正 R2（2026-05-28，C5 契約 ownership + freeze 時點）
+- **schema ownership = design**：pack manifest 具體 schema 以 `docs/architecture/knowledge-pipeline.md` §1（RawItem / KnowledgeUnit / VerticalPackConfig）為 baseline，由 design driver own。
+- **boundary ownership = arch**：本 ADR own「core 中立 / pack 可插拔」的邊界與不變式（pack 不繞 core Policy/Audit）。
+- **freeze 時點**：pack 契約 **不在 B1 前 freeze** — 以 Care Copilot（pack #1）跑過 B1 驗證介面後才鎖版（高槓桿介面避免預先定型）。
+
+---
+
 **End of ADR**

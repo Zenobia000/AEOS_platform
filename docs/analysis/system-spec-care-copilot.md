@@ -59,3 +59,27 @@ user_msg → draft_generated → [compliance gate] → expert_review
 
 - 🟦 **核心（垂直無關）**：UC-2 的 grounding/草稿機制、UC-4 的 Policy 引擎、UC-5 eval、BR-3/4/5/6、活檔案結構化模型（ADR-0003 標為垂直無關）
 - 🟨 **pack（垂直特定）**：直銷語氣/persona、FTC/FDA 詞庫、活檔案的「健康關注/家庭」欄位語意、3 語氣 prompt
+
+---
+
+## 7. Review 修正 R2（2026-05-28 multi-role review）
+
+### C3 — 切片 scope：UC-3 標 W2
+- **W1** = UC-1(ingest) + UC-2(draft) + UC-5(eval，離線 judge 代人審，**無審核 UI**)。
+- **UC-3**（審核台 approve/edit/reject）、UC-4 互動 gate = **W2**（precondition：有 expert web UI）。
+
+### C2 / B-9 — state model 補完
+- `edit` 後**必重跑 compliance gate**（不可繞紅燈）。
+- `needs_human` 出口：轉人工 → 人工回覆 → `sent(human)`，或逾時 `discarded`，皆記 audit。
+- **C2 manual_override**：red gate 時 expert 可選「改寫不適用 → 人工另寫」→ `decision=manual_override + reason`；AI 草稿不送、紅旗留 audit、**不繞送出人關**。
+
+### C4 — ownership
+- 合規判定（green/yellow/red）= **Policy Engine 權威**；`needs_human`（知識缺依據）= **知識/grounding 層權威**；API/runtime 僅傳輸不裁決。
+
+### B-1 — acceptance 量化（取代模糊詞）
+| UC | 可測 acceptance |
+|---|---|
+| UC-1 | 抽取欄位正確率 ≥ 80%（對標註集）；不同租戶 0 串（紅隊） |
+| UC-2 | 對測試集 pass ≥ 70%（W1）；grounded = 有 citation 且 judge 不判幻覺 |
+| UC-4 | 高風險詞召回 100%；誤擋率 ≤ 5% |
+- 每 UC 補 source FR-ID（UC-1=FR-001 … UC-7=FR-007）。

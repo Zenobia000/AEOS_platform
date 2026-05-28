@@ -43,3 +43,11 @@
 
 - 🟦 核心流程骨架（建檔→草稿→把關→審核→稽核）垂直無關，可複用
 - 🟨 「貼截圖補健康關注」「3 語氣」「FTC 改寫話術」= Care Copilot pack 垂直特定
+
+---
+
+## Review 修正 R2（2026-05-28 multi-role review）
+
+- **B-10 offline 狀態**：手機 PWA 必有斷網場景 → 新增 offline 列：草稿生成中斷網則本地暫存編輯內容，連線後續傳/重生，明示「離線，已暫存」。
+- **C2 red-gate 逃生**：紅燈 modal 除「採納改寫」外，加「**改寫不適用 → 轉人工（我自己寫）**」鈕 → 不送 AI 草稿、記 audit、**不繞送出 gate**。error 與 needs_human 各給明確下一步鈕（別讓使用者愣住）。
+- **B-10 a11y**：pilot 釘 **WCAG 2.1 AA**；screen reader 朗讀序（草稿 → citation → 徽章 → 鈕）；改寫/決定鈕 ≥44px 置拇指熱區。

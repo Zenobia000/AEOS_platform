@@ -24,6 +24,7 @@
 - §28.9 H5 假設 — 藍領市場可承載性 (見 `05-investor-thesis.md`)
 - §29 三 Compiler (見 `05-investor-thesis.md`)
 - §29.11 Layer 3a/3b/3c 細分 (見 `05-investor-thesis.md`)
+- **§33~§41 北極星 — 虛擬員工製造工廠 (R8 新增，見 `07-north-star.md`)** — §22 護城河論述的 10 年願景延伸
 
 ---
 
@@ -484,3 +485,7 @@ AI 藍領 (Frontline AI Worker) =
 | 不可忽略多語言 / 在地化 | 必死 — 藍領場景跨國語言複雜 |
 
 → 任一決策若違反藍領 wedge，需重新對齊 §22.8.3。
+
+### 22.9 願景延伸 — 北極星 (R8)
+
+§22 把護城河論述到「Year 3+ Enterprise AI Workforce Platform」。再往上一層的 10 年北極星——**「工廠即產品」：AEOS 真正的產品不是 AI 員工，而是量產 AI 員工的工廠本身**——獨立承載於 `07-north-star.md`（§33~§41）。其用 Elon 第一性原理把「製造一位 AI 員工的邊際成本」逼近零，並把 §22.5 護城河四層、§29 三 Compiler 飛輪拉高為「越用越快、越用越便宜」的自我強化生態。落地路徑見該檔 §39 MVG + §40 OGSM。

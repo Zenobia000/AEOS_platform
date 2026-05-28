@@ -150,7 +150,7 @@ UF/SF 流程、NFR、UX wireframe、threat model、test plan、observability spe
 
 ### 不急（Phase 2+ 或特定場景才看）
 
-白皮書敘事檔 (00-06, 99)、投資人視角 (05)、ADR 全集、法務模板、招募 JD、visual prompts、附錄 A/B/D/E/G/J
+白皮書敘事檔 (00-07, 99)、北極星願景 (07)、投資人視角 (05)、ADR 全集、法務模板、招募 JD、visual prompts、附錄 A/B/D/E/G/J
 
 ---
 

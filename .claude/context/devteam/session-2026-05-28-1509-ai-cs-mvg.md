@@ -41,3 +41,10 @@
 - 裁決：✅ 可行，建議先做最薄垂直切片 spike（訊息草稿+合規低語+活檔案），可複用 `aeos-mvg/` W1 骨架
 - gap → backlog：結構化 contact 知識模型 / 排程層 / **vertical pack 可插拔抽象**（橫向化關鍵）
 - 路由：未開新正式 session（feasibility 先行）；若推進 → `/devteam-arch` 正式化 §8 ADR 候選
+
+## [2026-05-28] OQ-002 裁決 + W1 實跑驗證
+
+- **W1 machinery 實跑通過**（`aeos-mvg`）：8 題範例 eval → 原樣 approve 62% / 總採用 100% / 🟢 GO；needs-human 與合規行為正確。**註**：範例資料，只證產線會動，非真 B1。
+- **OQ-002 裁決**：驗證載具 = **Care Copilot Synergy 教練 design-partner pilot**。ai-cs-mvg（AEOS 核心：草稿+合規+活檔案）= 此驗證核心；Care Copilot = 第一個 vertical pack。兩者對齊（同賭注/同 B1/同北極星數字）。
+- **剩餘硬閘門**：需一位真實簽下的 Synergy 教練提供真知識+真對話（市場賭注，非技術）。
+- 已提交：feasibility 評估 / aeos-mvg W1 / foundation 地基 / devteam infra / poetry.lock（5 commit，未 push）。

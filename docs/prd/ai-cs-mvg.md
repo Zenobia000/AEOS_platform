@@ -167,11 +167,15 @@
 | **OQ-003** | **W1 不做審核 UI（eval-only 即可打 B1）；W2 真流量才做「最笨的一張 web 列表頁」** | best part is no part：W1 用 eval.py + 測試集就能打最致命賭注，UI 是 W2 才需要的零件。LINE 內審看似聰明實則更多工（互動 flow + 長文編輯痛），故選最笨 web |
 | **OQ-004** | **不碰動態查詢（訂單/庫存）；草稿需要時標「需人工查詢」** | B1 賭的是「混亂**知識**→可用草稿」，訂單是**動態資料**（API 整合），證明不了 B1 卻要每 pilot 接一套系統。質疑笨需求→刪除 |
 
-### ⛔ Open Question（唯一未決，綁定約束）
+### ✅ OQ-002 已裁決（2026-05-28）
 
-| ID | Question | Why ask | 決策規則 | Owner | Due |
-|:---|:---|:---|:---|:---|:---|
-| **OQ-002** | 第一個 pilot 客戶是誰？ | 唯一的真實採用率數字只能來自一個給真知識+真 LINE 的 pilot；沒它實驗一行跑不了 | 挑**能最快簽下且願交真資料**的（速度 > logo）；痛點尖、關係熟、規模小優先。**硬閘門：拿到口頭 yes 前不寫 W1 程式碼**（機器可先備好，但打 B1 要真資料） | 業主 | W0（8 週簽不到 = 觸發 Kill） |
+**驗證載具 = Care Copilot 的 Synergy 教練 design-partner pilot**（見 `docs/foundation/pilot_run.md`、`docs/architecture/feasibility-AEOS-x-care-copilot.md`）。
+
+- B1（混亂知識 → 可用草稿）透過 Care Copilot **最薄切片**（訊息草稿 + 合規低語 + 活檔案）對一位 Synergy 教練的**真實客戶關係資料**驗證。
+- **ai-cs-mvg = 此驗證的 AEOS 核心**；Care Copilot = 第一個垂直（vertical pack）。兩者至此對齊：同一個賭注、同一個 B1、同一個北極星數字（原樣 approve 率）。
+- `aeos-mvg/data/` 範例已是精油直銷主題，方向一致。
+
+> **剩餘硬閘門（仍未決，屬市場賭注非技術）**：需**一位真實簽下的 Synergy 教練**提供真知識 + 真對話樣本（foundation/03「8 週內簽到 ≥ 1 pilot」）。拿到真資料前，範例資料只證明產線會轉，證不了 B1。
 
 ---
 

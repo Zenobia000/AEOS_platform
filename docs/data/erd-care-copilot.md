@@ -1,7 +1,7 @@
 # ERD + 模組/Error Model — care-copilot（最薄切片）
 
 > **Status**: draft · **Owner**: `devteam-design` · **Date**: 2026-05-28 · **Feature**: care-copilot
-> 對應 ADR-0003（結構化 contact）/ system-spec §3-4 / NFR Privacy。所有表帶 `tenant_id` + RLS。
+> 對應 ADR-0003（結構化 contact）/ system-spec §3-4 / NFR Privacy。所有**業務表**帶 `tenant_id` + RLS；`tenant` root 表無 tenant_id，由 GRANT 控管讀取範圍。
 
 ---
 
@@ -32,6 +32,8 @@ tenant (id, name, data_retention_days, compliance_profile)
 | 客戶結構化屬性（年資/標籤/健康關注） | **structured query** | `contact` + `interaction` |
 | 產品/FAQ 自由文本 | **RAG** | `knowledge_chunk`(pgvector) |
 | 合規規則 | **Policy** | vertical pack 詞庫（非 DB） |
+
+> **KnowledgeUnit → 儲存映射**（對齊 `architecture/knowledge-pipeline.md` 介面契約）:`kind=static_chunk` → `knowledge_chunk`(pgvector);`kind=structured_field` → `contact` 欄位;`kind=policy_rule` → pack 詞庫(非 DB)。三 kind 各有落點,無遺漏。
 
 ## 模組責任（切片，可平行實作）
 
@@ -70,10 +72,13 @@ tenant (id, name, data_retention_days, compliance_profile)
 ### B-3 — PII map（欄位 × 等級 × retention）
 | 表.欄位 | 等級 | retention |
 |---|---|---|
-| contact.* / interaction.summary / message.text·draft_text | PII | 隨 DPA（匯出 30 天 / 刪除 7 天） |
+| **contact.health_focus** | **特種個資**（需明示同意，可單獨撤回） | 隨 DPA；撤回即停止推論 |
+| contact.（其餘）/ interaction.summary | PII | 隨 DPA（匯出 30 天 / 刪除 7 天） |
+| message（整 row：text·draft_text·decided_by 等） | PII（row-level retention） | 隨 DPA（整 row 刪） |
 | knowledge_chunk.text | 脫敏後 | 隨 DPA |
 | audit_event.*（去識別化） | 非 PII | 永久 |
-- 刪除/匿名化 job：到期掃 contact/interaction/message + `knowledge_chunk` 殘留。
+- 特種個資（health_focus）合法性與撤回見 `governance/consent-and-dpa.md`。
+- 刪除/匿名化 job：到期掃 contact/interaction/message（整 row）+ `knowledge_chunk` 殘留。
 
 ### B-4 — migration / index / RLS（✅ 已落地 `migrations/`）
 實際 DDL 見 [`docs/data/migrations/0001_init_schema.up.sql`](./migrations/0001_init_schema.up.sql)（+ `.down.sql` + `README.md`）:

@@ -15,7 +15,8 @@
 |:---|:---|:---|
 | **RLS** | 每業務表 `ENABLE + FORCE` + `tenant_isolation` policy（`USING` + `WITH CHECK`） | 鐵律「跨 tenant=0」;FORCE 防 app 以 table owner 連線繞過 |
 | **租戶解析** | `current_tenant()` 讀 `app.current_tenant` GUC;缺值回 NULL → deny | app 每 request `SET app.current_tenant`;忘設 = 查無資料(安全預設) |
-| **app DB role** | 須為 **RLS-enforced、非 superuser、無 BYPASSRLS、無 CREATE/DROP**;對 `audit_event` **不 GRANT UPDATE/DELETE**（append-only） | threat-model T-E-01 / audit 不可竄改;角色建立另立 migration（依部署環境） |
+| **audit append-only** | schema 層 `audit_no_update`/`audit_no_delete` policy `USING(false)` **直接 deny**（主防線,不依賴部署） | 不外包給角色 migration;即使 role 被誤授權也擋（threat-model T-T-02） |
+| **app DB role** | 須為 **RLS-enforced、非 superuser、無 BYPASSRLS、無 CREATE/DROP**（縱深防禦,非 append-only 唯一保證） | threat-model T-E-01;角色 migration 依部署環境另立 |
 | **embedding 維度** | `vector(1024)` = **ASSUMPTION**（Voyage voyage-3） | W1 不接 DB;W2 選定 embedding 模型後,維度須與其一致,否則改本 migration |
 | **HNSW** | `knowledge_chunk.embedding` 用 hnsw + cosine | doc-RAG（W2） |
 | **composite index** | interaction / message 用 `(tenant_id, contact_id)` | 最常見查詢路徑（某客戶時間軸 / 對話） |

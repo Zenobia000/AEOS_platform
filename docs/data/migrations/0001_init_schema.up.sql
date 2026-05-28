@@ -64,8 +64,9 @@ CREATE TABLE message (
   role        text NOT NULL,             -- user / assistant
   text        text,                      -- 客戶訊息原文 (PII)
   draft_text  text,                      -- AI 草稿 (PII)
-  decision    text,                      -- approve/edit/reject/needs_human/manual_override
-  decided_by  text,                      -- 人類審核者；NULL = 未審 (鐵律掃描用)
+  decision    text,                      -- approve/edit/reject/needs_human/manual_override (人決定「什麼」)
+  decided_by  text,                      -- 人類審核者；NULL = 未審
+  sent_at     timestamptz,               -- 實際送達客戶時間；NULL = 未送 (與 decision 正交)
   compliance  text,                      -- green/yellow/red
   used_chunks jsonb NOT NULL DEFAULT '[]'::jsonb,
   model       text,
@@ -116,7 +117,10 @@ CREATE POLICY tenant_isolation ON knowledge_chunk
   USING (tenant_id = current_tenant()) WITH CHECK (tenant_id = current_tenant());
 CREATE POLICY tenant_isolation ON message
   USING (tenant_id = current_tenant()) WITH CHECK (tenant_id = current_tenant());
--- audit_event：租戶讀隔離 + 只允許 INSERT (append-only)。
--- UPDATE/DELETE 由 app DB role 不被 GRANT 來保證 (見 README §角色)；此處 policy 僅做租戶 scope。
+-- audit_event：租戶讀隔離 + append-only。
 CREATE POLICY tenant_isolation ON audit_event
   USING (tenant_id = current_tenant()) WITH CHECK (tenant_id = current_tenant());
+-- append-only 在 schema 層收口 (不外包給角色 migration)：policy 直接 deny 任何 UPDATE/DELETE，
+-- 即使 app role 被誤授權也擋得住 (threat-model T-T-02 audit 不可竄改)。
+CREATE POLICY audit_no_update ON audit_event FOR UPDATE USING (false);
+CREATE POLICY audit_no_delete ON audit_event FOR DELETE USING (false);

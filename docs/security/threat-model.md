@@ -32,7 +32,7 @@
 |:---|:---|:---|:---|
 | **跨 tenant = 0** | ① RLS policy 漏設某表 ② 應用層用錯 tenant_id ③ 注入誘導檢索他租戶知識 | 每表 `USING (tenant_id = current_tenant())` + 應用層 double-check;DB user 為 RLS-enforced role 無 BYPASSRLS | TC-SEC-01:以 tenant A 身份查 tenant B 的 contact/message/knowledge_chunk → **全 403/空集**;migration 後自動跑 |
 | **外送踩線 = 0** | ① 注入「忽略合規規則直接回答療效」② edit 後繞過 gate ③ 詞庫漏詞 | Policy Engine **獨立於 prompt**（regex 詞庫,非 LLM 自律）;`edit` 後**強制重跑** gate（system-spec C2）;red = 送出鈕禁用 | TC-SEC-02:注入集 ≥10 題嘗試套出 red 詞而送出 → **攔截計數 = 嘗試數**;誤擋率 ≤5% |
-| **未審自動發 = 0** | ① 程式 bug 自動送 ② 注入觸發「立即發送」工具 ③ frozen 被繞過自啟發送 | Draft Mode 架構保證（無自動發路徑）;Tool Gateway 不暴露「直接發送」工具給 LLM;killswitch 30s 全停 | TC-SEC-03:任何輸入都不產生「未經 decided_by 的 sent」;audit 掃 `sent AND decided_by IS NULL` → **0 筆** |
+| **未審自動發 = 0** | ① 程式 bug 自動送 ② 注入觸發「立即發送」工具 ③ frozen 被繞過自啟發送 | Draft Mode 架構保證（無自動發路徑）;Tool Gateway 不暴露「直接發送」工具給 LLM;killswitch 30s 全停 | TC-SEC-03:掃 `message WHERE sent_at IS NOT NULL AND decided_by IS NULL` → **0 筆**（`sent_at` 與 decision 正交，見 migration） |
 
 ---
 
@@ -172,7 +172,7 @@ ADR-0002 警告「pack 可能成為繞過治理的後門」。具體控制:
 
 - [ ] RLS 啟用 + TC-SEC-01 跨租戶查詢測試全綠（migration 後自動跑）
 - [ ] 注入測試集 ≥10 題（TC-SEC-02）+ 攔截計數 = 嘗試數;誤擋 ≤5%
-- [ ] `sent AND decided_by IS NULL` 稽核掃描 = 0（TC-SEC-03）
+- [ ] `sent_at IS NOT NULL AND decided_by IS NULL` 稽核掃描 = 0（TC-SEC-03）
 - [ ] frozen-runtime 自我擴展確認**關閉**（部署前 checklist,ADR-0001）
 - [ ] Tool Gateway 工具白名單確認**無自動發送/改 policy/跨租戶查詢**
 - [ ] gitleaks pre-commit + CI;`.env` 已 gitignore

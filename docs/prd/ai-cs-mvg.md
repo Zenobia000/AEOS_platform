@@ -132,7 +132,7 @@
 | **🔁 Reliability** | pilot 期單台 VM，best-effort | 無正式 SLO；killswitch 保底 | [[06_quality_attributes_catalog]] §2 |
 | **🔒 Security / 資料分級** | 客戶對話含個資（聯絡資訊／對話內容） | 來源驗簽 + secrets 不進 git + 傳輸加密 + tenant_id 強制 scope | [[11_data_and_stack_catalog]] §1 §2 |
 | **📜 Auditability** | 每則訊息全稽核、可還原 | 保留期依 DPA（baseline 90 天） | — |
-| **🧊 學習/生產分離** | 上線配置（prompt + 知識快照）凍結；回饋資料離線改版 | AI 不得線上即時學習改變行為（Frozen Runtime） | `foundation/01` · ADR-TBD |
+| **🧊 學習/生產分離** | 上線配置（prompt + 知識快照）凍結；回饋資料離線改版 | AI 不得線上即時學習改變行為（Frozen Runtime） | `foundation/01` · ADR-0001 |
 | **💰 Cost** | 單租戶 LLM 用量上限 | ≤ $300/月（毛利護欄） | — |
 
 > [Architect 視角] 學習/生產分離與 tenant_id scope 是身份級鐵律，即使單租戶也要寫對，否則多租戶階段需重構。對應未來 ADR（Frozen Runtime）。

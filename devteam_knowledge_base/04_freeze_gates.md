@@ -40,7 +40,9 @@
 - [ ] Problem Statement 三項都填（現況 / 為什麼解 / 不解的成本）
 - [ ] 至少 1 個可量化 KPI
 - [ ] Primary persona + Key scenario 已定義
-- [ ] In-scope 與 Out-of-scope 都列出
+- [ ] **JTBD 段已填**（每個 job ≥ 1 條 success criterion，可被 user-flow anchor 引用）
+- [ ] **Value Hypothesis 段已填**（每條含 counter-metric + 成功閾值；樣本 N 可標 `<TBD, gate 前補>`）
+- [ ] In-scope 與 Out-of-scope 都列出，且 **Prioritized Scope Slice 已排序**（MoSCoW / P0-P1-P2，取代 sprint backlog）
 - [ ] 主要 risks 已揭露
 - [ ] Open questions 已標記（不可以「沒問題」帶過）
 
@@ -96,11 +98,33 @@
 - [ ] C4 Level 1（Context）+ Level 2（Container）已畫
 - [ ] Failure modes 初步盤點
 - [ ] Observability 需求已前置（不是上線前才補）
+- [ ] **（條件式）Threat Model**：觸發規則命中時（見下）→ `templates/threat-model.md` 已產，且每條 STRIDE 閉環（ADR mitigation + API error model + security negative test）；未命中可免；主張豁免須寫 DR（Architect 可簽，業主 informed）
 
 **Review personas**:
 - `pm`: NFR 是否回應 KPI 與商業目標
 - `sre`: SLO / 可觀測 / rollback 路徑是否可行
 - `dba`: 資料相關 NFR（retention / PII / audit）是否被涵蓋
+
+### Gate 4 Threat Model 觸發規則（條件式必備）
+
+> Source: Roundtable B (2026-05-28) D3 + 業主 Q2/Q3/Q4=A。
+> 設計：threat model 不靠 architect 自由心證，由**資料分級客觀規則自動觸發**，綁 [[11_data_and_stack_catalog]] §1/§2 既有欄位。
+
+```
+threat_model_required =
+    (ERD.pii_type ∈ {identifier, sensitive})
+    OR (ERD.classification = restricted)
+    OR (surface ∈ {auth, payment})
+    OR (ERD.pii_type = quasi-identifier AND consent_required = explicit)
+```
+
+| 項目 | 規則 |
+|:-----|:-----|
+| **硬度** | Hard rule。命中卻無 threat-model 且無豁免 DR ⟹ Gate 4 阻擋（與「缺資料分級 → Gate 4 阻擋」同級） |
+| **豁免** | 寫 DR：rationale + 殘餘風險 + 到期 review 日。簽核權 = Architect 可簽、業主 informed |
+| **閉環** | 觸發時每條 STRIDE 須結到 ADR mitigation + API error model/status code/telemetry + 一條 security negative test（寫進 system-spec acceptance） |
+| **合規背書** | GDPR Art.32 / Art.35 DPIA、個資法第 27 條 / 特種個資第 6 條 |
+| **與 NFR 關係** | 互補非重複 — NFR matrix 答「達標常數」，threat model 答「誰攻 / 攻哪 / 怎麼防」 |
 
 ---
 

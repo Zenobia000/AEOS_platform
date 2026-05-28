@@ -33,6 +33,24 @@
 
 ---
 
+## 2.1 資料分級 → Threat Model 自動觸發（綁 Gate 4）
+
+> Source: Roundtable B (2026-05-28) D3。資料敏感度是 threat model 的客觀 driver — 不靠 architect 判斷要不要做，由 ERD data dictionary 欄位機械觸發。
+
+```
+threat_model_required =
+    (pii_type ∈ {identifier, sensitive})
+    OR (classification = restricted)
+    OR (surface ∈ {auth, payment})
+    OR (pii_type = quasi-identifier AND consent_required = explicit)
+```
+
+- `quasi-identifier` **單獨不觸發**（避免 dob 類過度觸發）；僅當伴隨 `consent_required = explicit` 才升級觸發。
+- 命中 ⟹ Gate 4 必備 `templates/threat-model.md`（hard rule，豁免須 DR）。詳見 [`04_freeze_gates.md` §Gate 4 Threat Model 觸發規則](04_freeze_gates.md)。
+- 合規背書：GDPR Art.32（安全措施）、Art.35（DPIA）；個資法第 27 條、特種個資第 6 條 → 見 §3.2。
+
+---
+
 ## 3. GDPR + 台灣個資法欄位標示
 
 ### 3.1 ERD column 必標欄位

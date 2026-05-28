@@ -63,12 +63,12 @@ R = Responsible（執行），A = Accountable（最終負責），C = Consulted�
 | 產品角色 (slug) | Critique persona | Driver skill | 產品招牌交付物 | Harness 範本 / 輸出 |
 |:----------------|:-----------------|:-------------|:---------------|:--------------------|
 | pm | pm | devteam-pm | PRD / Roadmap / KPI | `prd.md` (+ `governance/stakeholders.md`) |
-| po | po | devteam-pm（兼） | Ordered Backlog / Acceptance Criteria | ⚠ 無 backlog 範本（harness 為 feature-spec 導向，非 sprint 導向）；AC 落在 `system-spec.md` |
+| po | po | devteam-pm（兼） | Ordered Backlog / Acceptance Criteria | `prd.md` §Prioritized Scope Slice（MoSCoW，**取代** sprint Ordered Backlog —— harness 為 feature-spec 導向）；AC 單一真相源在 `system-spec.md`（UC priority 欄） |
 | ba | ba | devteam-analyst | Stakeholder Map / Business Rules Catalog | `system-spec.md` + `governance/rule-catalog.md` |
 | sa | sa | devteam-analyst | System Spec / SRS / State Machine | `system-spec.md` |
 | ux | ux | devteam-ux | User Journey / Flow / Wireframe | `user-flow.md` (+ `wireframe-*.md`) |
 | ui | ui | devteam-ux（兼） | Hi-fi / Component Spec / Design System | ⚠ 描述落在 `user-flow.md` state coverage，無獨立 UI spec 範本 |
-| architect | arch | devteam-arch | C4 / ADR / NFR Matrix | `c4-l1/l2/l3.md` + `adr.md`（NFR 為 arch 內一段，無獨立範本） |
+| architect | arch | devteam-arch | C4 / ADR / NFR Matrix / Threat Model | `c4-l1/l2/l3.md` + `adr.md` + `threat-model.md`（條件式，資料分級觸發掛 Gate 4）；NFR 為 arch 內一段 |
 | **dev** | **— 無 —** | **— 無 —** | Code / Tests / Migrations / Telemetry | **外部 coding agent 實作**；接手契約 = `specs/<feature>/handoff.md`（見「Scope 邊界」） |
 | qa | qa | devteam-qa | Test Plan / Completion Report | `test-plan.md` |
 | devops（·SRE） | devops + sre | devteam-ops | Pipeline / SLO / Runbook / Postmortem | `runbook.md` + `slo.md` + `release-readiness.md` + `postmortem-template.md` |
@@ -80,7 +80,9 @@ R = Responsible（執行），A = Accountable（最終負責），C = Consulted�
 | sd（System Designer） | devteam-design | API contract / Module Design / Error Model → `openapi.yaml` | 折進產品 `architect`（RACI 欄稱 **Dev Lead**，三者同指實作設計責任） |
 | dba | devteam-design | ERD / DDL / Migration → `erd.md` + `data/migrations/*.sql` | 折進產品 `architect` + `dev` |
 
-**交付物命名 rosetta（產品名 → harness 範本名）：** `srs`/`frd`→`system-spec.md`、`api-spec`→`openapi.yaml`、`data-model`→`erd.md`、`journey-map`→`user-flow.md`、`non-functional-reqs`→ NFR matrix（arch 內一段）。
+**交付物命名 rosetta（產品名 → harness 範本名）：** `srs`/`frd`→`system-spec.md`、`api-spec`→`openapi.yaml`、`data-model`→`erd.md`、`journey-map`→`user-flow.md`、`non-functional-reqs`→ NFR matrix（arch 內一段）、`threat-model`→`threat-model.md`（條件式）、`jtbd`/`value-hypothesis`→`prd.md` 必填段、`ordered-backlog`→`prd.md` §Prioritized Scope Slice（不產 sprint backlog）。
+
+> **2026-05-28 Roundtable B 決議落地**（D1/D2/D3）：JTBD + Value Hypothesis 升 PRD 必填段；Ordered Backlog 降級為 PRD Prioritized Scope Slice；新增條件式 STRIDE threat-model（資料分級觸發掛 Gate 4）。詳見 `.claude/context/devteam/meetings/2026-05-28-harness-gap-planning/MoM.md`。
 
 > **Scope 邊界**：`dev`（Build code）、Operate runtime loop 不在 harness 產出範圍 —— harness 是 **spec 產生器**，產規範包後交外部 coding agent + 運維承接。詳見 `.claude/CLAUDE.md` §Scope 邊界。
 

@@ -73,11 +73,13 @@ PRD 不負責「選技術」，但**負責讓 NFR 與資料敏感度有 baseline
 | `open_questions[]` | §9 Risks & Open Questions | 全部 carryover |
 
 完成預填後，**只對業主追問 PRD 必填但 bootstrap 沒覆蓋的部分**：
-- §1 Problem Statement 的「為什麼值得解 / 不解的成本」
-- §2 Goals & Success Metrics（**KPI 必填，bootstrap 不問**）
-- §4 Scope 的 Out of scope（強制不可空）
-- §6 Functional Requirements（具體 FR list）
-- §9 Risks 補充
+- Problem Statement 的「為什麼值得解 / 不解的成本」
+- JTBD（每 job 的 success criterion；UX 主筆但 PM 起草佔位）
+- Goals & Success Metrics（**KPI 必填，bootstrap 不問**）
+- Value Hypothesis（counter-metric + 成功閾值，**防假成功**）
+- Scope 的 Out of scope（強制不可空）+ Prioritized Scope Slice 排序
+- Functional Requirements（具體 FR list）
+- Risks 補充
 
 這比傳統 Mode B 少問 7-8 題基礎問題，業主聚焦在 PM 真正該決定的東西。
 
@@ -88,16 +90,18 @@ PRD 不負責「選技術」，但**負責讓 NFR 與資料敏感度有 baseline
 ### PRD 必備節（依範本順序）
 
 1. **Problem Statement** — 現況、為什麼值得解、不解的成本
-2. **Goals & Success Metrics** — Business goal / User goal / KPI / Counter-metrics
-3. **Users & Scenarios** — Primary persona / Key scenario / Edge cases  *(bootstrap: business.user_scale)*
-4. **Scope** — In scope / Out of scope（**Out of scope 不可空**）
-5. **User Flow Links** — 連到 ux/user-flow-{feature}.md（占位指向）
-6. **Functional Requirements** — Requirement ID / Description / Acceptance criteria
-7. **Non-Functional Requirements** — Performance / Reliability / Security / Accessibility / Auditability  *(bootstrap: latency_sensitivity + compliance.*)*
-8. **Dependencies** — Upstream / Downstream / External / Data / API  *(bootstrap: stack.*)*
-9. **Risks & Open Questions**  *(bootstrap: open_questions[])*
-10. **Release Plan** — Rollout strategy / Observability / Rollback  *(bootstrap: team_timeline.first_release_deadline)*
-11. **Decision Log** — 連到 architecture/adr/ 或 architecture/dr/
+2. **JTBD（Jobs To Be Done）** — 每個 job ≥ 1 條 success criterion（可被 user-flow anchor `#jtbd-JN` 引用）；UX driver 主筆內容、PM owner（**Gate 1 必填**）
+3. **Goals & Success Metrics** — Business goal / User goal / KPI / Counter-metrics
+4. **Value Hypothesis** — 每條含 counter-metric + 成功閾值（樣本 N 可標 `<TBD, gate 前補>`）；防假成功（**Gate 1 必填**）
+5. **Users & Scenarios** — Primary persona / Key scenario / Edge cases  *(bootstrap: business.user_scale)*
+6. **Scope** — In scope / Out of scope（**Out of scope 不可空**）+ **Prioritized Scope Slice**（MoSCoW / P0-P1-P2，取代 sprint backlog，PM single owner）
+7. **User Flow Links** — 連到 ux/user-flow-{feature}.md（占位指向）
+8. **Functional Requirements** — Requirement ID / Description / Acceptance criteria
+9. **Non-Functional Requirements** — Performance / Reliability / Security / Accessibility / Auditability  *(bootstrap: latency_sensitivity + compliance.*)*
+10. **Dependencies** — Upstream / Downstream / External / Data / API  *(bootstrap: stack.*)*
+11. **Risks & Open Questions**  *(bootstrap: open_questions[])*
+12. **Release Plan** — Rollout strategy / Observability / Rollback  *(bootstrap: team_timeline.first_release_deadline)*
+13. **Decision Log** — 連到 architecture/adr/ 或 architecture/dr/
 
 ### 產出邏輯（兩模式共用）
 

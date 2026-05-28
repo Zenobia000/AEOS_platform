@@ -25,7 +25,7 @@ references:
 ## Phase 1: 讀取上下文
 
 1. 讀 `state.json` 確認 phase
-2. 讀 `docs/prd/<feature>.md` 取 persona、scenarios、KPI
+2. 讀 `docs/prd/<feature>.md` 取 persona、scenarios、KPI、**JTBD（§Jobs To Be Done）** —— 每個 flow 的 task success 判準必須回引對應 JTBD 的 success criterion（anchor `#jtbd-JN`），不自己重新發明
 3. 讀 `devteam_knowledge_base/templates/user-flow.md`
 4. 若已存在 docs/ux/user-flow-<feature>.md → 進入迭代模式
 5. 與 devteam-analyst 並行時，協調避免重複定義 actor / state
@@ -46,12 +46,13 @@ references:
 ## Phase 2: 產出 User Flow
 
 ### 2a. Journey Map（高層）
-Discover → Onboard → Use → Retain（或產品特定階段）。每階段對應 PRD scenario。
+Discover → Onboard → Use → Retain（或產品特定階段）。每階段對應 PRD scenario / JTBD job。
 
 ### 2b. Core Flow（任務主線）
 用 mermaid flowchart 畫：
 - Entry → Steps → Branches → Success / Error / Exit
 - 每個 step 標：使用者動作、系統回應、預期時間
+- **Task success 定義** anchor 引用 PRD JTBD（`[J1](../prd/<feature>.md#jtbd-J1)`）—— 成功判準以 PRD 為單一真相源，避免 PRD↔flow 漂移
 
 ### 2c. State Coverage 矩陣（**最容易漏的部分**）
 對每個 step 列：Happy / Empty / Loading / Error / Offline。

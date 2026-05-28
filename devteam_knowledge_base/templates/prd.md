@@ -34,6 +34,18 @@
 
 ---
 
+## 🧩 Jobs To Be Done (JTBD)
+
+> [!NOTE]
+> JTBD = 使用者想完成的任務（非功能清單）。**UX driver 主筆內容、PM driver = PRD doc owner**（見 [[01_role_responsibilities]] §Crosswalk）。每個 job 必須有 ≥ 1 條 success criterion；`user-flow.md` 以 anchor 下游引用（`#jtbd-J1`）作為 task success 判準，不可只寫敘事散文。必填段。
+
+| ID | When（情境） | I want to（任務） | So I can（動機 / 結果） | Success criterion（完成什麼算成功，可被 user-flow 引用） |
+|:---|:---|:---|:---|:---|
+| <a id="jtbd-J1"></a>J1 | {觸發情境} | {想完成的任務} | {underlying 動機} | {可觀測的完成判準} |
+| <a id="jtbd-J2"></a>J2 | ... | ... | ... | ... |
+
+---
+
 ## 📊 Goals & Success Metrics
 
 | 類別 | 目標 | 量化指標 | 觀測週期 |
@@ -46,6 +58,18 @@
 
 > [!IMPORTANT]
 > KPI 必填且可量化。不可寫「使用度高」這類無法測量的描述。
+
+---
+
+## 🔬 Value Hypothesis
+
+> [!IMPORTANT]
+> 防「假成功當真成功」。每條假設必含 **counter-metric + 成功閾值**（P0 必填）；樣本 N / 觀測窗在 0-1 模糊期可標 `<TBD, gate 前補>`，不擋 PRD freeze。QA 以此導出可測 exit criteria — 寫不出成功閾值的假設等於沒假設。必填段。
+
+| ID | 假設（We believe…） | 成功定義（… will result in，含閾值） | Counter-metric（避免副作用） | 樣本 / 觀測窗 | 對應 JTBD / KPI |
+|:---|:---|:---|:---|:---|:---|
+| VH-1 | {若做 X} | {指標 ≥ 閾值} | {副指標 + 上限} | {N / 期間 或 `<TBD>`} | J1 / K1 |
+| VH-2 | ... | ... | ... | ... | ... |
 
 ---
 
@@ -76,6 +100,18 @@
 
 - {explicitly excluded item 1}
 - {explicitly excluded item 2}
+
+### 🎚 Prioritized Scope Slice
+
+> [!NOTE]
+> harness 為 feature-spec 導向、**不產 sprint backlog**（取代產品的 Ordered Backlog；見 [[01_role_responsibilities]] §Crosswalk）。排序在此用 MoSCoW + P0/P1/P2 收口，**PM driver single owner**。此處只排序、連回 Value Hypothesis；item 的 acceptance criteria **單一真相源在 system-spec**（use case priority 欄），不在此重寫。
+
+| Slice | MoSCoW | 對應 FR / Use Case | 排序理由（連 Value Hypothesis） |
+|:---|:---|:---|:---|
+| P0 | Must | FR-001 | VH-1 核心驗證 |
+| P1 | Should | FR-002 | — |
+| P2 | Could | — | — |
+| — | Won't（this release） | {見 Out of Scope} | — |
 
 ---
 

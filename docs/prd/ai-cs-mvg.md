@@ -1,7 +1,7 @@
 # PRD — AI 客服 MVG（Draft Mode 草稿模式）
 
 > **📋 Status**: frozen（Gate 1 PRD，2026-05-28；變更走 DR）
-> **🗓 Last updated**: 2026-05-28
+> **🗓 Last updated**: 2026-05-29
 > **👤 Owner**: PM
 > **🔖 Version**: v1
 > **🔗 Related**: docs/foundation/00~03 · ADR-0001(Frozen Runtime) · [[06_quality_attributes_catalog]] · [[11_data_and_stack_catalog]]
@@ -114,7 +114,7 @@
 |:---|:---|:---|:---:|
 | FR-001 | 知識 ingest：貼上 markdown → 切塊 → 建立可檢索索引 | 貼一份真知識後，對相關問題能檢索回正確片段 | P0 |
 | FR-002 | 草稿生成：檢索 + Claude 產生回覆草稿 | 對測試集 50 題產草稿，pass rate ≥ 70%（W1） | P0 |
-| FR-003 | LINE 收訊：webhook 接收並驗證來源後存檔 | 真實 LINE 訊息入庫；來源驗簽失敗則拒絕 | P0 |
+| FR-003 | 訊息入口（W1：手動貼上/截圖；W2+：LINE webhook 自動收訊） | W1：expert 貼上/截圖真實客戶訊息即入庫；W2+：webhook 接收並驗簽，失敗則拒絕（見下方 R2 S-1） | P0 |
 | FR-004 | Draft Mode 審核：expert approve / edit / reject，approve 後回發 LINE | 三種決定皆可操作；approve 後客戶收到回覆 | P0 |
 | FR-005 | 稽核：每則訊息記錄知識來源 + model + 人類決定 + 決定者 | 任一對話可完整還原上述四項 | P0 |
 | FR-006 | Kill switch：單一開關全停 | 實測 30 秒內全面停止產草稿與回發 | P0 |
@@ -242,5 +242,11 @@
 - **B-3 客戶側 counter-metric**：補一個終端客戶側指標（重問率 / 投訴）— expert approve ≠ 客戶滿意。
 - **S-1 scope 一致化**：FR-003「LINE webhook 自動收訊」與切片「草稿+手動貼 LINE」不一致 → **pilot 切片 FR-003 改為手動入口（貼上/截圖）**，LINE webhook 排 W2+。
 - **Decision Log**：ADR-TBD → 已落地 **ADR-0001**（nanobot Frozen Runtime）；單體決策見 feasibility §4 / ADR-0001 anti-scope。
+
+---
+
+## Review 修正 R3（2026-05-29，doc hygiene）
+
+- **D-1 FR-003 表格同步**：凍結 PRD 的 FR-003 列原仍寫「LINE 收訊：webhook 接收並驗證」，與 **R2 S-1**（已改手動入口）及下游 `traceability-matrix.md` / `system-spec-care-copilot.md`（皆已用「訊息入口 W1 手動貼 / W2 LINE」）不一致 —— 凍結文件內部自相矛盾。本次將 FR-003 列同步為「W1 手動貼/截圖；W2+ webhook」。**決策依據沿用 R2 S-1，無新增/變更 scope**，故以 doc hygiene 處理（非新決策，免另開 DR）。
 
 > 給業主：主要看 **Executive Summary + Goals & KPI + Risks & Open Questions + Sign-off** 四段。其餘是給下游 phase（analyst / ux / arch）的輸入。

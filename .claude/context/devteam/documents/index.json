@@ -101,12 +101,6 @@
     "owner_role": "ops",
     "created_at": "2026-05-28T07:09:26Z"
   },
-  "specs/care-copilot/handoff.md": {
-    "status": "draft",
-    "version": 1,
-    "owner_role": "router",
-    "created_at": "2026-05-28T07:09:26Z"
-  },
   "docs/security/threat-model.md": {
     "status": "draft",
     "version": 1,

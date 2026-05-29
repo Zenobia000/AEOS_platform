@@ -121,5 +121,5 @@
 
 - 賭注與殺死條件:[`docs/foundation/00-the-bet.md`](../foundation/00-the-bet.md) · [`03-validation-and-kill.md`](../foundation/03-validation-and-kill.md)
 - 可行性與 vertical pack:[`docs/architecture/feasibility-AEOS-x-care-copilot.md`](../architecture/feasibility-AEOS-x-care-copilot.md) §6
-- 護城河四層 / 藍領 wedge:`_legacy-dev_docs/01-vision-positioning.md` §22
+- 護城河四層 / 藍領 wedge:pre-0to1 vision-positioning §22（git history）
 - 格式標準:KB-12 · 品質維度:KB-06 · 資料/合規:KB-11

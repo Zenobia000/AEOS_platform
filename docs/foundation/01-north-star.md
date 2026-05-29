@@ -72,4 +72,4 @@ flowchart TB
 | 不在流程刪對前自動化 | 五步法第 5 步 |
 | 守住 AI 藍領 wedge | 偏離即失去差異化身份 |
 
-> 北極星的完整論述（產線六站、互換矩陣、一引擎三放大器飛輪、MVG/OGSM）保存在 `_legacy-dev_docs/07-north-star.md`，被真實事件觸發時再叫回。
+> 北極星的完整論述（產線六站、互換矩陣、一引擎三放大器飛輪、MVG/OGSM）已退役至 git history（pre-0to1 `07-north-star.md`），被真實事件觸發時再叫回。

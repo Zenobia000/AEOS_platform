@@ -5,12 +5,12 @@
 > **👤 Owner**: `devteam-arch`
 > **🔖 Version**: v1
 > **🎯 Scope**: AEOS × Care Copilot × nanobot 可行性評估（歷史 spike，導出 ADR-0001~0004）
-> **🔗 Related**: `docs/foundation/pilot_run.md`（Care Copilot PRD v0.3）· `c4-care-copilot.md` · ADR-0001~0004 · `_legacy-dev_docs/02-product-architecture.md`
+> **🔗 Related**: `docs/foundation/pilot_run.md`（Care Copilot PRD v0.3）· `c4-care-copilot.md` · ADR-0001~0004
 
 > [!NOTE]
 > **詞彙對映（本文為歷史 spike，沿用 legacy 詞彙；當前架構以 C4 + ADR-0001~0004 為準）**：
 > - **執行引擎**：本文評估 pi 後**收斂為 nanobot**（§4 / ADR-0001）；標題與 §1 已更新，內文 pi 段保留為決策軌跡。
-> - **MC-0xx 模組契約**定義在 `_legacy-dev_docs`（已退役）。對映當前 C4 元件：MC-001 Policy+Audit→**Policy Engine + Audit writer**;MC-003 evaluation→**Eval**;MC-004 tenant-manager→**Postgres RLS（屬性，非獨立 container）**;MC-005 skill→**Vertical Pack skills**;MC-006 tool-registry→**Tool Gateway**;MC-008 knowledge-rag→**KnowledgeRouter**;MC-010 conversation-engine→**Draft 生成**。詳見 `c4-care-copilot.md` L2/L3。
+> - **MC-0xx 模組契約**定義在 pre-0to1 歸檔（已退役至 git history）。對映當前 C4 元件：MC-001 Policy+Audit→**Policy Engine + Audit writer**;MC-003 evaluation→**Eval**;MC-004 tenant-manager→**Postgres RLS（屬性，非獨立 container）**;MC-005 skill→**Vertical Pack skills**;MC-006 tool-registry→**Tool Gateway**;MC-008 knowledge-rag→**KnowledgeRouter**;MC-010 conversation-engine→**Draft 生成**。詳見 `c4-care-copilot.md` L2/L3。
 > - **11 工具** = Care Copilot 垂直全集（`pilot_run.md`），**非本次 freeze scope**（最薄切片只取 3 工具，見 PRD 命名註記）。
 
 > **問題**：現有 AEOS 架構能滿足 Care Copilot（直銷關懷 Copilot, pilot_run.md）的客戶需求到什麼程度？底層用 pi agent 跑是否可行？這個垂直能否驗證「AEOS = 跨所有垂直領域的平台」這個本質目標？

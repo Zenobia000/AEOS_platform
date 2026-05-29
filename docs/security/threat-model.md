@@ -211,4 +211,4 @@ ADR-0002 警告「pack 可能成為繞過治理的後門」。具體控制:
 - Frozen / pack / 知識治理:ADR-0001 · ADR-0002 · ADR-0004
 - 注入測試集落地:[`docs/qa/test-plan-care-copilot.md`](../qa/test-plan-care-copilot.md)
 - 同意 / DPA:[`governance/consent-and-dpa.md`](../governance/consent-and-dpa.md)
-- 結構參考（legacy,Phase 2 重做）:`_legacy-dev_docs/_archive-pre-0to1/2-contracts/SEC-001-threat-model.md`
+- 結構參考（legacy,Phase 2 重做）:pre-0to1 SEC-001-threat-model（git history）

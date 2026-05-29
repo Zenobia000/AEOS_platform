@@ -120,7 +120,7 @@
 | Asset | Path |
 |:---|:---|
 | **Feasibility** | [`docs/architecture/feasibility-AEOS-x-care-copilot.md`](../feasibility-AEOS-x-care-copilot.md) §3 #1 |
-| **延續 ADR** | legacy ADR-0010（記憶五層 L3）·`_legacy-dev_docs/02-product-architecture.md` §6.3 知識三分類 |
+| **延續 ADR** | legacy ADR-0010（記憶五層 L3）· pre-0to1 product-architecture §6.3 知識三分類（git history） |
 | **KB references** | [[11_data_and_stack_catalog]] |
 
 ---

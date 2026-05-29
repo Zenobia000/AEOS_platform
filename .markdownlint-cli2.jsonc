@@ -1,0 +1,29 @@
+{
+  // markdownlint-cli2 runner config — picks up .markdownlint.json
+  "config": {
+    "extends": ".markdownlint.json"
+  },
+  "globs": [
+    "VibeCoding_Workflow_Templates/**/*.md",
+    "docs/**/*.md",
+    "README.md",
+    ".claude/rules/**/*.md",
+    ".claude/skills/**/*.md",
+    ".claude/agents/**/*.md",
+    ".claude/CLAUDE.md",
+    ".claude/WORKFLOW.md"
+  ],
+  "ignores": [
+    "node_modules/**",
+    ".git/**",
+    ".claude/coordination/**",
+    ".claude/context/**",
+    ".claude/logs/**",
+    ".claude/taskmaster-data/**",
+    ".claude/output-styles/**",
+    ".claude/commands/**",
+    "VibeCoding_Workflow_Templates/output_style.md"
+  ],
+  "fix": false,
+  "noInlineConfig": false
+}

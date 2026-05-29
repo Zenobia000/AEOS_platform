@@ -1,0 +1,13 @@
+{
+  "name": "claude-godzilla-z",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Workspace harness — owns VibeCoding templates, Claude rules and skills. package.json exists only to pin markdown tooling versions.",
+  "scripts": {
+    "lint:md": "markdownlint-cli2",
+    "lint:md:fix": "markdownlint-cli2 --fix"
+  },
+  "devDependencies": {
+    "markdownlint-cli2": "^0.13.0"
+  }
+}

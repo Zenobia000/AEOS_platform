@@ -5,18 +5,21 @@
 # Claude Code 個人設定
 .claude/settings.local.json
 
-# DevTeam transient session state（hook 高頻變動 / session lock，不入 git）
-.claude/context/devteam/consistency-drift.md
-.claude/scheduled_tasks.lock
+# Claude Code TaskMaster session state（per-clone、per-session 生成，不入 repo）
+.claude/taskmaster-data/.session-*
+.claude/taskmaster-data/timelog.jsonl
+.claude/taskmaster-data/wbs-history.log
+.claude/taskmaster-data/project.json
+.claude/taskmaster-data/wbs.md
 
-# TaskMaster session-level 暫存檔（hook 高頻變動，不該入 git）
-# 保留 timelog.jsonl（append-only 歷史紀錄）
-.claude/taskmaster-data/.session-snapshot
-.claude/taskmaster-data/.session-start
-.claude/taskmaster-data/.current-task
+# Claude Code hook logs（per-clone）
+.claude/logs/*.log
 
-# 獨立子專案（Launch Atlas 圖鑑，自有 repo / 575M 含 node_modules，不入此 repo）
-product_to_launch/
+# Binary executables（跨平台不安全；本專案僅保留 .sh）
+*.exe
+*.dll
+*.dylib
+*.so
 
 # Node
 node_modules/
